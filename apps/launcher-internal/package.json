@@ -1,0 +1,60 @@
+{
+    "$schema": "https://www.raycast.com/schemas/extension.json",
+    "name": "altered-42-launcher-internal",
+    "title": "Altered: 42 - Internal",
+    "description": "Internal tooling for Altered: 42.",
+    "icon": "icon-rounded-512.png",
+    "author": "inducingchaos",
+    "categories": [],
+    "license": "MIT",
+    "commands": [
+        {
+            "name": "create-thought",
+            "title": "Create Thought",
+            "description": "Create a thought.",
+            "mode": "view"
+        },
+        {
+            "name": "list-thoughts",
+            "title": "List Thoughts",
+            "description": "List thoughts.",
+            "mode": "view"
+        }
+    ],
+    "dependencies": {
+        "@altered-42/api": "workspace:*",
+        "@altered-42/db": "workspace:*",
+        "@altered-42/ui": "workspace:*",
+        "@altered-42/validators": "workspace:*",
+        "@raycast/api": "^1.96.0",
+        "@raycast/utils": "^1.17.0",
+        "@tanstack/react-query": "catalog:",
+        "@trpc/client": "catalog:",
+        "@trpc/tanstack-react-query": "catalog:",
+        "react": "catalog:react19",
+        "superjson": "2.2.2"
+    },
+    "devDependencies": {
+        "@altered-42/eslint-config": "workspace:*",
+        "@altered-42/prettier-config": "workspace:*",
+        "@altered-42/tsconfig": "workspace:*",
+        "@raycast/eslint-config": "^2.0.4",
+        "@types/node": "^22.13.11",
+        "@types/react": "19.0.10",
+        "eslint": "^9.22.0",
+        "prettier": "^3.5.3",
+        "typescript": "catalog:"
+    },
+    "scripts": {
+        "build": "ray build",
+        "dev": "ray develop",
+        "format": "prettier --check . --ignore-path ../../.gitignore",
+        "lint:ray": "ray lint",
+        "lint:ray:fix": "ray lint --fix",
+        "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+        "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+        "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",
+        "publish": "npx @raycast/api@latest publish"
+    },
+    "prettier": "@altered-42/prettier-config"
+}

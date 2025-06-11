@@ -1,0 +1,53 @@
+#  Dependencies.
+node_modules
+.pnp
+.pnp.js
+
+#  Testing.
+coverage
+
+#  Next.js.
+.next/
+out/
+next-env.d.ts
+
+#  Raycast.
+raycast-env.d.ts
+
+#  Nitro.
+.nitro/
+.output/
+
+#  Expo.
+.expo/
+expo-env.d.ts
+apps/expo/.gitignore
+apps/expo/ios
+apps/expo/android
+
+#  Production.
+build
+
+#  Misc.
+.DS_Store
+*.pem
+
+#  Debug.
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+#  Environment.
+.env
+.env*.local
+
+#  Vercel.
+.vercel
+
+#  TypeScript.
+dist/
+.cache
+
+#  Turbo.
+.turbo
