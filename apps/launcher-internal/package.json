@@ -19,6 +19,12 @@
             "title": "List Thoughts",
             "description": "List thoughts.",
             "mode": "view"
+        },
+        {
+            "name": "open-chat",
+            "title": "Open Chat",
+            "description": "Opens chat.altered.app in your default browser.",
+            "mode": "no-view"
         }
     ],
     "dependencies": {
