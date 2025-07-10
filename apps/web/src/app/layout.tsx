@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     title: "ALTERED",
     description: "Knowledge systems for the obsessed.",
     icons: {
-        icon: "/icon-rounded.png"
+        icon: "/icon-raycast-dark.png"
     },
     openGraph: {
         title: "ALTERED",
