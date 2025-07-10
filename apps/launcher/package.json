@@ -1,11 +1,13 @@
 {
     "$schema": "https://www.raycast.com/schemas/extension.json",
-    "name": "altered-launcher-internal",
-    "title": "ALTERED Launcher - Internal",
-    "description": "Internal tooling for ALTERED.",
-    "icon": "icon-rounded-512.png",
+    "name": "altered-launcher",
+    "title": "ALTERED",
+    "description": "Organize the thoughts in your ALTERED brain.",
+    "icon": "icon.png",
     "author": "inducingchaos",
-    "categories": [],
+    "categories": [
+        "Productivity"
+    ],
     "license": "MIT",
     "commands": [
         {
