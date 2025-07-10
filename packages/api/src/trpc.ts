@@ -14,9 +14,9 @@ import { initTRPC, TRPCError } from "@trpc/server"
 import superjson from "superjson"
 import { ZodError } from "zod"
 
-import type { Session } from "@altered-42/auth"
-import { auth } from "@altered-42/auth"
-import { db } from "@altered-42/db/client"
+import type { Session } from "@altered/auth"
+import { auth } from "@altered/auth"
+import { db } from "@altered/db/client"
 
 /**
  * 1. CONTEXT

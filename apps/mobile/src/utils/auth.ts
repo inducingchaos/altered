@@ -14,8 +14,8 @@ const _authClient = createAuthClient({
     baseURL: `${env.EXPO_PUBLIC_BASE_URL}/api/auth`,
     plugins: [
         expoClient({
-            scheme: "altered-42",
-            storagePrefix: "altered-42",
+            scheme: "altered",
+            storagePrefix: "altered",
             storage: SecureStore
         })
     ]

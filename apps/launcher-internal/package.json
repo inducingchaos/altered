@@ -1,37 +1,37 @@
 {
     "$schema": "https://www.raycast.com/schemas/extension.json",
-    "name": "altered-42-launcher-internal",
-    "title": "Altered: 42 - Internal",
-    "description": "Internal tooling for Altered: 42.",
+    "name": "altered-launcher-internal",
+    "title": "ALTERED Launcher - Internal",
+    "description": "Internal tooling for ALTERED.",
     "icon": "icon-rounded-512.png",
     "author": "inducingchaos",
     "categories": [],
     "license": "MIT",
     "commands": [
         {
-            "name": "create-thought",
-            "title": "Create Thought",
-            "description": "Create a thought.",
+            "name": "capture",
+            "title": "Capture a Thought",
+            "description": "Upload a thought to your ALTERED brain.",
             "mode": "view"
         },
         {
-            "name": "list-thoughts",
-            "title": "List Thoughts",
-            "description": "List thoughts.",
+            "name": "view-thoughts",
+            "title": "View Thoughts",
+            "description": "See all of your thoughts.",
             "mode": "view"
         },
         {
-            "name": "open-chat",
-            "title": "Open Chat",
-            "description": "Opens chat.altered.app in your default browser.",
+            "name": "warp",
+            "title": "Warp from Clipboard",
+            "description": "Capture a thought from your clipboard.",
             "mode": "no-view"
         }
     ],
     "dependencies": {
-        "@altered-42/api": "workspace:*",
-        "@altered-42/db": "workspace:*",
-        "@altered-42/ui": "workspace:*",
-        "@altered-42/validators": "workspace:*",
+        "@altered/api": "workspace:*",
+        "@altered/db": "workspace:*",
+        "@altered/ui": "workspace:*",
+        "@altered/validators": "workspace:*",
         "@raycast/api": "^1.96.0",
         "@raycast/utils": "^1.17.0",
         "@tanstack/react-query": "catalog:",
@@ -41,9 +41,9 @@
         "superjson": "2.2.2"
     },
     "devDependencies": {
-        "@altered-42/eslint-config": "workspace:*",
-        "@altered-42/prettier-config": "workspace:*",
-        "@altered-42/tsconfig": "workspace:*",
+        "@altered/eslint-config": "workspace:*",
+        "@altered/prettier-config": "workspace:*",
+        "@altered/tsconfig": "workspace:*",
         "@raycast/eslint-config": "^2.0.4",
         "@types/node": "^22.13.11",
         "@types/react": "19.0.10",
@@ -62,5 +62,5 @@
         "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",
         "publish": "npx @raycast/api@latest publish"
     },
-    "prettier": "@altered-42/prettier-config"
+    "prettier": "@altered/prettier-config"
 }

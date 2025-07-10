@@ -9,12 +9,12 @@ import { nextCookies } from "better-auth/next-js"
 import { oAuthProxy } from "better-auth/plugins"
 import { nanoid } from "nanoid"
 
-import { db } from "@altered-42/db/client"
+import { db } from "@altered/db/client"
 
 import { env } from "../env"
 
 export const auth = betterAuth({
-    appName: "Altered: 42",
+    appName: "ALTERED",
     baseURL: env.NEXT_PUBLIC_BASE_URL,
     basePath: "/api/auth",
     secret: env.AUTH_SECRET,
@@ -38,7 +38,7 @@ export const auth = betterAuth({
         }),
         expo()
     ],
-    trustedOrigins: [env.NEXT_PUBLIC_BASE_URL, "altered-42://"],
+    trustedOrigins: [env.NEXT_PUBLIC_BASE_URL, "altered://"],
     advanced: {
         database: {
             generateId: () => nanoid()

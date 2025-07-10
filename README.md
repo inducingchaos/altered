@@ -1,1 +1,1 @@
-# Altered 42: The Answer
+# ALTERED: Systems for Thought

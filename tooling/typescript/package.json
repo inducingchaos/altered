@@ -1,8 +1,8 @@
 {
-  "name": "@altered-42/tsconfig",
-  "private": true,
-  "version": "0.1.0",
-  "files": [
-    "*.json"
-  ]
+    "name": "@altered/tsconfig",
+    "private": true,
+    "version": "0.1.0",
+    "files": [
+        "*.json"
+    ]
 }

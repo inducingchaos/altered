@@ -4,6 +4,6 @@
 
 import { toNextJsHandler } from "better-auth/next-js"
 
-import { auth } from "@altered-42/auth"
+import { auth } from "@altered/auth"
 
 export const { POST, GET } = toNextJsHandler(auth)

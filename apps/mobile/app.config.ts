@@ -6,9 +6,9 @@ import type { ConfigContext, ExpoConfig } from "expo/config"
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
     ...config,
-    name: "Altered: 42",
-    slug: "altered-42",
-    scheme: "altered-42",
+    name: "ALTERED",
+    slug: "altered",
+    scheme: "altered",
     version: "0.1.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
@@ -16,7 +16,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     updates: { fallbackToCacheTimeout: 0 },
     assetBundlePatterns: ["**/*"],
     ios: {
-        bundleIdentifier: "com.splitdesigns.altered-42",
+        bundleIdentifier: "com.splitdesigns.altered",
         // supportsTablet: true,
         icon: {
             light: "./assets/icon.png"
@@ -25,7 +25,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         }
     },
     android: {
-        package: "com.splitdesigns.altered-42",
+        package: "com.splitdesigns.altered",
         adaptiveIcon: {
             foregroundImage: "./assets/icon.png",
             backgroundColor: "#FFFFFF"

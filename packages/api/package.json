@@ -1,5 +1,5 @@
 {
-    "name": "@altered-42/api",
+    "name": "@altered/api",
     "version": "0.1.0",
     "private": true,
     "type": "module",
@@ -19,9 +19,9 @@
         "typecheck": "tsc --noEmit --emitDeclarationOnly false"
     },
     "dependencies": {
-        "@altered-42/auth": "workspace:*",
-        "@altered-42/db": "workspace:*",
-        "@altered-42/validators": "workspace:*",
+        "@altered/auth": "workspace:*",
+        "@altered/db": "workspace:*",
+        "@altered/validators": "workspace:*",
         "@trpc/server": "catalog:",
         "@upstash/qstash": "^2.8.1",
         "nanoid": "^5.1.5",
@@ -29,12 +29,12 @@
         "zod": "catalog:"
     },
     "devDependencies": {
-        "@altered-42/eslint-config": "workspace:*",
-        "@altered-42/prettier-config": "workspace:*",
-        "@altered-42/tsconfig": "workspace:*",
+        "@altered/eslint-config": "workspace:*",
+        "@altered/prettier-config": "workspace:*",
+        "@altered/tsconfig": "workspace:*",
         "eslint": "catalog:",
         "prettier": "catalog:",
         "typescript": "catalog:"
     },
-    "prettier": "@altered-42/prettier-config"
+    "prettier": "@altered/prettier-config"
 }

@@ -3,9 +3,9 @@ import { GeistMono } from "geist/font/mono"
 import { GeistSans } from "geist/font/sans"
 import { NuqsAdapter } from "nuqs/adapters/next/app"
 
-import { cn } from "@altered-42/ui"
-import { Toaster } from "@altered-42/ui/sonner"
-import { ThemeProvider, ThemeToggle } from "@altered-42/ui/theme"
+import { cn } from "@altered/ui"
+import { Toaster } from "@altered/ui/sonner"
+import { ThemeProvider, ThemeToggle } from "@altered/ui/theme"
 
 import { TRPCReactProvider } from "~/trpc/react"
 
@@ -15,21 +15,21 @@ import { env } from "~/env"
 
 export const metadata: Metadata = {
     metadataBase: new URL(env.VERCEL_ENV === "production" ? env.NEXT_PUBLIC_PROD_URL : env.NEXT_PUBLIC_BASE_URL),
-    title: "Altered: 42",
+    title: "ALTERED",
     description: "Knowledge systems for the obsessed.",
     icons: {
         icon: "/icon-rounded.png"
     },
     openGraph: {
-        title: "Altered: 42",
+        title: "ALTERED",
         description: "Knowledge systems for the obsessed.",
         url: env.VERCEL_ENV === "production" ? env.NEXT_PUBLIC_PROD_URL : env.NEXT_PUBLIC_BASE_URL,
-        siteName: "Altered: 42"
+        siteName: "ALTERED"
     },
     twitter: {
         card: "summary_large_image",
-        site: "@altered_42",
-        creator: "@altered_42"
+        site: "@altered",
+        creator: "@altered"
     }
 }
 

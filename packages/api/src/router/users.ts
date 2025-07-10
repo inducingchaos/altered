@@ -5,8 +5,8 @@
 import type { TRPCRouterRecord } from "@trpc/server"
 import { z } from "zod"
 
-import { eq } from "@altered-42/db"
-import { users } from "@altered-42/db/schema"
+import { eq } from "@altered/db"
+import { users } from "@altered/db/schema"
 
 import { publicProcedure } from "../trpc"
 

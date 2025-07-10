@@ -4,7 +4,7 @@
 
 import type { LoggerLinkOptions } from "@trpc/client"
 
-import type { AppRouter } from "@altered-42/api"
+import type { AppRouter } from "@altered/api"
 
 type CustomLoggerFnType = NonNullable<LoggerLinkOptions<AppRouter>["logger"]>
 type CustomLoggerOptsType = Parameters<CustomLoggerFnType>[0]

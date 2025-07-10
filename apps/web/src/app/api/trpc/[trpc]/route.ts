@@ -5,8 +5,8 @@
 import type { NextRequest } from "next/server"
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch"
 
-import { appRouter, createTRPCContext } from "@altered-42/api"
-import { auth } from "@altered-42/auth"
+import { appRouter, createTRPCContext } from "@altered/api"
+import { auth } from "@altered/auth"
 
 /**
  * Configures basic CORS headers. You should extend this to match your needs.

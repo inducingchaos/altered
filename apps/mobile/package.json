@@ -1,5 +1,5 @@
 {
-    "name": "@altered-42/mobile",
+    "name": "@altered/mobile",
     "version": "0.1.0",
     "private": true,
     "main": "index.ts",
@@ -60,11 +60,11 @@
         "superjson": "2.2.2"
     },
     "devDependencies": {
-        "@altered-42/api": "workspace:*",
-        "@altered-42/eslint-config": "workspace:*",
-        "@altered-42/prettier-config": "workspace:*",
-        "@altered-42/tailwind-config": "workspace:*",
-        "@altered-42/tsconfig": "workspace:*",
+        "@altered/api": "workspace:*",
+        "@altered/eslint-config": "workspace:*",
+        "@altered/prettier-config": "workspace:*",
+        "@altered/tailwind-config": "workspace:*",
+        "@altered/tsconfig": "workspace:*",
         "@babel/core": "^7.26.10",
         "@babel/preset-env": "^7.26.9",
         "@babel/runtime": "^7.26.10",
@@ -75,5 +75,5 @@
         "tailwindcss": "catalog:",
         "typescript": "catalog:"
     },
-    "prettier": "@altered-42/prettier-config"
+    "prettier": "@altered/prettier-config"
 }

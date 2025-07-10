@@ -10,7 +10,7 @@
         "cssVariables": true
     },
     "aliases": {
-        "utils": "@altered-42/ui",
+        "utils": "@altered/ui",
         "components": "./src",
         "ui": "./src"
     }

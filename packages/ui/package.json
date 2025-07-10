@@ -1,5 +1,5 @@
 {
-    "name": "@altered-42/ui",
+    "name": "@altered/ui",
     "private": true,
     "version": "0.1.0",
     "type": "module",
@@ -109,10 +109,10 @@
         "vaul": "^1.1.2"
     },
     "devDependencies": {
-        "@altered-42/eslint-config": "workspace:*",
-        "@altered-42/prettier-config": "workspace:*",
-        "@altered-42/tailwind-config": "workspace:*",
-        "@altered-42/tsconfig": "workspace:*",
+        "@altered/eslint-config": "workspace:*",
+        "@altered/prettier-config": "workspace:*",
+        "@altered/tailwind-config": "workspace:*",
+        "@altered/tsconfig": "workspace:*",
         "@types/react": "catalog:react19",
         "eslint": "catalog:",
         "prettier": "catalog:",
@@ -124,5 +124,5 @@
         "react": "catalog:react19",
         "zod": "catalog:"
     },
-    "prettier": "@altered-42/prettier-config"
+    "prettier": "@altered/prettier-config"
 }

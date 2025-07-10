@@ -7,10 +7,10 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
-import type { Session } from "@altered-42/auth"
-import { authClient } from "@altered-42/auth/client"
-import { ArrowRightIcon } from "@altered-42/ui"
-import { Button } from "@altered-42/ui/button"
+import type { Session } from "@altered/auth"
+import { authClient } from "@altered/auth/client"
+import { ArrowRightIcon } from "@altered/ui"
+import { Button } from "@altered/ui/button"
 
 export function AuthButton({ session, callback }: { session: Session | null; callback?: string }) {
     const router = useRouter()

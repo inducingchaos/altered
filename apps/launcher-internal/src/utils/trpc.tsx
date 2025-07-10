@@ -6,7 +6,7 @@ import { createTRPCClient, httpBatchLink, loggerLink } from "@trpc/client"
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query"
 import superjson from "superjson"
 
-import type { AppRouter } from "@altered-42/api"
+import type { AppRouter } from "@altered/api"
 
 import { customTRPCLogger } from "./custom-logger"
 import { getBaseUrl } from "./get-base-url"
@@ -39,4 +39,4 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
     queryClient
 })
 
-export { type RouterInputs, type RouterOutputs } from "@altered-42/api"
+export { type RouterInputs, type RouterOutputs } from "@altered/api"

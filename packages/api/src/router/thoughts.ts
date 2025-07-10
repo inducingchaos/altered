@@ -1,8 +1,8 @@
 import type { TRPCRouterRecord } from "@trpc/server"
 import { z } from "zod"
 
-import { desc, eq } from "@altered-42/db"
-import { creatableThoughtSchema, thoughts } from "@altered-42/db/schema"
+import { desc, eq } from "@altered/db"
+import { creatableThoughtSchema, thoughts } from "@altered/db/schema"
 
 import { publicProcedure } from "../trpc"
 

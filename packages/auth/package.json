@@ -1,5 +1,5 @@
 {
-    "name": "@altered-42/auth",
+    "name": "@altered/auth",
     "version": "0.1.0",
     "private": true,
     "type": "module",
@@ -16,7 +16,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
-        "@altered-42/db": "workspace:*",
+        "@altered/db": "workspace:*",
         "@better-auth/expo": "^1.2.7",
         "@t3-oss/env-nextjs": "^0.12.0",
         "better-auth": "^1.2.7",
@@ -26,13 +26,13 @@
         "zod": "catalog:"
     },
     "devDependencies": {
-        "@altered-42/eslint-config": "workspace:*",
-        "@altered-42/prettier-config": "workspace:*",
-        "@altered-42/tsconfig": "workspace:*",
+        "@altered/eslint-config": "workspace:*",
+        "@altered/prettier-config": "workspace:*",
+        "@altered/tsconfig": "workspace:*",
         "@types/react": "catalog:react19",
         "eslint": "catalog:",
         "prettier": "catalog:",
         "typescript": "catalog:"
     },
-    "prettier": "@altered-42/prettier-config"
+    "prettier": "@altered/prettier-config"
 }

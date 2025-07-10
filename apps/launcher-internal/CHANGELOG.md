@@ -1,3 +1,3 @@
-# Altered: 42 - Internal Changelog
+# ALTERED Changelog
 
 ## [Initial Version] - {PR_MERGE_DATE}
