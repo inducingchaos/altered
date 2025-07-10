@@ -13,19 +13,22 @@
         {
             "name": "capture",
             "title": "Capture a Thought",
-            "description": "Upload a thought to your ALTERED brain.",
+            "subtitle": "ALTERED Capture",
+            "description": "Upload a thought.",
             "mode": "view"
         },
         {
-            "name": "view-thoughts",
-            "title": "View Thoughts",
-            "description": "See all of your thoughts.",
+            "name": "refine",
+            "title": "Refine your Knowledge",
+            "subtitle": "ALTERED Refine",
+            "description": "View and edit your thoughts.",
             "mode": "view"
         },
         {
             "name": "warp",
             "title": "Warp from Clipboard",
-            "description": "Capture a thought from your clipboard.",
+            "subtitle": "ALTERED Warp",
+            "description": "Upload a thought from your clipboard.",
             "mode": "no-view"
         }
     ],
