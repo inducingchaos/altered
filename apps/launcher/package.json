@@ -56,6 +56,8 @@
         "@tanstack/react-query": "catalog:",
         "@trpc/client": "catalog:",
         "@trpc/tanstack-react-query": "catalog:",
+        "@types/luxon": "^3.6.2",
+        "luxon": "^3.6.1",
         "react": "catalog:react19",
         "superjson": "2.2.2"
     },

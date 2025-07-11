@@ -71,7 +71,7 @@ function _CreateThought() {
             }
             isLoading={createData.isPending}
         >
-            <Form.TextArea title="Content" placeholder="Thought content..." {...itemProps.content} />
+            <Form.TextArea title="Content" placeholder="Your next idea..." {...itemProps.content} />
         </Form>
     )
 }

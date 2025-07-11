@@ -3,8 +3,10 @@
  */
 
 import type { QueryClient } from "@tanstack/react-query"
-import { Action, ActionPanel, getPreferenceValues, List, showToast, Toast } from "@raycast/api"
+import { useState } from "react"
+import { Action, ActionPanel, getPreferenceValues, Icon, List, showToast, Toast } from "@raycast/api"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { DateTime } from "luxon"
 
 import type { RouterOutputs } from "./utils/trpc"
 import { Layout } from "./ui/layout"
@@ -20,17 +22,39 @@ export default function ListThoughts() {
     )
 }
 
+// Format date to a nice readable format
+const formatDate = (date: Date) => {
+    return DateTime.fromJSDate(date).toLocaleString({
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+    })
+}
+
 function GlobalActions<T extends { id: string }>({
     thought,
     handleRefresh,
-    handleDelete
+    handleDelete,
+    isShowingDetail,
+    toggleDetail
 }: {
     thought: T
     handleRefresh: () => Promise<unknown>
     handleDelete: (thoughtId: Pick<T, "id">) => void
+    isShowingDetail: boolean
+    toggleDetail: () => void
 }) {
     return (
         <ActionPanel>
+            <Action
+                title={isShowingDetail ? "Hide Detail" : "Show Detail"}
+                icon={isShowingDetail ? Icon.EyeDisabled : Icon.Eye}
+                shortcut={{ modifiers: ["cmd"], key: "i" }}
+                onAction={toggleDetail}
+            />
+
             <Action
                 title="Refresh"
                 shortcut={{ modifiers: ["cmd"], key: "r" }}
@@ -55,6 +79,7 @@ const getAllThoughtsQueryOptions = (userId: string) => trpc.thoughts.all.queryOp
 
 function _ListThoughts() {
     const queryClient = useQueryClient()
+    const [isShowingDetail, setIsShowingDetail] = useState(false)
 
     const thoughtsQuery = useQuery(getAllThoughtsQueryOptions(userId))
     const thoughtsCountQuery = useQuery(trpc.thoughts.count.queryOptions({ userId }))
@@ -67,18 +92,31 @@ function _ListThoughts() {
         <List
             isLoading={isActive}
             navigationTitle={thoughtsCountQuery.data ? `${thoughtsCountQuery.data} thoughts` : undefined}
+            isShowingDetail={isShowingDetail}
         >
             {thoughtsQuery.data?.length ? (
                 thoughtsQuery.data?.map(thought => (
                     <List.Item
                         key={thought.id}
                         title={`${thought.content}`}
-                        subtitle={thought.createdAt.toLocaleString()}
+                        // subtitle={formatDate(thought.createdAt)}
+                        detail={
+                            <List.Item.Detail
+                                markdown={thought.content}
+                                metadata={
+                                    <List.Item.Detail.Metadata>
+                                        <List.Item.Detail.Metadata.Label title="Created" text={formatDate(thought.createdAt)} />
+                                    </List.Item.Detail.Metadata>
+                                }
+                            />
+                        }
                         actions={
                             <GlobalActions
                                 thought={thought}
                                 handleRefresh={thoughtsQuery.refetch}
                                 handleDelete={deleteThought.mutate}
+                                isShowingDetail={isShowingDetail}
+                                toggleDetail={() => setIsShowingDetail(!isShowingDetail)}
                             />
                         }
                         accessories={[
