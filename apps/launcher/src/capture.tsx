@@ -2,13 +2,14 @@
  *
  */
 
-import { Action, ActionPanel, closeMainWindow, Form, popToRoot, Toast } from "@raycast/api"
+import { Action, ActionPanel, closeMainWindow, Form, getPreferenceValues, popToRoot, Toast } from "@raycast/api"
 import { useForm } from "@raycast/utils"
 import { useMutation } from "@tanstack/react-query"
 
-import { ME } from "./constants/misc"
 import { Layout } from "./ui/layout"
 import { trpc } from "./utils/trpc"
+
+const { "user-id": userId } = getPreferenceValues()
 
 export default function CreateThought() {
     return (
@@ -37,9 +38,11 @@ function _CreateThought() {
 
                 popToRoot({ clearSearchBar: true })
             },
-            onError: () => {
+            onError: error => {
                 toast.style = Toast.Style.Failure
                 toast.title = "Error Creating Thought"
+
+                console.error(error.message)
             }
         })
     )
@@ -49,7 +52,7 @@ function _CreateThought() {
             await closeMainWindow()
             await toast.show()
 
-            createData.mutate({ userId: ME, content: values.content })
+            createData.mutate({ userId, content: values.content })
         },
 
         validation: {

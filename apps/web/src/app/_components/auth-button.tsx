@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation"
 
 import type { Session } from "@altered/auth"
 import { authClient } from "@altered/auth/client"
-import { ArrowRightIcon } from "@altered/ui"
+import { CopyIcon } from "@altered/ui"
 import { Button } from "@altered/ui/button"
 
 export function AuthButton({ session, callback }: { session: Session | null; callback?: string }) {
@@ -27,7 +27,9 @@ export function AuthButton({ session, callback }: { session: Session | null; cal
 
                     await authClient.signIn.social({
                         provider: "google",
-                        callbackURL: callback
+
+                        //  If we don't include, it goes back to "/api/auth" page (investigate).
+                        callbackURL: callback ?? "/"
                     })
                 }}
             >
@@ -45,16 +47,15 @@ export function AuthButton({ session, callback }: { session: Session | null; cal
             </p>
 
             <div className="flex flex-col items-center justify-center gap-8">
-                <Button
-                    size="lg"
-                    variant="default"
-                    onClick={() => {
-                        router.push("/chat")
-                    }}
-                >
-                    {"Go to Chat"}
-                    <ArrowRightIcon className="ml-1 h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-4 rounded-md border p-4 px-8">
+                    <p className="text-md text-center">
+                        <span className="font-bold">{"User ID: "}</span>
+                        {session.user.id}
+                    </p>
+                    <Button variant="outline" size="icon" onClick={() => navigator.clipboard.writeText(session.user.id)}>
+                        <CopyIcon className="h-4 w-4" />
+                    </Button>
+                </div>
 
                 <form
                     onSubmit={async e => {
@@ -64,7 +65,7 @@ export function AuthButton({ session, callback }: { session: Session | null; cal
                         router.refresh()
                     }}
                 >
-                    <Button size="lg" variant="link" type="submit" className="m-0 size-0 p-0">
+                    <Button size="lg" variant="destructive" type="submit">
                         {"Sign out"}
                     </Button>
                 </form>

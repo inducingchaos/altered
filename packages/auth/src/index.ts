@@ -38,7 +38,7 @@ export const auth = betterAuth({
         }),
         expo()
     ],
-    trustedOrigins: [env.NEXT_PUBLIC_BASE_URL, "altered://"],
+    trustedOrigins: ["http://localhost:5873", env.NEXT_PUBLIC_BASE_URL, "altered://"],
     advanced: {
         database: {
             generateId: () => nanoid()
