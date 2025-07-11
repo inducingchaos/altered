@@ -30,6 +30,13 @@
             "subtitle": "ALTERED Warp",
             "description": "Upload a thought from your clipboard.",
             "mode": "no-view"
+        },
+        {
+            "name": "info",
+            "title": "Learn about ALTERED",
+            "subtitle": "ALTERED Info",
+            "description": "Get info on how to start using your ALTERED brain.",
+            "mode": "view"
         }
     ],
     "dependencies": {
