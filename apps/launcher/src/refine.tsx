@@ -68,25 +68,29 @@ function _ListThoughts() {
             isLoading={isActive}
             navigationTitle={thoughtsCountQuery.data ? `${thoughtsCountQuery.data} thoughts` : undefined}
         >
-            {thoughtsQuery.data?.map(thought => (
-                <List.Item
-                    key={thought.id}
-                    title={`${thought.content}`}
-                    subtitle={thought.createdAt.toLocaleString()}
-                    actions={
-                        <GlobalActions
-                            thought={thought}
-                            handleRefresh={thoughtsQuery.refetch}
-                            handleDelete={deleteThought.mutate}
-                        />
-                    }
-                    accessories={[
-                        {
-                            date: thought.createdAt
+            {thoughtsQuery.data?.length ? (
+                thoughtsQuery.data?.map(thought => (
+                    <List.Item
+                        key={thought.id}
+                        title={`${thought.content}`}
+                        subtitle={thought.createdAt.toLocaleString()}
+                        actions={
+                            <GlobalActions
+                                thought={thought}
+                                handleRefresh={thoughtsQuery.refetch}
+                                handleDelete={deleteThought.mutate}
+                            />
                         }
-                    ]}
-                />
-            ))}
+                        accessories={[
+                            {
+                                date: thought.createdAt
+                            }
+                        ]}
+                    />
+                ))
+            ) : (
+                <List.EmptyView title="No thoughts yet" icon="💭" />
+            )}
         </List>
     )
 }
