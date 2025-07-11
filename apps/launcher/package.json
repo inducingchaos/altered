@@ -75,6 +75,9 @@
         "publish": "npx @raycast/api@latest publish"
     },
     "prettier": "@altered/prettier-config",
+    "platforms": [
+        "macOS"
+    ],
     "preferences": [
         {
             "name": "user-id",

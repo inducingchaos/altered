@@ -23,7 +23,7 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
             }),
             httpBatchLink({
                 transformer: superjson,
-                url: `${getBaseUrl()}/api/trpc`,
+                url: `${getBaseUrl({ environment: "dev" })}/api/trpc`,
                 headers() {
                     const headers = new Map<string, string>()
                     headers.set("x-trpc-source", "raycast-react")

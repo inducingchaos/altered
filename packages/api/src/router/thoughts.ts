@@ -1,17 +1,26 @@
 import type { TRPCRouterRecord } from "@trpc/server"
 import { z } from "zod"
 
-import { desc, eq } from "@altered/db"
+import { count, desc, eq } from "@altered/db"
 import { creatableThoughtSchema, thoughts } from "@altered/db/schema"
 
 import { publicProcedure } from "../trpc"
 
 export const thoughtsRouter = {
-    all: publicProcedure.query(({ ctx }) => {
-        return ctx.db.query.thoughts.findMany({
+    all: publicProcedure.input(z.object({ userId: z.string() })).query(async ({ ctx, input }) => {
+        return await ctx.db.query.thoughts.findMany({
+            where: eq(thoughts.userId, input.userId),
             orderBy: desc(thoughts.createdAt),
             limit: 25
         })
+    }),
+
+    count: publicProcedure.input(z.object({ userId: z.string() })).query(async ({ ctx, input }) => {
+        const result = await ctx.db.select({ count: count() }).from(thoughts).where(eq(thoughts.userId, input.userId))
+
+        if (!result[0]?.count) return 0
+
+        return result[0].count
     }),
 
     //   byId: publicProcedure

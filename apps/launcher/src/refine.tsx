@@ -3,12 +3,14 @@
  */
 
 import type { QueryClient } from "@tanstack/react-query"
-import { Action, ActionPanel, List, showToast, Toast } from "@raycast/api"
+import { Action, ActionPanel, getPreferenceValues, List, showToast, Toast } from "@raycast/api"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import type { RouterOutputs } from "./utils/trpc"
 import { Layout } from "./ui/layout"
 import { trpc } from "./utils/trpc"
+
+const { "user-id": userId } = getPreferenceValues()
 
 export default function ListThoughts() {
     return (
@@ -49,17 +51,23 @@ function GlobalActions<T extends { id: string }>({
     )
 }
 
+const getAllThoughtsQueryOptions = (userId: string) => trpc.thoughts.all.queryOptions({ userId })
+
 function _ListThoughts() {
     const queryClient = useQueryClient()
 
-    const thoughtsQuery = useQuery(trpc.thoughts.all.queryOptions())
+    const thoughtsQuery = useQuery(getAllThoughtsQueryOptions(userId))
+    const thoughtsCountQuery = useQuery(trpc.thoughts.count.queryOptions({ userId }))
 
     const deleteThought = useMutation(createThoughtDeletionMutationOptions(queryClient))
 
     const isActive = thoughtsQuery.isFetching || deleteThought.isPending
 
     return (
-        <List isLoading={isActive}>
+        <List
+            isLoading={isActive}
+            navigationTitle={thoughtsCountQuery.data ? `${thoughtsCountQuery.data} thoughts` : undefined}
+        >
             {thoughtsQuery.data?.map(thought => (
                 <List.Item
                     key={thought.id}
@@ -91,15 +99,15 @@ const createThoughtDeletionMutationOptions = (queryClient: QueryClient) =>
         onMutate: async deletedThought => {
             //  Avoid conflicts with optimistic updates.
 
-            await queryClient.cancelQueries({ queryKey: trpc.thoughts.all.queryOptions().queryKey })
+            await queryClient.cancelQueries({ queryKey: getAllThoughtsQueryOptions(userId).queryKey })
 
             //  Snapshot prev.
 
-            const previousData = queryClient.getQueryData(trpc.thoughts.all.queryOptions().queryKey)
+            const previousData = queryClient.getQueryData(getAllThoughtsQueryOptions(userId).queryKey)
 
             //  Optimistically update state.
 
-            queryClient.setQueryData(trpc.thoughts.all.queryOptions().queryKey, (stale?: RouterOutputs["thoughts"]["all"]) =>
+            queryClient.setQueryData(getAllThoughtsQueryOptions(userId).queryKey, (stale?: RouterOutputs["thoughts"]["all"]) =>
                 stale?.filter(thought => thought.id !== deletedThought.id)
             )
 
@@ -111,12 +119,13 @@ const createThoughtDeletionMutationOptions = (queryClient: QueryClient) =>
         onError: (error, _, context) => {
             //  Roll back state.
 
-            if (context?.previousData) queryClient.setQueryData(trpc.thoughts.all.queryOptions().queryKey, context.previousData)
+            if (context?.previousData)
+                queryClient.setQueryData(getAllThoughtsQueryOptions(userId).queryKey, context.previousData)
 
             showToast({ style: Toast.Style.Failure, title: "Deletion Failed", message: "Failed to delete thought." })
             console.error(error)
         },
 
         onSuccess: async () => await showToast({ style: Toast.Style.Success, title: "Thought Deleted" }),
-        onSettled: () => queryClient.invalidateQueries({ queryKey: trpc.thoughts.all.queryOptions().queryKey })
+        onSettled: () => queryClient.invalidateQueries({ queryKey: getAllThoughtsQueryOptions(userId).queryKey })
     })
