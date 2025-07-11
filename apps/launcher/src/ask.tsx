@@ -122,7 +122,7 @@ function _Generate() {
                 </ActionPanel>
             }
         >
-            <Form.TextArea title="Prompt" placeholder="Thought prompt..." {...itemProps.prompt} />
+            <Form.TextArea title="Question" placeholder="Ask your brain..." {...itemProps.prompt} />
         </Form>
     )
 }

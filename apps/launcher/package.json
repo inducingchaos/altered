@@ -39,10 +39,10 @@
             "mode": "view"
         },
         {
-            "name": "generate",
-            "title": "Generate a Thought",
+            "name": "ask",
+            "title": "Ask Your Brain",
             "subtitle": "ALTERED Generate",
-            "description": "Use your thoughts to generate a new one.",
+            "description": "Get answers from your thoughts.",
             "mode": "view"
         }
     ],
