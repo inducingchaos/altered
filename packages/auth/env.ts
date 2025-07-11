@@ -11,6 +11,8 @@ export const env = createEnv({
         AUTH_GOOGLE_ID: z.string().min(1),
         AUTH_GOOGLE_SECRET: z.string().min(1),
 
+        OPENAI_API_KEY: z.string().min(1),
+
         NODE_ENV: z.enum(["development", "production"]).optional()
     },
     client: {

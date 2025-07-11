@@ -37,6 +37,13 @@
             "subtitle": "ALTERED Info",
             "description": "Get info on how to start using your ALTERED brain.",
             "mode": "view"
+        },
+        {
+            "name": "generate",
+            "title": "Generate a Thought",
+            "subtitle": "ALTERED Generate",
+            "description": "Use your thoughts to generate a new one.",
+            "mode": "view"
         }
     ],
     "dependencies": {
