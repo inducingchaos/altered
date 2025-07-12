@@ -32,13 +32,6 @@
             "mode": "no-view"
         },
         {
-            "name": "info",
-            "title": "Learn about ALTERED",
-            "subtitle": "ALTERED Info",
-            "description": "Get info on how to start using your ALTERED brain.",
-            "mode": "view"
-        },
-        {
             "name": "ask",
             "title": "Ask Your Brain",
             "subtitle": "ALTERED Generate",

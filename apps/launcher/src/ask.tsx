@@ -52,7 +52,15 @@ function GenerationResult({ prompt }: { prompt: string }) {
             actions={
                 <ActionPanel>
                     <Action
+                        title="Close"
+                        onAction={async () => {
+                            popToRoot({ clearSearchBar: true })
+                            closeMainWindow()
+                        }}
+                    />
+                    <Action
                         title="Copy & Close"
+                        shortcut={{ modifiers: ["shift"], key: "return" }}
                         onAction={async () => {
                             await Clipboard.copy(generateThought.data ?? "")
 
