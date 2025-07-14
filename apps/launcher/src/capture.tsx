@@ -2,7 +2,7 @@
  *
  */
 
-import { Action, ActionPanel, closeMainWindow, Form, getPreferenceValues, popToRoot, Toast } from "@raycast/api"
+import { Action, ActionPanel, closeMainWindow, Form, getPreferenceValues, LaunchProps, popToRoot, Toast } from "@raycast/api"
 import { useForm } from "@raycast/utils"
 import { useMutation } from "@tanstack/react-query"
 
@@ -11,19 +11,21 @@ import { trpc } from "./utils/trpc"
 
 const { "user-id": userId } = getPreferenceValues()
 
-export default function CreateThought() {
-    return (
-        <Layout>
-            <_CreateThought />
-        </Layout>
-    )
-}
-
 interface FormValues {
     content: string
 }
 
-function _CreateThought() {
+export default function CreateThought({ draftValues }: LaunchProps<{ draftValues: FormValues }>) {
+    return (
+        <Layout>
+            <_CreateThought initialValues={draftValues} />
+        </Layout>
+    )
+}
+
+function _CreateThought({ initialValues }: { initialValues: FormValues | undefined }) {
+    const { content: initialContent } = initialValues ?? { content: "" }
+
     const toast = new Toast({
         style: Toast.Style.Animated,
         title: "Creating Thought"
@@ -64,6 +66,7 @@ function _CreateThought() {
 
     return (
         <Form
+            enableDrafts
             actions={
                 <ActionPanel>
                     <Action.SubmitForm onSubmit={handleSubmit} />
@@ -71,7 +74,12 @@ function _CreateThought() {
             }
             isLoading={createData.isPending}
         >
-            <Form.TextArea title="Content" placeholder="Your next idea..." {...itemProps.content} />
+            <Form.TextArea
+                title="Content"
+                placeholder="Your next idea..."
+                {...itemProps.content}
+                defaultValue={initialContent}
+            />
         </Form>
     )
 }
