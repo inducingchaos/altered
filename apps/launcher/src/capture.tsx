@@ -75,7 +75,6 @@ function _CreateThought({ initialValues }: { initialValues: FormValues | undefin
             isLoading={createData.isPending}
         >
             <Form.TextArea
-                enableMarkdown
                 title="Content"
                 placeholder="Your next idea..."
                 {...itemProps.content}

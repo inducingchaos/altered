@@ -11,6 +11,7 @@ import {
     Detail,
     Form,
     getPreferenceValues,
+    LaunchProps,
     popToRoot,
     showToast,
     Toast,
@@ -80,7 +81,7 @@ function GenerationResult({ prompt }: { prompt: string }) {
                         onAction={() => {
                             push(
                                 <Layout>
-                                    <_Generate />
+                                    <_Generate initialValues={undefined} />
                                 </Layout>
                             )
                         }}
@@ -91,10 +92,10 @@ function GenerationResult({ prompt }: { prompt: string }) {
     )
 }
 
-export default function Generate() {
+export default function Generate({ draftValues }: LaunchProps<{ draftValues: FormValues }>) {
     return (
         <Layout>
-            <_Generate />
+            <_Generate initialValues={draftValues} />
         </Layout>
     )
 }
@@ -103,7 +104,9 @@ interface FormValues {
     prompt: string
 }
 
-function _Generate() {
+function _Generate({ initialValues }: { initialValues: FormValues | undefined }) {
+    const { prompt: initialPrompt } = initialValues ?? { prompt: "" }
+
     const { push } = useNavigation()
 
     const { handleSubmit, itemProps } = useForm<FormValues>({
@@ -124,13 +127,19 @@ function _Generate() {
 
     return (
         <Form
+            enableDrafts
             actions={
                 <ActionPanel>
                     <Action.SubmitForm onSubmit={handleSubmit} />
                 </ActionPanel>
             }
         >
-            <Form.TextArea title="Question" placeholder="Ask your brain..." {...itemProps.prompt} />
+            <Form.TextArea
+                title="Question"
+                placeholder="Ask your brain..."
+                {...itemProps.prompt}
+                defaultValue={initialPrompt}
+            />
         </Form>
     )
 }
