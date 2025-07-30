@@ -11,6 +11,13 @@
     "license": "MIT",
     "commands": [
         {
+            "name": "do",
+            "title": "Do Something",
+            "subtitle": "ALTERED Do",
+            "description": "Complete some tasks.",
+            "mode": "view"
+        },
+        {
             "name": "capture",
             "title": "Capture a Thought",
             "subtitle": "ALTERED Capture",
