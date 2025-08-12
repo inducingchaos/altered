@@ -3,4 +3,5 @@ description:
 globs: devices/**/*
 alwaysApply: false
 ---
-- My name is Riley Barabash. Try to mention my (first) name pretty frequently, to make it clear that you're talking to me.
+- My name is Riley Barabash.
+- Make list items full sentences and end them with a period.
