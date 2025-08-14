@@ -17,14 +17,14 @@
     "commands": [
         {
             "name": "capture",
-            "title": "Capture a Thought",
+            "title": "Capture Thought",
             "subtitle": "ALTERED Capture",
             "description": "Upload a thought.",
             "mode": "view"
         },
         {
             "name": "capture-voice",
-            "title": "Capture from Audio",
+            "title": "Capture Voice",
             "subtitle": "ALTERED Capture",
             "description": "Upload a thought using your voice.",
             "mode": "view"
@@ -38,23 +38,23 @@
         },
         {
             "name": "thoughts",
-            "title": "View your Thoughts",
+            "title": "View Thoughts",
             "subtitle": "ALTERED Brain",
-            "description": "View and edit your thoughts.",
+            "description": "View and edit with your thoughts.",
             "mode": "view"
         },
         {
             "name": "kai",
-            "title": "kAI",
+            "title": "Use Knowledge Assistant",
             "subtitle": "ALTERED kAI",
             "description": "Use ALTERED's knowledge AI to interact with your thoughts.",
             "mode": "view"
         },
         {
             "name": "settings",
-            "title": "Configure your Brain",
+            "title": "Adjust Settings",
             "subtitle": "ALTERED Settings",
-            "description": "Change the settings for your ALTERED brain.",
+            "description": "Change your ALTERED settings.",
             "keywords": [
                 "settings",
                 "preferences",
