@@ -8,17 +8,17 @@ import { Action, ActionPanel, getPreferenceValues, Icon, List, showToast, Toast 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { DateTime } from "luxon"
 
-import type { RouterOutputs } from "./utils/trpc"
-import { Layout } from "./ui/layout"
-import { trpc } from "./utils/trpc"
+import type { RouterOutputs } from "../../../lib/networking/rpc/client"
+import { trpc } from "../../../lib/networking/rpc/client"
+import { ContextProvider } from "../../ui/headless/context-providers"
 
 const { "user-id": userId } = getPreferenceValues()
 
 export default function ListThoughts() {
     return (
-        <Layout>
+        <ContextProvider>
             <_ListThoughts />
-        </Layout>
+        </ContextProvider>
     )
 }
 

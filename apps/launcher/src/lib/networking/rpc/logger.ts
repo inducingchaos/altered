@@ -1,5 +1,5 @@
 /**
- *
+ * @todo [P4] Review and clean up.
  */
 
 import type { LoggerLinkOptions } from "@trpc/client"
@@ -9,9 +9,6 @@ import type { AppRouter } from "@altered/api"
 type CustomLoggerFnType = NonNullable<LoggerLinkOptions<AppRouter>["logger"]>
 type CustomLoggerOptsType = Parameters<CustomLoggerFnType>[0]
 
-/**
- * Needs cleaning, but works.
- */
 export const customTRPCLogger = (opts: CustomLoggerOptsType) => {
     const { path, type, direction, id, input } = opts
     const directionMarker = direction === "up" ? ">>" : "<<"

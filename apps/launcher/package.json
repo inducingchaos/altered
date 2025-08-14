@@ -2,21 +2,19 @@
     "$schema": "https://www.raycast.com/schemas/extension.json",
     "name": "altered-launcher",
     "title": "ALTERED",
-    "description": "Organize the thoughts in your ALTERED brain.",
+    "description": "Store, develop, and use your ideas at the speed of thought.",
     "icon": "icon.png",
     "author": "inducingchaos",
     "categories": [
-        "Productivity"
+        "Productivity",
+        "Data",
+        "Documentation",
+        "Media",
+        "Applications",
+        "Web"
     ],
     "license": "MIT",
     "commands": [
-        {
-            "name": "do",
-            "title": "Do Something",
-            "subtitle": "ALTERED Do",
-            "description": "Complete some tasks.",
-            "mode": "view"
-        },
         {
             "name": "capture",
             "title": "Capture a Thought",
@@ -25,24 +23,44 @@
             "mode": "view"
         },
         {
-            "name": "refine",
-            "title": "Refine your Knowledge",
-            "subtitle": "ALTERED Refine",
+            "name": "capture-voice",
+            "title": "Capture from Audio",
+            "subtitle": "ALTERED Capture",
+            "description": "Upload a thought using your voice.",
+            "mode": "view"
+        },
+        {
+            "name": "capture-selection",
+            "title": "Capture Selected Text",
+            "subtitle": "ALTERED Capture",
+            "description": "Upload a thought from the selected text.",
+            "mode": "no-view"
+        },
+        {
+            "name": "thoughts",
+            "title": "View your Thoughts",
+            "subtitle": "ALTERED Brain",
             "description": "View and edit your thoughts.",
             "mode": "view"
         },
         {
-            "name": "warp",
-            "title": "Warp from Clipboard",
-            "subtitle": "ALTERED Warp",
-            "description": "Upload a thought from your clipboard.",
-            "mode": "no-view"
+            "name": "kai",
+            "title": "kAI",
+            "subtitle": "ALTERED kAI",
+            "description": "Use ALTERED's knowledge AI to interact with your thoughts.",
+            "mode": "view"
         },
         {
-            "name": "ask",
-            "title": "Ask Your Brain",
-            "subtitle": "ALTERED Generate",
-            "description": "Get answers from your thoughts.",
+            "name": "settings",
+            "title": "Configure your Brain",
+            "subtitle": "ALTERED Settings",
+            "description": "Change the settings for your ALTERED brain.",
+            "keywords": [
+                "settings",
+                "preferences",
+                "configuration",
+                "options"
+            ],
             "mode": "view"
         }
     ],
@@ -56,7 +74,6 @@
         "@tanstack/react-query": "catalog:",
         "@trpc/client": "catalog:",
         "@trpc/tanstack-react-query": "catalog:",
-        "@types/luxon": "^3.6.2",
         "luxon": "^3.6.1",
         "react": "catalog:react19",
         "superjson": "2.2.2"
@@ -66,6 +83,7 @@
         "@altered/prettier-config": "workspace:*",
         "@altered/tsconfig": "workspace:*",
         "@raycast/eslint-config": "^2.0.4",
+        "@types/luxon": "^3.6.2",
         "@types/node": "^22.13.11",
         "@types/react": "19.0.10",
         "eslint": "^9.22.0",

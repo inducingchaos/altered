@@ -20,8 +20,8 @@ import {
 import { useForm } from "@raycast/utils"
 import { useMutation } from "@tanstack/react-query"
 
-import { Layout } from "./ui/layout"
-import { trpc } from "./utils/trpc"
+import { trpc } from "../../../lib/networking/rpc/client"
+import { ContextProvider } from "../../ui/headless/context-providers"
 
 const { "user-id": userId } = getPreferenceValues()
 
@@ -80,9 +80,9 @@ function GenerationResult({ prompt }: { prompt: string }) {
                         shortcut={{ modifiers: ["cmd"], key: "n" }}
                         onAction={() => {
                             push(
-                                <Layout>
+                                <ContextProvider>
                                     <_Generate initialValues={undefined} />
-                                </Layout>
+                                </ContextProvider>
                             )
                         }}
                     />
@@ -94,9 +94,9 @@ function GenerationResult({ prompt }: { prompt: string }) {
 
 export default function Generate({ draftValues }: LaunchProps<{ draftValues: FormValues }>) {
     return (
-        <Layout>
+        <ContextProvider>
             <_Generate initialValues={draftValues} />
-        </Layout>
+        </ContextProvider>
     )
 }
 
@@ -112,9 +112,9 @@ function _Generate({ initialValues }: { initialValues: FormValues | undefined })
     const { handleSubmit, itemProps } = useForm<FormValues>({
         async onSubmit(values) {
             push(
-                <Layout>
+                <ContextProvider>
                     <GenerationResult prompt={values.prompt} />
-                </Layout>
+                </ContextProvider>
             )
         },
 

@@ -3,10 +3,6 @@
     "include": ["src/**/*", "raycast-env.d.ts"],
     "compilerOptions": {
         "lib": ["ES2023"],
-
-        /**
-         * @remarks Changed from "commonjs" to "esnext" to support workspace package imports.
-         */
         "module": "esnext",
         "target": "ES2023",
         "strict": true,
@@ -16,9 +12,6 @@
         "forceConsistentCasingInFileNames": true,
         "jsx": "react-jsx",
         "resolveJsonModule": true,
-
-        /* New. */
-
         "moduleResolution": "bundler"
     }
 }

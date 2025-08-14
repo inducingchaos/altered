@@ -8,10 +8,14 @@ import superjson from "superjson"
 
 import type { AppRouter } from "@altered/api"
 
-import { customTRPCLogger } from "./custom-logger"
-import { getBaseUrl } from "./get-base-url"
-import { queryClient } from "./query-client"
+import config from "../../../config"
+import { baseUrl } from "../../environment"
+import { queryClient } from "../client"
+import { customTRPCLogger } from "./logger"
 
+/**
+ * @todo [P2] Set up auth.
+ */
 export const trpcClient: TRPCClient<AppRouter> = createTRPCClient({
     links: [
         loggerLink({
@@ -22,7 +26,7 @@ export const trpcClient: TRPCClient<AppRouter> = createTRPCClient({
         }),
         httpBatchLink({
             transformer: superjson,
-            url: `${getBaseUrl({ environment: "dev" })}/api/trpc`,
+            url: `${baseUrl}${config.paths.api.endpoints.trpc}`,
             headers() {
                 const headers = new Map<string, string>()
                 headers.set("x-trpc-source", "raycast-react")
