@@ -21,7 +21,7 @@ import { useForm } from "@raycast/utils"
 import { useMutation } from "@tanstack/react-query"
 
 import { trpc } from "../../../lib/networking/rpc/client"
-import { ContextProvider } from "../../ui/headless/context-providers"
+import { withContext } from "../../ui/headless/context-providers"
 
 /**
  * @todo [P1] Replace when auth is implemented.
@@ -40,11 +40,7 @@ export function initCapture({ inputMethod }: CustomCaptureProps) {
 }
 
 export default function Capture(props: CaptureProps) {
-    return (
-        <ContextProvider>
-            <_Capture {...props} />
-        </ContextProvider>
-    )
+    return withContext(<_Capture {...props} />)
 }
 
 /**
