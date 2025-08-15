@@ -2,110 +2,53 @@
  *
  */
 
-import type { QueryClient } from "@tanstack/react-query"
 import { useState } from "react"
-import { Action, ActionPanel, getPreferenceValues, Icon, List, showToast, Toast } from "@raycast/api"
+import { getPreferenceValues, Icon, List } from "@raycast/api"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { DateTime } from "luxon"
 
-import type { RouterOutputs } from "../../../lib/networking/rpc/client"
 import { trpc } from "../../../lib/networking/rpc/client"
-import { ContextProvider } from "../../ui/headless/context-providers"
+import { prettifyDate } from "../../../utils"
+import { withContext } from "../../ui/headless/context-providers"
+import { GlobalActions } from "./global-actions"
+import { createThoughtDeletionMutationOptions, getAllThoughtsQueryOptions } from "./query-helpers"
 
-const { "user-id": userId } = getPreferenceValues()
+/**
+ * @todo [P1] Replace when auth is implemented.
+ */
+const { "user-id": userId }: { "user-id": string } = getPreferenceValues()
 
-export default function ListThoughts() {
-    return (
-        <ContextProvider>
-            <_ListThoughts />
-        </ContextProvider>
-    )
+export default function Thoughts() {
+    return withContext(<_Thoughts />)
 }
 
-// Format date to a nice readable format
-const formatDate = (date: Date) => {
-    return DateTime.fromJSDate(date).toLocaleString({
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit"
-    })
-}
-
-function GlobalActions<T extends { id: string }>({
-    thought,
-    handleRefresh,
-    handleDelete,
-    isShowingDetail,
-    toggleDetail
-}: {
-    thought: T
-    handleRefresh: () => Promise<unknown>
-    handleDelete: (thoughtId: Pick<T, "id">) => void
-    isShowingDetail: boolean
-    toggleDetail: () => void
-}) {
-    return (
-        <ActionPanel>
-            <Action
-                title={isShowingDetail ? "Hide Detail" : "Show Detail"}
-                icon={isShowingDetail ? Icon.EyeDisabled : Icon.Eye}
-                shortcut={{ modifiers: ["cmd"], key: "i" }}
-                onAction={toggleDetail}
-            />
-
-            <Action
-                title="Refresh"
-                shortcut={{ modifiers: ["cmd"], key: "r" }}
-                onAction={async () => {
-                    await handleRefresh()
-
-                    await showToast({ style: Toast.Style.Success, title: "Refreshed Thoughts" })
-                }}
-            />
-
-            <Action
-                title="Delete"
-                style={Action.Style.Destructive}
-                onAction={() => handleDelete({ id: thought.id })}
-                shortcut={{ modifiers: ["cmd"], key: "backspace" }}
-            />
-        </ActionPanel>
-    )
-}
-
-const getAllThoughtsQueryOptions = (userId: string) => trpc.thoughts.all.queryOptions({ userId })
-
-function _ListThoughts() {
+function _Thoughts() {
     const queryClient = useQueryClient()
     const [isShowingDetail, setIsShowingDetail] = useState(false)
 
-    const thoughtsQuery = useQuery(getAllThoughtsQueryOptions(userId))
-    const thoughtsCountQuery = useQuery(trpc.thoughts.count.queryOptions({ userId }))
-
-    const deleteThought = useMutation(createThoughtDeletionMutationOptions(queryClient))
+    const { data: thoughts, ...thoughtsQuery } = useQuery(getAllThoughtsQueryOptions({ userId }))
+    const { data: thoughtCount } = useQuery(trpc.thoughts.count.queryOptions({ userId }))
+    const deleteThought = useMutation(createThoughtDeletionMutationOptions({ client: queryClient, userId }))
 
     const isActive = thoughtsQuery.isFetching || deleteThought.isPending
+    const toggleDetail = () => setIsShowingDetail(!isShowingDetail)
+    const navigationTitle = thoughtCount ? `${thoughtCount} Thoughts` : undefined
 
     return (
-        <List
-            isLoading={isActive}
-            navigationTitle={thoughtsCountQuery.data ? `${thoughtsCountQuery.data} thoughts` : undefined}
-            isShowingDetail={isShowingDetail}
-        >
-            {thoughtsQuery.data?.length ? (
-                thoughtsQuery.data?.map(thought => (
+        <List isLoading={isActive} navigationTitle={navigationTitle} isShowingDetail={isShowingDetail}>
+            {thoughts?.length ? (
+                thoughts.map(thought => (
                     <List.Item
                         key={thought.id}
                         title={`${thought.content}`}
-                        // subtitle={formatDate(thought.createdAt)}
                         detail={
                             <List.Item.Detail
                                 markdown={thought.content}
                                 metadata={
                                     <List.Item.Detail.Metadata>
-                                        <List.Item.Detail.Metadata.Label title="Created" text={formatDate(thought.createdAt)} />
+                                        <List.Item.Detail.Metadata.Label
+                                            title="Created"
+                                            text={prettifyDate(thought.createdAt)}
+                                        />
                                     </List.Item.Detail.Metadata>
                                 }
                             />
@@ -113,10 +56,10 @@ function _ListThoughts() {
                         actions={
                             <GlobalActions
                                 thought={thought}
-                                handleRefresh={thoughtsQuery.refetch}
-                                handleDelete={deleteThought.mutate}
+                                refreshThoughts={thoughtsQuery.refetch}
+                                deleteThought={deleteThought.mutate}
                                 isShowingDetail={isShowingDetail}
-                                toggleDetail={() => setIsShowingDetail(!isShowingDetail)}
+                                toggleDetail={toggleDetail}
                             />
                         }
                         accessories={[
@@ -127,47 +70,8 @@ function _ListThoughts() {
                     />
                 ))
             ) : (
-                <List.EmptyView title="No thoughts yet" icon="💭" />
+                <List.EmptyView title="No thoughts yet." icon={Icon.Message} />
             )}
         </List>
     )
 }
-
-const createThoughtDeletionMutationOptions = (queryClient: QueryClient) =>
-    trpc.thoughts.delete.mutationOptions({
-        /**
-         * @todo [P3] There might be a newer way to do optimistic updates.
-         */
-        onMutate: async deletedThought => {
-            //  Avoid conflicts with optimistic updates.
-
-            await queryClient.cancelQueries({ queryKey: getAllThoughtsQueryOptions(userId).queryKey })
-
-            //  Snapshot prev.
-
-            const previousData = queryClient.getQueryData(getAllThoughtsQueryOptions(userId).queryKey)
-
-            //  Optimistically update state.
-
-            queryClient.setQueryData(getAllThoughtsQueryOptions(userId).queryKey, (stale?: RouterOutputs["thoughts"]["all"]) =>
-                stale?.filter(thought => thought.id !== deletedThought.id)
-            )
-
-            //  Return the previous state as context.
-
-            return { previousData }
-        },
-
-        onError: (error, _, context) => {
-            //  Roll back state.
-
-            if (context?.previousData)
-                queryClient.setQueryData(getAllThoughtsQueryOptions(userId).queryKey, context.previousData)
-
-            showToast({ style: Toast.Style.Failure, title: "Deletion Failed", message: "Failed to delete thought." })
-            console.error(error)
-        },
-
-        onSuccess: async () => await showToast({ style: Toast.Style.Success, title: "Thought Deleted" }),
-        onSettled: () => queryClient.invalidateQueries({ queryKey: getAllThoughtsQueryOptions(userId).queryKey })
-    })
