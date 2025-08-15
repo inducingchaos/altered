@@ -23,20 +23,6 @@
             "mode": "view"
         },
         {
-            "name": "capture-voice",
-            "title": "Capture Voice",
-            "subtitle": "ALTERED Capture",
-            "description": "Upload a thought using your voice.",
-            "mode": "view"
-        },
-        {
-            "name": "capture-selection",
-            "title": "Capture Selected Text",
-            "subtitle": "ALTERED Capture",
-            "description": "Upload a thought from the selected text.",
-            "mode": "no-view"
-        },
-        {
             "name": "thoughts",
             "title": "View Thoughts",
             "subtitle": "ALTERED Brain",

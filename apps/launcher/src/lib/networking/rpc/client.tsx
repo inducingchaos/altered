@@ -26,7 +26,7 @@ export const trpcClient: TRPCClient<AppRouter> = createTRPCClient({
         }),
         httpBatchLink({
             transformer: superjson,
-            url: `${baseUrl}${config.paths.api.endpoints.trpc}`,
+            url: `${baseUrl}${config.paths.api.base}${config.paths.api.endpoints.trpc}`,
             headers() {
                 const headers = new Map<string, string>()
                 headers.set("x-trpc-source", "raycast-react")

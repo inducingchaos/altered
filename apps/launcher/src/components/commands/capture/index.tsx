@@ -2,73 +2,111 @@
  *
  */
 
-import { Action, ActionPanel, closeMainWindow, Form, getPreferenceValues, LaunchProps, popToRoot, Toast } from "@raycast/api"
+import { useState } from "react"
+import {
+    Action,
+    ActionPanel,
+    Clipboard,
+    closeMainWindow,
+    Form,
+    getPreferenceValues,
+    getSelectedText,
+    Icon,
+    LaunchProps,
+    popToRoot,
+    showToast,
+    Toast
+} from "@raycast/api"
 import { useForm } from "@raycast/utils"
 import { useMutation } from "@tanstack/react-query"
 
 import { trpc } from "../../../lib/networking/rpc/client"
 import { ContextProvider } from "../../ui/headless/context-providers"
 
+/**
+ * @todo [P1] Replace when auth is implemented.
+ */
 const { "user-id": userId } = getPreferenceValues()
 
-interface FormValues {
+interface CaptureFormSchema {
     content: string
 }
 
-type CaptureProps = LaunchProps<{ draftValues: FormValues }> & { input: "text" | "voice" | "selection" }
+type CustomCaptureProps = { inputMethod: "form" | "audio" | "selection" }
+type CaptureProps = LaunchProps<{ draftValues: CaptureFormSchema }> & CustomCaptureProps
 
-export default function Capture({ draftValues }: CaptureProps) {
+export function initCapture({ inputMethod }: CustomCaptureProps) {
+    return (props: CaptureProps) => Capture({ ...props, inputMethod })
+}
+
+export default function Capture(props: CaptureProps) {
     return (
         <ContextProvider>
-            <_CreateThought initialValues={draftValues} />
+            <_Capture {...props} />
         </ContextProvider>
     )
 }
 
-export function initCapture({ input }: { input: "text" | "voice" | "selection" }) {
-    return (props: CaptureProps) => Capture({ ...props, input })
-}
-
-function _CreateThought({ initialValues }: { initialValues: FormValues | undefined }) {
-    const { content: initialContent } = initialValues ?? { content: "" }
+/**
+ * @todo [P3] Implement the `inputMethod = "form"` prop when initializing from specialized commands.
+ */
+function _Capture({ draftValues }: CaptureProps) {
+    const [content, setContent] = useState<string | undefined>(draftValues?.content)
 
     const toast = new Toast({
         style: Toast.Style.Animated,
         title: "Creating Thought"
     })
 
-    const createData = useMutation(
+    const createThought = useMutation(
         trpc.thoughts.create.mutationOptions({
             onSuccess: async () => {
                 toast.style = Toast.Style.Success
                 toast.title = "Thought Created"
                 toast.message = "Your thought has been created."
 
-                popToRoot({ clearSearchBar: true })
+                await popToRoot({ clearSearchBar: true })
             },
             onError: error => {
                 toast.style = Toast.Style.Failure
                 toast.title = "Error Creating Thought"
+                toast.message = "Unable to create thought."
 
+                if (content) Clipboard.copy(content)
                 console.error(error.message)
             }
         })
     )
 
-    const { handleSubmit, itemProps } = useForm<FormValues>({
+    const { handleSubmit, itemProps } = useForm<CaptureFormSchema>({
         async onSubmit(values) {
             await closeMainWindow()
             await toast.show()
 
-            createData.mutate({ userId, content: values.content })
+            createThought.mutate({ userId, content: values.content })
         },
 
-        validation: {
-            content: value => {
-                if (!value) return "Content is required."
-            }
-        }
+        validation: { content: value => (!value ? "Content is required." : undefined) }
     })
+
+    const insertFromSelection = async () => {
+        try {
+            const selection = await getSelectedText()
+            if (!selection || !selection.length) {
+                showToast({ title: "No Text Selected", style: Toast.Style.Failure })
+                return
+            }
+
+            setContent((content ?? "") + selection)
+        } catch (error) {
+            showToast({ title: "Unable to Get Selection", style: Toast.Style.Failure })
+            console.error(error)
+        }
+    }
+
+    const recordAudio = async () => {
+        console.log("recordAudio")
+    }
 
     return (
         <Form
@@ -76,79 +114,31 @@ function _CreateThought({ initialValues }: { initialValues: FormValues | undefin
             actions={
                 <ActionPanel>
                     <Action.SubmitForm onSubmit={handleSubmit} />
+                    <ActionPanel.Section title="Import">
+                        <Action
+                            title={"Insert from Selection"}
+                            icon={Icon.TextSelection}
+                            onAction={insertFromSelection}
+                            shortcut={{ modifiers: ["cmd", "shift"], key: "v" }}
+                        />
+                        <Action
+                            title={"Record Audio"}
+                            icon={Icon.Microphone}
+                            onAction={recordAudio}
+                            shortcut={{ modifiers: ["cmd", "shift"], key: "r" }}
+                        />
+                    </ActionPanel.Section>
                 </ActionPanel>
             }
-            isLoading={createData.isPending}
+            isLoading={createThought.isPending}
         >
             <Form.TextArea
-                title="Content"
-                placeholder="Your next idea..."
                 {...itemProps.content}
-                defaultValue={initialContent}
+                title="Content"
+                placeholder="Your thought..."
+                value={content}
+                onChange={setContent}
             />
         </Form>
     )
 }
-
-// /**
-//  *
-//  */
-
-// import { Clipboard, closeMainWindow, getPreferenceValues, Toast } from "@raycast/api"
-
-// import { trpcClient } from "./lib/networking/rpc/client"
-
-// //  get from https://developers.raycast.com/api-reference/environment#example-3
-
-// // import { getSelectedText, Clipboard, showToast, Toast } from "@raycast/api";
-
-// // export default async function Command() {
-// //   try {
-// //     const selectedText = await getSelectedText();
-// //     const transformedText = selectedText.toUpperCase();
-// //     await Clipboard.paste(transformedText);
-// //   } catch (error) {
-// //     await showToast({
-// //       style: Toast.Style.Failure,
-// //       title: "Cannot transform text",
-// //       message: String(error),
-// //     });
-// //   }
-// // }
-
-// export default async function Warp() {
-//     const toast = new Toast({
-//         style: Toast.Style.Animated,
-//         title: "Warping Thought"
-//     })
-
-//     const content = await Clipboard.readText()
-
-//     if (!content) {
-//         toast.style = Toast.Style.Failure
-//         toast.title = "No Content"
-//         toast.message = "No content to warp."
-
-//         toast.show()
-//         return
-//     }
-
-//     await closeMainWindow()
-//     await toast.show()
-
-//     const { "user-id": userId } = getPreferenceValues()
-
-//     try {
-//         await trpcClient.thoughts.create.mutate({ userId, content })
-
-//         toast.style = Toast.Style.Success
-//         toast.title = "Thought Warped: " + content.slice(0, 8) + (content.length > 8 ? "..." : "")
-//         toast.message = "Your thought has been warped."
-//     } catch (error) {
-//         toast.style = Toast.Style.Failure
-//         toast.title = "Error Warping Thought"
-//         toast.message = "Failed to warp your thought."
-
-//         console.error(error)
-//     }
-// }
