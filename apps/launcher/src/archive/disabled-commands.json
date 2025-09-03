@@ -1,0 +1,32 @@
+[
+    {
+        "name": "tools",
+        "title": "Tools",
+        "subtitle": "ALTERED Tools",
+        "description": "View and edit with your tools.",
+        "mode": "view"
+    },
+
+    {
+        "name": "systems",
+        "title": "Systems",
+        "subtitle": "ALTERED Systems",
+        "description": "View and edit with your systems.",
+        "mode": "view"
+    },
+    {
+        "name": "capture",
+        "title": "Capture a Thought",
+        "subtitle": "ALTERED Capture",
+        "description": "Upload a thought.",
+        "mode": "view"
+    },
+
+    {
+        "name": "kai",
+        "title": "Use Knowledge Assistant",
+        "subtitle": "ALTERED kAI",
+        "description": "Use ALTERED's knowledge AI to interact with your thoughts.",
+        "mode": "view"
+    }
+]

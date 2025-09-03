@@ -16,31 +16,24 @@
     "license": "MIT",
     "commands": [
         {
-            "name": "capture",
-            "title": "Capture Thought",
-            "subtitle": "ALTERED Capture",
-            "description": "Upload a thought.",
-            "mode": "view"
-        },
-        {
             "name": "thoughts",
-            "title": "View Thoughts",
-            "subtitle": "ALTERED Brain",
-            "description": "View and edit with your thoughts.",
+            "title": "Thoughts",
+            "subtitle": "ALTERED",
+            "description": "View your thoughts.",
             "mode": "view"
         },
         {
-            "name": "kai",
-            "title": "Use Knowledge Assistant",
-            "subtitle": "ALTERED kAI",
-            "description": "Use ALTERED's knowledge AI to interact with your thoughts.",
+            "name": "datasets",
+            "title": "Datasets",
+            "subtitle": "ALTERED",
+            "description": "View your datasets.",
             "mode": "view"
         },
         {
             "name": "settings",
-            "title": "Adjust Settings",
-            "subtitle": "ALTERED Settings",
-            "description": "Change your ALTERED settings.",
+            "title": "Settings",
+            "subtitle": "ALTERED",
+            "description": "Change your settings.",
             "keywords": [
                 "settings",
                 "preferences",

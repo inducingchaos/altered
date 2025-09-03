@@ -6,18 +6,18 @@ import { Action, ActionPanel, Icon } from "@raycast/api"
 
 import { Thought } from "@altered/db/schema"
 
-export function GlobalActions({
+export function ThoughtListItemActions({
     thought,
-    refreshThoughts,
-    deleteThought,
+    handleRefresh,
+    handleDelete,
     isShowingDetail,
     toggleDetail
 }: {
     thought: Thought
-    refreshThoughts: () => Promise<unknown>
-    deleteThought: (thought: Thought) => void
+    handleRefresh: () => unknown
+    handleDelete: (thought: Thought) => unknown
     isShowingDetail: boolean
-    toggleDetail: () => void
+    toggleDetail: () => unknown
 }) {
     return (
         <ActionPanel>
@@ -35,14 +35,14 @@ export function GlobalActions({
                     title="Refresh"
                     icon={Icon.RotateClockwise}
                     shortcut={{ modifiers: ["cmd"], key: "r" }}
-                    onAction={refreshThoughts}
+                    onAction={handleRefresh}
                 />
                 <Action
                     title="Delete"
                     icon={Icon.Trash}
                     style={Action.Style.Destructive}
                     shortcut={{ modifiers: ["cmd"], key: "backspace" }}
-                    onAction={() => deleteThought(thought)}
+                    onAction={() => handleDelete(thought)}
                 />
             </ActionPanel.Section>
         </ActionPanel>

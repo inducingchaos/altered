@@ -2,6 +2,6 @@
  *
  */
 
-import Settings from "./components/commands/settings"
+import Settings from "./app/settings"
 
 export default Settings

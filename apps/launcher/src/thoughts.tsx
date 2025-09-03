@@ -2,6 +2,6 @@
  *
  */
 
-import Thoughts from "./components/commands/thoughts"
+import Thoughts from "./app/thoughts"
 
 export default Thoughts
