@@ -13,8 +13,12 @@ export function NavBar() {
 
     return (
         <_NavBar>
-            <Logo className="px-6">altered</Logo>
-            {!isWaitlistPage && <Button className="px-3">join waitlist</Button>}
+            <Logo className="px-5.5">altered</Logo>
+            {!isWaitlistPage && (
+                <Button className="px-3.5" size="compact">
+                    join waitlist
+                </Button>
+            )}
         </_NavBar>
     )
 }
