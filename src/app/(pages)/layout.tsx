@@ -5,8 +5,10 @@
 import { GeistMono } from "geist/font/mono"
 import { GeistSans } from "geist/font/sans"
 import type { Metadata } from "next"
-import { NavBar } from "./components"
-import "./globals.css"
+import "~/app/globals.css"
+import { ContextProvider } from "~/components/context-providers"
+import "~/lib/infra/rpc/pre-render"
+import { NavBar } from "./_components"
 
 // const hoeflerText = localFont({
 //     variable: "--font-hoefler-text",
@@ -37,7 +39,7 @@ import "./globals.css"
 /**
  * @remarks Add Hoefler Text if enabled in the future.
  */
-const fontVariables = [GeistSans.variable, GeistMono.variable].join(" ")
+const fontVariables = [GeistSans.variable, GeistMono.variable]
 
 export const metadata: Metadata = {
     title: "ALTERED | Knowledge Systems For The Obsessed",
@@ -51,9 +53,11 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={`${fontVariables} antialiased`}>
-                <NavBar />
-                {children}
+            <body className={`${fontVariables.join(" ")} antialiased`}>
+                <ContextProvider>
+                    <NavBar />
+                    {children}
+                </ContextProvider>
             </body>
         </html>
     )
