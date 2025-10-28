@@ -5,16 +5,13 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { api } from "~/server"
+import { apiClient } from "~/lib/infra/rpc"
 
 export function ClientRPCTest() {
-    const { data, isLoading } = useQuery(
-        api.thoughts.get.queryOptions({
-            input: { cursor: 1, limit: 10 }
-        })
-    )
+    const { data: { thought } = {}, isLoading } = useQuery(apiClient.thoughts.getLatest.queryOptions())
 
     if (isLoading) return <div>Loading...</div>
+    if (!thought) return <div>No thought found</div>
 
-    return <div className="text-center">{`Client RPC test: ${JSON.stringify(data?.thoughts?.[0])}`}</div>
+    return <div className="text-center">{`Latest thought (client): ${thought.content}`}</div>
 }

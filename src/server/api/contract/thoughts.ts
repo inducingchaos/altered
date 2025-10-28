@@ -8,6 +8,7 @@ import { contractFactory } from "./factory"
 
 export const thoughtsContract = {
     get: contractFactory
+        .route({ tags: ["internal"] })
         .input(
             type({
                 cursor: "number.integer >= 0",
@@ -29,6 +30,12 @@ export const thoughtsContract = {
     create: contractFactory.input(creatableThoughtSchema).output(
         type({
             thought: thoughtSchema
+        })
+    ),
+
+    getLatest: contractFactory.output(
+        type({
+            thought: thoughtSchema.optional()
         })
     )
 }
