@@ -1,5 +1,0 @@
-/**
- * 
- */
-
-export * from "./nav-bar"
