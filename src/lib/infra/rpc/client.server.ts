@@ -16,7 +16,7 @@ globalThis.$client = createRouterClient(router, {
      */
     context: async () => ({
         _: {
-            headers: Object.fromEntries(await headers())
+            headers: await headers()
         }
     })
 })

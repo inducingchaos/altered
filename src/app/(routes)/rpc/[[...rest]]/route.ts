@@ -3,6 +3,7 @@
  */
 
 import { RPCHandler } from "@orpc/server/fetch"
+import { headers } from "next/headers"
 import { router } from "~/server/api"
 
 const handler = new RPCHandler(router)
@@ -11,7 +12,7 @@ async function handleRequest(request: Request) {
     const { response } = await handler.handle(request, {
         prefix: "/rpc",
         context: {
-            _: { headers: Object.fromEntries(request.headers) }
+            _: { headers: await headers() }
         }
     })
 

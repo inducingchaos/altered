@@ -11,7 +11,7 @@ export async function getLatestThought({ ctx }: { ctx: ProtectedRouteContext }) 
     try {
         const thought = await ctx.db.query.thoughts.findFirst({
             orderBy: desc(thoughts.createdAt),
-            where: eq(thoughts.userId, ctx.user.id)
+            where: eq(thoughts.userId, ctx.auth.user.id)
         })
 
         return { thought: thought }

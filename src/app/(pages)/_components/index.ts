@@ -2,6 +2,6 @@
  *
  */
 
-export * from "./client-rpc-test"
+export * from "./auth-button"
 export * from "./nav-bar"
-export * from "./server-rpc-test"
+export * from "./waitlist-button"
