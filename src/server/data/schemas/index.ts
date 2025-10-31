@@ -2,11 +2,13 @@
  *
  */
 
-import { thoughts } from "./thoughts"
+import * as authSchemas from "./auth"
+import * as thoughtsSchemas from "./thoughts"
 
-const schema = {
-    thoughts
+export const allSchemas = {
+    ...authSchemas,
+    ...thoughtsSchemas
 }
 
+export * from "./auth"
 export * from "./thoughts"
-export default schema

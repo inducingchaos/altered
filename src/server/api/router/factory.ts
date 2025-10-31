@@ -26,5 +26,5 @@ const logValidationError = (error: unknown) => {
     }
 }
 
-export const publicRouteFactory = apiFactory.use(onError(logValidationError))
-export const protectedRouteFactory = publicRouteFactory.use(dbProvider).use(requireAuth)
+export const publicRouteFactory = apiFactory.use(onError(logValidationError)).use(dbProvider)
+export const protectedRouteFactory = publicRouteFactory.use(requireAuth)

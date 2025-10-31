@@ -2,23 +2,22 @@
  *
  */
 
-"use client"
-
-import { usePathname } from "next/navigation"
-import { Button, Logo, NavBar as _NavBar } from "~/components/ui"
+import { Logo, Wrapper, NavBar as _NavBar } from "~/components/ui"
+import { AuthButton } from "./auth-button"
+import { WaitlistButton } from "./waitlist-button"
 
 export function NavBar() {
-    const pathname = usePathname()
-    const isWaitlistPage = pathname === "/waitlist"
-
     return (
         <_NavBar>
-            <Logo className="px-5.5">altered</Logo>
-            {!isWaitlistPage && (
-                <Button className="px-3.5" size="compact">
-                    join waitlist
-                </Button>
-            )}
+            <Wrapper className="pl-5.5 pr-3.5 w-full justify-between">
+                <Logo>altered</Logo>
+
+                <Wrapper className="gap-3.5">
+                    <WaitlistButton />
+
+                    <AuthButton />
+                </Wrapper>
+            </Wrapper>
         </_NavBar>
     )
 }

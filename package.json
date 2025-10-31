@@ -17,6 +17,7 @@
         "@orpc/tanstack-query": "^1.10.2",
         "@tanstack/react-query": "^5.90.5",
         "arktype": "^2.1.23",
+        "better-auth": "^1.3.34",
         "dotenv": "^17.2.3",
         "drizzle-orm": "^0.44.7",
         "geist": "^1.5.1",
