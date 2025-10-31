@@ -25,7 +25,7 @@ const handler = new OpenAPIHandler(router, {
 async function handleRequest(request: Request) {
     const { matched, response } = await handler.handle(request, {
         prefix: "/api",
-        context: { _: { headers: Object.fromEntries(request.headers) } }
+        context: { _: { headers: request.headers } }
     })
 
     if (matched) return response
