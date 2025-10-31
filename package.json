@@ -1,0 +1,14 @@
+{
+    "name": "altered",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "turbo dev",
+        "lint": "turbo lint",
+        "typecheck": "turbo typecheck"
+    },
+    "devDependencies": {
+        "turbo": "^2.6.0"
+    },
+    "packageManager": "pnpm@10.20.0"
+}
