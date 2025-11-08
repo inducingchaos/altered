@@ -1,0 +1,7 @@
+---
+description: General Chat Rules
+alwaysApply: true
+---
+
+-   After every successful main feature implementation, always suggest a relevant branch name, and a conventional commit message with a detailed body describing the changes. Both the commit message and the branch name should be provided in code blocks. They should also be character-escaped for `bash` - so that when we use `git` in the terminal, characters like double-quotes (`"`) don't break the CLI.
+-   As we strategize further about architectural patterns and code design, when a major choice is made that could be useful as future context - suggest it to me concisely and briefly at the end of the chat completion to be added to the `.cursor/rules/context.mdc` file. Or, if you believe a critical decision or insight belongs in a different rule or context file - suggest that instead.
