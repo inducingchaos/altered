@@ -1,0 +1,111 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "altered",
+  "title": "ALTERED",
+  "description": "Knowledge systems for the obsessed.",
+  "icon": "extension-icon.png",
+  "author": "inducingchaos",
+  "platforms": [
+    "macOS",
+    "Windows"
+  ],
+  "categories": [
+    "Productivity"
+  ],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "show-detail",
+      "title": "Show Detail",
+      "subtitle": "Subtitle Test",
+      "description": "Description test.",
+      "mode": "view"
+    },
+    {
+      "name": "submit-form",
+      "title": "Submit Form",
+      "description": "",
+      "mode": "view"
+    },
+    {
+      "name": "show-grid",
+      "title": "Show Grid",
+      "description": "",
+      "mode": "view"
+    },
+    {
+      "name": "show-list-and-detail",
+      "title": "Show List and Detail",
+      "description": "",
+      "mode": "view"
+    },
+    {
+      "name": "menu-bar-extra",
+      "title": "Menu Bar Extra",
+      "description": "",
+      "mode": "menu-bar"
+    },
+    {
+      "name": "run-script",
+      "title": "Run Script",
+      "description": "",
+      "mode": "no-view"
+    },
+    {
+      "name": "show-list",
+      "title": "Show List",
+      "description": "",
+      "mode": "view"
+    },
+    {
+      "name": "show-typeahead-results",
+      "title": "Show Typeahead Results",
+      "description": "",
+      "mode": "view"
+    },
+    {
+      "name": "ai",
+      "title": "AI",
+      "description": "",
+      "mode": "view"
+    },
+    {
+      "name": "blank",
+      "title": "Blank",
+      "description": "",
+      "mode": "no-view"
+    }
+  ],
+  "tools": [
+    {
+      "name": "tool-with-confirmation",
+      "title": "Tool with Confirmation",
+      "description": ""
+    },
+    {
+      "name": "blank-tool",
+      "title": "Blank Tool",
+      "description": ""
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.103.6",
+    "@raycast/utils": "^1.17.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^2.0.4",
+    "@types/node": "22.13.10",
+    "@types/react": "19.0.10",
+    "eslint": "^9.22.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
+  },
+  "scripts": {
+    "build": "ray build",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",
+    "publish": "npx @raycast/api@latest publish"
+  }
+}
