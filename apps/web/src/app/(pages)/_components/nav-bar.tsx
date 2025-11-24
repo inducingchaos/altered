@@ -2,7 +2,7 @@
  *
  */
 
-import { Logo, Wrapper, NavBar as _NavBar } from "~/components/ui"
+import { Logo, Wrapper, NavBar as _NavBar } from "~/components/ui/_legacy"
 import { AuthButton } from "./auth-button"
 import { WaitlistButton } from "./waitlist-button"
 

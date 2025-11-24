@@ -6,7 +6,7 @@
 
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { DynamicTextSizer } from "~/components/ui"
+import { DynamicTextSizer } from "~/components/ui/_legacy"
 import { authClient } from "~/lib/auth/client"
 
 type ButtonState = {
@@ -26,6 +26,7 @@ export function AuthButtonWithoutSession({ isAuthenticated, className }: { isAut
                     fetchOptions: {
                         onSuccess: () => {
                             router.push("/")
+
                             router.refresh()
                         }
                     }
