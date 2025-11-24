@@ -1,6 +1,6 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "altered",
+  "name": "altered-launcher",
   "title": "ALTERED",
   "description": "Knowledge systems for the obsessed.",
   "icon": "extension-icon.png",

@@ -1,0 +1,78 @@
+name: 'Send Notifications'
+description: 'Sends out notifications with deployment info.'
+
+inputs:
+  repo:
+    description: 'The repo that the deployment was created from.'
+    required: true
+  branch-name:
+    description: 'The branch that the deployment was created from.'
+    required: true
+  commit-sha:
+    description: 'The SHA of the commit that the deployment was created from.'
+    required: true
+  commit-msg:
+    description: 'The full message of the commit that the deployment was created from.'
+    required: true
+
+  vercel-token:
+    description: 'The authentication token for the Vercel API.'
+    required: true
+  vercel-team:
+    description: 'The ID of the Vercel team that the deployment was created in.'
+    required: true
+
+  deployment-id:
+    description: 'The ID of the deployment.'
+    required: true
+  deployment-environment:
+    description: 'The environment of the deployment.'
+    required: true
+  deployment-creator-username:
+    description: 'The username of the user who created the deployment.'
+    required: true
+
+  discord-webhook-url:
+    description: 'The URL of the Discord webhook to send the notification to.'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Restore Notification IDs
+      uses: actions/cache/restore@v4
+      with:
+        path: notification-ids.${{ inputs.deployment-environment }}
+        key: notification-ids-${{ inputs.deployment-environment }}-${{ github.run_id }}-${{ github.run_attempt }}
+        restore-keys: |
+          notification-ids-${{ inputs.deployment-environment }}-
+
+    - name: Send Notifications
+      continue-on-error: true
+      shell: bash
+      env:
+        REPO: ${{ inputs.repo }}
+        BRANCH_NAME: ${{ inputs.branch-name }}
+        COMMIT_SHA: ${{ inputs.commit-sha }}
+        COMMIT_MSG: ${{ inputs.commit-msg }}
+
+        VERCEL_TOKEN: ${{ inputs.vercel-token }}
+        VERCEL_TEAM: ${{ inputs.vercel-team }}
+
+        DEPLOYMENT_ID: ${{ inputs.deployment-id }}
+        DEPLOYMENT_ENVIRONMENT: ${{ inputs.deployment-environment }}
+        DEPLOYMENT_CREATOR_USERNAME: ${{ inputs.deployment-creator-username }}
+
+        DISCORD_WEBHOOK_URL: ${{ inputs.discord-webhook-url }}
+
+      run: |
+        chmod +x "${{ github.action_path }}/scripts/send-notifications.sh"
+        "${{ github.action_path }}/scripts/send-notifications.sh" || true
+
+    - name: Save Notification IDs
+      if: always()
+      uses: actions/cache/save@v4
+      continue-on-error: true
+      with:
+        path: notification-ids.${{ inputs.deployment-environment }}
+        key: notification-ids-${{ inputs.deployment-environment }}-${{ github.run_id }}-${{ github.run_attempt }}

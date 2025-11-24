@@ -1,0 +1,49 @@
+name: 'Get Deployment'
+description: 'Finds the latest deployment for a given commit SHA.'
+
+inputs:
+
+  commit-sha:
+    description: 'The SHA of the commit to find the deployment for.'
+    required: true
+
+  vercel-token:
+    description: 'The authentication token for the Vercel API.'
+    required: true
+  vercel-team:
+    description: 'The ID of the Vercel team to find the deployment for.'
+    required: true
+
+  project-name:
+    description: 'The name of the Vercel project to find the deployment for.'
+    required: true
+  deployment-environment:
+    description: 'The environment of the deployment to find.'
+    required: true
+
+outputs:
+  deployment-id:
+    description: 'The ID of the deployment.'
+    value: ${{ steps.get.outputs.deployment-id }}
+  deployment-creator-username:
+    description: 'The username of the user who created the deployment.'
+    value: ${{ steps.get.outputs.deployment-creator-username }}  
+
+runs:
+  using: composite
+  steps:  
+    - name: Get Deployment
+      id: get
+      shell: bash
+      env:
+        COMMIT_SHA: ${{ inputs.commit-sha }}
+
+        VERCEL_TOKEN: ${{ inputs.vercel-token }}
+        VERCEL_TEAM: ${{ inputs.vercel-team }}
+
+        PROJECT_NAME: ${{ inputs.project-name }}
+        DEPLOYMENT_ENVIRONMENT: ${{ inputs.deployment-environment }}
+      run: |
+        chmod +x "${{ github.action_path }}/scripts/get-deployment.sh"
+        "${{ github.action_path }}/scripts/get-deployment.sh"
+

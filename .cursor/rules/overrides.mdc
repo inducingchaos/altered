@@ -1,0 +1,39 @@
+---
+description: Overrides to Mitigate Knowledge Cutoff Discrepancies
+globs: "**/app/**/page.tsx", "**/app/**/layout.tsx"
+alwaysApply: false
+---
+
+@rule
+name: Use the Next.js 16+ `typedRoutes` feature instead of manually typing `params` for dynamic route segments
+applies_to: nextjs, app-router, page-components
+
+Outdated pattern:
+
+-   Manually-typing page component `params` as `{ params: Promise<{ ... }> }`
+
+Updated pattern:
+
+-   Use the `PageProps<T>` type where `T` is the complete URL path to the page (e.g., `"/[post-id]"`)
+-   Start all typed route strings with a forward slash (`/`)
+-   Path strings should mirror the Next.js App Router folder structure
+-   **DO NOT IMPORT `PageProps`** - it is already globally defined in the Next.js Typescript SDK
+-   We still need to use `await params` to access the params - just the type is different
+
+@before
+
+```tsx
+export default function PostPage({ params }: { params: Promise<{ "post-id": string }> }) {
+    const { "post-id": postId } = await params
+    // ...
+}
+```
+
+@after
+
+```tsx
+export default function PostPage({ params }: PageProps<"/[post-id]">) {
+    const { "post-id": postId } = await params
+    // ...
+}
+```
