@@ -1,0 +1,51 @@
+name: 'Create Deployment'
+description: 'Creates a Vercel deployment and returns the deployment info.'
+
+inputs:
+  repo-id:
+    description: 'The ID of the GitHub repo to use for the deployment.'
+    required: true
+  ref:
+    description: 'The Git ref to deploy.'
+    required: true
+  commit-sha:
+    description: 'The SHA of the commit to deploy.'
+    required: true
+
+  vercel-token:
+    description: 'The authentication token for the Vercel API.'
+    required: true
+  vercel-team:
+    description: 'The ID of the Vercel team to create the deployment for.'
+    required: true
+  project-name:
+    description: 'The name of the Vercel project to create the deployment in.'
+    required: true
+
+outputs:
+  deployment-id:
+    description: 'The ID of the deployment.'
+    value: ${{ steps.create.outputs.deployment-id }}
+  deployment-creator-username:
+    description: 'The username of the user who created the deployment.'
+    value: ${{ steps.create.outputs.deployment-creator-username }}
+
+runs:
+  using: composite
+  steps:
+    - name: Create Deployment
+      id: create
+      shell: bash
+      env:
+        REPO_ID: ${{ inputs.repo-id }}
+        REF: ${{ inputs.ref }}
+        COMMIT_SHA: ${{ inputs.commit-sha }}
+
+        VERCEL_TOKEN: ${{ inputs.vercel-token }}
+        VERCEL_TEAM: ${{ inputs.vercel-team }}
+
+        PROJECT_NAME: ${{ inputs.project-name }}
+      run: |
+        chmod +x "${{ github.action_path }}/scripts/create-deployment.sh"
+        "${{ github.action_path }}/scripts/create-deployment.sh"
+

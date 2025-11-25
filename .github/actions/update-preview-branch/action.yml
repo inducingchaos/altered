@@ -1,0 +1,24 @@
+name: 'Update Preview Branch'
+description: 'Configures git and force pushes the current branch to the preview branch.'
+
+inputs:
+  token:
+    description: 'The authentication token for the GitHub API.'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Configure Git User
+      shell: bash
+      run: |
+        git config user.name "altered[bot]"
+        git config user.email "altered[bot]@users.noreply.github.com"
+
+    - name: Force Push to Branch
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        chmod +x "${{ github.action_path }}/scripts/push-to-branch.sh"
+        "${{ github.action_path }}/scripts/push-to-branch.sh"

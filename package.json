@@ -4,6 +4,7 @@
     "private": true,
     "scripts": {
         "dev": "turbo dev",
+        "dev:web": "turbo dev --filter=altered-web",
         "lint": "turbo lint",
         "typecheck": "turbo typecheck"
     },

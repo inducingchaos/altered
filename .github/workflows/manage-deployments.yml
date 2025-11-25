@@ -1,0 +1,102 @@
+name: Manage Deployments
+
+on:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update Preview Branch
+        uses: ./.github/actions/update-preview-branch
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Deployment
+        id: create-deployment
+        uses: ./.github/actions/create-deployment
+        with:
+          repo-id: ${{ github.repository_id }}
+          ref: preview
+          commit-sha: ${{ github.sha }}
+
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-team: ${{ vars.VERCEL_TEAM }}
+          project-name: vaultedvaluesx
+
+      - name: Get Commit Info
+        id: get-commit-info
+        uses: ./.github/actions/get-commit-info
+
+      - name: Send Notifications
+        uses: ./.github/actions/send-notifications
+        with:
+          repo: ${{ github.repository }}
+          branch-name: ${{ github.ref_name }}
+          commit-sha: ${{ github.sha }}
+          commit-msg: ${{ steps.get-commit-info.outputs.commit-msg }}
+
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-team: ${{ vars.VERCEL_TEAM }}
+
+          deployment-id: ${{ steps.create-deployment.outputs.deployment-id }}
+          deployment-environment: preview
+          deployment-creator-username: ${{ steps.create-deployment.outputs.deployment-creator-username }}
+
+          discord-webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+  production:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Deployment
+        id: get-deployment
+        uses: ./.github/actions/get-deployment
+        with:
+          commit-sha: ${{ github.sha }}
+
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-team: ${{ vars.VERCEL_TEAM }}
+
+          project-name: vaultedvaluesx
+          deployment-environment: production
+
+      - name: Get Commit Info
+        id: get-commit-info
+        uses: ./.github/actions/get-commit-info
+
+      - name: Send Notifications
+        uses: ./.github/actions/send-notifications
+        with:
+          repo: ${{ github.repository }}
+          branch-name: ${{ github.ref_name }}
+          commit-sha: ${{ github.sha }}
+          commit-msg: ${{ steps.get-commit-info.outputs.commit-msg }}
+
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-team: ${{ vars.VERCEL_TEAM }}
+
+          deployment-id: ${{ steps.get-deployment.outputs.deployment-id }}
+          deployment-environment: production
+          deployment-creator-username: ${{ steps.get-deployment.outputs.deployment-creator-username }}
+
+          discord-webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}

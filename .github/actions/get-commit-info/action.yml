@@ -1,0 +1,19 @@
+name: 'Get Commit Info'
+description: 'Extracts the commit message from the git log.'
+
+outputs:
+  commit-msg:
+    description: 'The full commit message.'
+    value: ${{ steps.extract.outputs.commit-msg }}
+
+runs:
+  using: composite
+  steps:
+    - name: Get Commit Message
+      id: extract
+      shell: bash
+      run: |
+        COMMIT_MSG=$(git log -1 --pretty=%B)
+        echo "commit-msg<<EOF" >> $GITHUB_OUTPUT
+        echo "$COMMIT_MSG" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
