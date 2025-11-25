@@ -33,7 +33,7 @@ jobs:
 
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-team: ${{ vars.VERCEL_TEAM }}
-          project-name: vaultedvaluesx
+          project-name: altered
 
       - name: Get Commit Info
         id: get-commit-info
@@ -77,7 +77,7 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-team: ${{ vars.VERCEL_TEAM }}
 
-          project-name: vaultedvaluesx
+          project-name: altered
           deployment-environment: production
 
       - name: Get Commit Info
