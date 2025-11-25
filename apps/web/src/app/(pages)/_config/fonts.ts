@@ -13,22 +13,22 @@ const hoeflerText = localFont({
     variable: "--font-hoefler-text",
     src: [
         {
-            path: "../../public/typefaces/hoefler-text/regular.ttf",
+            path: "../../../../public/typefaces/hoefler-text/regular.ttf",
             weight: "400",
             style: "normal"
         },
         {
-            path: "../../public/typefaces/hoefler-text/regular-italic.ttf",
+            path: "../../../../public/typefaces/hoefler-text/regular-italic.ttf",
             weight: "400",
             style: "italic"
         },
         {
-            path: "../../public/typefaces/hoefler-text/black.ttf",
+            path: "../../../../public/typefaces/hoefler-text/black.ttf",
             weight: "900",
             style: "normal"
         },
         {
-            path: "../../public/typefaces/hoefler-text/black-italic.ttf",
+            path: "../../../../public/typefaces/hoefler-text/black-italic.ttf",
             weight: "900",
             style: "italic"
         }
