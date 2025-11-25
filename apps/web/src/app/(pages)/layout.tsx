@@ -5,7 +5,7 @@
 import { ReactNode } from "react"
 import "~/app/globals.css"
 import { ContextProvider } from "~/components/headless"
-import { Toaster } from "~/components/ui/primitives"
+import { Toaster } from "~/components/ui/primitives/sonner"
 import "~/lib/infra/rpc/pre-render"
 import { NavBar } from "./_components"
 import { fontVariables } from "./_config/fonts"
