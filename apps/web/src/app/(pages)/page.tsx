@@ -14,6 +14,7 @@ export default function HomePage() {
                 </Wrapper>
 
                 <Wrapper className="gap-4 px-4">
+                    <Button redirectTo="/dashboard">{"go to app"}</Button>
                     <Button redirectTo="/waitlist">{"join waitlist"}</Button>
                     <Button redirectTo="/protected-example">{"protected example"}</Button>
                 </Wrapper>
