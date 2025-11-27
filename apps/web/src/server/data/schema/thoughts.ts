@@ -8,6 +8,10 @@ import { type } from "arktype"
 
 export const thoughtSchema = type({
     id: "string",
+    /**
+     * @todo [P2] Expand to allow multiple aliases from the "aliases" table.
+     */
+    alias: "string | null",
     userId: "string",
     content: "string",
     validated: "Date | null",
