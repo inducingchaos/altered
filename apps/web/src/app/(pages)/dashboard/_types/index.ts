@@ -9,7 +9,7 @@ export type ThoughtWithDatasets = Thought & {
     datasets: string[]
 }
 
-export type DataTableProps<Data, Value> = {
-    columns: ColumnDef<Data, Value>[]
-    data: Data[]
+export type ThoughtsTableProps<Thought, Value> = {
+    columns: ColumnDef<Thought, Value>[]
+    data: Thought[]
 }

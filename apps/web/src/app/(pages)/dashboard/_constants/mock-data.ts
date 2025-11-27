@@ -2,7 +2,7 @@
  *
  */
 
-import { ThoughtWithDatasets } from "./types"
+import { ThoughtWithDatasets } from "../_types"
 
 export const mockThoughts: ThoughtWithDatasets[] = [
     {

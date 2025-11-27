@@ -6,7 +6,10 @@
 
 import { ColumnDef, Row } from "@tanstack/react-table"
 import { DateTime } from "luxon"
-import { ThoughtWithDatasets } from "../types"
+import { Checkbox } from "~/components/ui/primitives/checkbox"
+import { ThoughtWithDatasets } from "../../_types"
+import { ColumnHeader } from "./column-header"
+import { RowActions } from "./row-actions"
 
 export const AliasColumnCell = ({ row }: { row: Row<ThoughtWithDatasets> }) => {
     const alias = row.getValue("alias") as string | null
@@ -44,28 +47,42 @@ export const UpdatedAtColumnCell = ({ row }: { row: Row<ThoughtWithDatasets> }) 
 
 export const columns: ColumnDef<ThoughtWithDatasets>[] = [
     {
+        id: "select",
+        header: ({ table }) => <Checkbox checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")} onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)} aria-label="Select all" />,
+        cell: ({ row }) => <Checkbox checked={row.getIsSelected()} onCheckedChange={value => row.toggleSelected(!!value)} aria-label="Select row" />,
+        enableSorting: false,
+        enableHiding: false
+    },
+    {
         accessorKey: "alias",
-        header: "Alias",
+        header: ({ column }) => <ColumnHeader column={column} title="Alias" />,
         cell: AliasColumnCell
     },
     {
         accessorKey: "content",
-        header: "Content",
+        header: ({ column }) => <ColumnHeader column={column} title="Content" />,
         cell: ContentColumnCell
     },
     {
         accessorKey: "datasets",
         header: "Datasets",
-        cell: DatasetsColumnCell
+        cell: DatasetsColumnCell,
+        enableSorting: false
     },
     {
         accessorKey: "createdAt",
-        header: "Created",
+        header: ({ column }) => <ColumnHeader column={column} title="Created" />,
         cell: CreatedAtColumnCell
     },
     {
         accessorKey: "updatedAt",
-        header: "Updated",
+        header: ({ column }) => <ColumnHeader column={column} title="Updated" />,
         cell: UpdatedAtColumnCell
+    },
+    {
+        id: "actions",
+        cell: ({ row }) => <RowActions row={row} />,
+        enableSorting: false,
+        enableHiding: false
     }
 ]
