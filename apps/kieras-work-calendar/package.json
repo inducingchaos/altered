@@ -1,0 +1,27 @@
+{
+    "name": "kieras-work-calendar",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch src/index.ts",
+        "build": "tsc",
+        "start": "node src/index.js",
+        "typecheck": "tsc --noEmit",
+        "execute": "sh -c 'IFS=\"\" tsx --env-file ./.env ./src/scripts/$1.ts $*' sh"
+    },
+    "dependencies": {
+        "@elysiajs/node": "^1.1.3",
+        "@upstash/qstash": "^2.7.0",
+        "elysia": "^1.1.20",
+        "exact-mirror": "^0.2.5",
+        "ical-generator": "^8.1.0",
+        "openapi-types": "^12.1.0",
+        "@sinclair/typebox": "^0.34.15"
+    },
+    "devDependencies": {
+        "@types/node": "^20",
+        "tsx": "^4.20.6",
+        "typescript": "^5"
+    }
+}
