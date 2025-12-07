@@ -3,11 +3,8 @@ import { handleCalendarICS } from "./routes/calendar"
 import { handleRefresh } from "./routes/refresh"
 import { initializeQStashSchedule } from "./lib/qstash"
 
-// TODO: Implement dynamic login flow to automatically refresh session keys
-// Session keys expire after ~30 minutes of inactivity, so we need to:
-// 1. Intercept/login flow to get new session key
-// 2. Store credentials securely
-// 3. Auto-refresh before expiration
+// Dynamic login is now implemented - session keys are fetched automatically on each calendar request
+// This ensures we always have a fresh, valid session key without manual intervention
 
 const app = new Elysia()
     .get("/", () => "Kiera's Work Calendar API")

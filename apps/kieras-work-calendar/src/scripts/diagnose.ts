@@ -17,18 +17,19 @@ async function diagnose() {
     const outputIcs = args.includes("--output-ics")
 
     // Check environment variables
-    const sessionKey = process.env.ABIMM_SESSION_KEY
-    const employeeId = process.env.ABIMM_EMPLOYEE_ID
+    const userId = process.env.ABIMM_USER_ID
+    const pin = process.env.ABIMM_PIN
     const venueId = process.env.ABIMM_VENUE_ID || "IDH"
 
     console.log("📋 Environment Variables:")
-    console.log(`  ABIMM_SESSION_KEY: ${sessionKey ? "✅ Set" : "❌ Missing"}`)
-    console.log(`  ABIMM_EMPLOYEE_ID: ${employeeId || "❌ Missing"}`)
+    console.log(`  ABIMM_USER_ID: ${userId || "❌ Missing"}`)
+    console.log(`  ABIMM_PIN: ${pin ? "✅ Set" : "❌ Missing"}`)
     console.log(`  ABIMM_VENUE_ID: ${venueId}`)
     console.log()
 
-    if (!sessionKey || !employeeId) {
-        console.error("❌ Missing required environment variables!")
+    if (!userId || !pin) {
+        console.error("❌ Missing required environment variables: ABIMM_USER_ID and ABIMM_PIN")
+        console.error("💡 Note: We now use dynamic login - no need for ABIMM_SESSION_KEY!")
         process.exit(1)
     }
 

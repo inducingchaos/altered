@@ -4,15 +4,14 @@
 
 import { parseCalendarHtml, type CalendarEvent } from "./parser"
 import { fetchCalendarData } from "./fetcher"
+import { getFreshSession } from "./auth"
 
 export async function fetchAndParseCalendar(): Promise<CalendarEvent[]> {
-    const sessionKey = process.env.ABIMM_SESSION_KEY
-    const employeeId = process.env.ABIMM_EMPLOYEE_ID
+    // Get fresh session by logging in dynamically
+    // This ensures we always have a valid, non-expired session key
+    const session = await getFreshSession()
+    const { sessionKey, employeeId } = session
     const venueId = process.env.ABIMM_VENUE_ID || "IDH"
-
-    if (!sessionKey || !employeeId) {
-        throw new Error("Missing required environment variables: ABIMM_SESSION_KEY and ABIMM_EMPLOYEE_ID")
-    }
 
     // Get current month and next 2 months for better coverage
     const now = new Date()

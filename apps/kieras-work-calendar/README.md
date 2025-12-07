@@ -6,20 +6,15 @@ A service that syncs work schedule from ABIMM portal to an iCal subscription fee
 
 ### 1. Environment Variables
 
-From the HAR file (`ess.abimm.com.har`), the credentials are:
+Required credentials:
 
-- **ABIMM_SESSION_KEY**: `jcAvjkhiMA0c0cisv9Htyw73Dd8rR6jgWRhyeSSAXUgQ4YKgQ2EKcb2vWFq6lqPGZLEivsEUhEMdHp7fKSYQ0P4vOvSXkMYp5YrkSklgwklVGYep8BuJP7GAPJJ8QpsL`
-- **ABIMM_EMPLOYEE_ID**: `000858107`
+- **ABIMM_USER_ID**: Your login user ID (e.g., "HUNT8107")
+- **ABIMM_PIN**: Your PIN/password
 - **ABIMM_VENUE_ID**: `IDH` (optional, defaults to "IDH")
 - **REFRESH_SECRET**: A secret string for manual refresh endpoint authentication (generate a random string)
 - **QSTASH_TOKEN**: (Optional) Upstash QStash token for scheduled refreshes
 
-**Note**: Session keys expire after ~30 minutes of inactivity. You'll need to refresh the `ABIMM_SESSION_KEY` periodically by:
-
-1. Logging into the portal
-2. Opening browser dev tools → Network tab
-3. Viewing the calendar page
-4. Finding the `SessionKey` parameter in the form data of the POST request to `Request.aspx`
+**Note**: The app now uses dynamic login - it automatically logs in on each request to get a fresh session key. No need to manually update session keys anymore!
 
 ### 2. Local Development
 
@@ -47,9 +42,9 @@ pnpm dev
 
 1. Push to GitHub and connect to Vercel
 2. Set environment variables in Vercel dashboard:
-    - `ABIMM_SESSION_KEY`
-    - `ABIMM_EMPLOYEE_ID`
-    - `ABIMM_VENUE_ID` (optional)
+    - `ABIMM_USER_ID` (your login user ID)
+    - `ABIMM_PIN` (your PIN/password)
+    - `ABIMM_VENUE_ID` (optional, defaults to "IDH")
     - `REFRESH_SECRET` (for manual refresh endpoint)
     - `QSTASH_TOKEN` (optional, for QStash scheduling)
 
@@ -71,10 +66,11 @@ pnpm dev
 
 The service:
 
-1. Fetches calendar HTML from the ABIMM portal for current + 2 months
-2. Parses events from HTML (dates, times, facilities, addresses)
-3. Generates a single ICS file with all events
-4. Serves it for iOS Calendar subscription
+1. Automatically logs into the ABIMM portal to get a fresh session key
+2. Fetches calendar HTML from the ABIMM portal for current + 2 months
+3. Parses events from HTML (dates, times, facilities, addresses)
+4. Generates a single ICS file with all events
+5. Serves it for iOS Calendar subscription
 
 ## Scripts
 
@@ -96,8 +92,7 @@ curl -X GET https://your-app.vercel.app/api/refresh \
 
 ## Notes
 
-- Session keys expire after ~30 minutes of inactivity
-- You may need to refresh the session key periodically
+- **Dynamic Login**: The app automatically logs in on each calendar request to get a fresh session key
+- No need to manually update session keys - they're fetched dynamically
 - The calendar refreshes every 8 hours via QStash (if configured)
 - Calendar fetches data for current month + 2 months ahead
-- TODO: Implement dynamic login flow to automatically refresh session keys
