@@ -57,16 +57,17 @@ export async function initializeQStashSchedule(baseUrl: string): Promise<void> {
     try {
         // Check if schedule already exists
         const schedules = await qstashClient.schedules.list()
-        const existingSchedule = schedules.find(s => s.destination === refreshUrl && s.cron === "0 0 * * *")
+        const cronPattern = "0 */8 * * *" // Every 8 hours at minute 0
+        const existingSchedule = schedules.find(s => s.destination === refreshUrl && s.cron === cronPattern)
 
         if (existingSchedule) {
             console.log(`[QStash] Schedule already exists, skipping initialization`)
             return
         }
 
-        // Schedule daily refresh at midnight UTC
-        await scheduleRefresh(refreshUrl, "0 0 * * *")
-        console.log(`[QStash] Initialized daily schedule for ${refreshUrl}`)
+        // Schedule refresh every 8 hours
+        await scheduleRefresh(refreshUrl, cronPattern)
+        console.log(`[QStash] Initialized 8-hour schedule for ${refreshUrl}`)
     } catch (error) {
         console.error(`[QStash] Failed to initialize schedule:`, error)
         // Don't throw - allow app to continue even if scheduling fails

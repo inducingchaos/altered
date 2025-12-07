@@ -67,8 +67,7 @@ pnpm dev
 
 - **`/calendar.ics`**: Serves the aggregated calendar file (subscription endpoint)
 - **`/api/refresh`**: Manual refresh endpoint (requires `X-Refresh-Secret` header)
-- **Cron Job**: Uses Elysia cron plugin to refresh daily at midnight UTC
-- **QStash** (Optional): Alternative scheduling via Upstash QStash
+- **QStash** (Optional): Scheduled refreshes every 8 hours via Upstash QStash
 
 The service:
 
@@ -99,6 +98,6 @@ curl -X GET https://your-app.vercel.app/api/refresh \
 
 - Session keys expire after ~30 minutes of inactivity
 - You may need to refresh the session key periodically
-- The cron job runs daily at midnight UTC
+- The calendar refreshes every 8 hours via QStash (if configured)
 - Calendar fetches data for current month + 2 months ahead
 - TODO: Implement dynamic login flow to automatically refresh session keys
