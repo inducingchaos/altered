@@ -1,75 +1,139 @@
-/**
- * QStash integration for scheduled calendar refreshes
- * Alternative to Vercel cron - provides more flexibility and reliability
- */
-
 import { Client } from "@upstash/qstash"
+import { config } from "../config"
+import { logger } from "./logger"
 
-const qstashClient = process.env.QSTASH_TOKEN
+const qstashClient = config.qstash.token
     ? new Client({
-          token: process.env.QSTASH_TOKEN
+          token: config.qstash.token
       })
     : null
 
-/**
- * Schedule a calendar refresh via QStash
- */
-export async function scheduleRefresh(url: string, schedule?: string): Promise<void> {
-    if (!qstashClient) {
-        console.warn("QStash token not configured, skipping scheduled refresh")
-        return
-    }
+let initializationPromise: Promise<void> | null = null
+let isInitialized = false
+
+async function findScheduleByDestination(url: string, cron: string): Promise<{ scheduleId: string; destination: string; cron: string } | null> {
+    if (!qstashClient) return null
 
     try {
-        if (schedule) {
-            // Schedule recurring job (e.g., "0 0 * * *" for daily at midnight)
-            await qstashClient.schedules.create({
-                destination: url,
-                cron: schedule
-            })
-            console.log(`[QStash] Scheduled recurring refresh: ${schedule}`)
-        } else {
-            // One-time job
-            await qstashClient.publishJSON({
-                url,
-                body: { action: "refresh" }
-            })
-            console.log(`[QStash] Scheduled one-time refresh`)
+        const schedules = await qstashClient.schedules.list()
+        const found = schedules.find(s => s.destination === url && s.cron === cron)
+        if (!found) return null
+        return {
+            scheduleId: found.scheduleId,
+            destination: found.destination,
+            cron: found.cron
         }
+    } catch {
+        return null
+    }
+}
+
+async function deleteSchedule(scheduleId: string): Promise<void> {
+    if (!qstashClient) return
+
+    try {
+        await qstashClient.schedules.delete(scheduleId)
+        logger.info("QStash schedule deleted", { scheduleId })
     } catch (error) {
-        console.error(`[QStash] Failed to schedule refresh:`, error)
+        logger.error("Failed to delete QStash schedule", error)
         throw error
     }
 }
 
-/**
- * Initialize QStash schedule (call this on app startup)
- * Only schedules if not already scheduled to avoid duplicates
- */
-export async function initializeQStashSchedule(baseUrl: string): Promise<void> {
+async function createSchedule(url: string, cron: string): Promise<string> {
     if (!qstashClient) {
-        console.warn("QStash token not configured, skipping schedule initialization")
+        logger.warn("QStash token not configured")
+        throw new Error("QStash not configured")
+    }
+
+    try {
+        const schedule = await qstashClient.schedules.create({
+            destination: url,
+            cron
+        })
+
+        logger.info("QStash schedule created", { scheduleId: schedule.scheduleId, url, cron })
+        return schedule.scheduleId
+    } catch (error) {
+        logger.error("Failed to create QStash schedule", error)
+        throw error
+    }
+}
+
+async function publishOneTime(url: string): Promise<void> {
+    if (!qstashClient) {
+        logger.warn("QStash token not configured")
         return
     }
 
-    const refreshUrl = `${baseUrl}/api/refresh`
+    await qstashClient.publishJSON({
+        url,
+        body: { action: "refresh" }
+    })
+
+    logger.info("QStash one-time job published", { url })
+}
+
+export async function scheduleRefresh(url: string, schedule?: string): Promise<void> {
+    if (!qstashClient) return
 
     try {
-        // Check if schedule already exists
-        const schedules = await qstashClient.schedules.list()
-        const cronPattern = "0 */8 * * *" // Every 8 hours at minute 0
-        const existingSchedule = schedules.find(s => s.destination === refreshUrl && s.cron === cronPattern)
+        if (schedule) {
+            await createSchedule(url, schedule)
+        } else {
+            await publishOneTime(url)
+        }
+    } catch (error) {
+        logger.error("QStash scheduling failed", error)
+        throw error
+    }
+}
 
-        if (existingSchedule) {
-            console.log(`[QStash] Schedule already exists, skipping initialization`)
+export async function initializeQStashSchedule(baseUrl: string): Promise<void> {
+    if (isInitialized) return
+
+    if (initializationPromise) {
+        await initializationPromise
+        return
+    }
+
+    initializationPromise = (async () => {
+        if (!qstashClient) {
+            logger.warn("QStash not configured, skipping schedule initialization")
+            isInitialized = true
             return
         }
 
-        // Schedule refresh every 8 hours
-        await scheduleRefresh(refreshUrl, cronPattern)
-        console.log(`[QStash] Initialized 8-hour schedule for ${refreshUrl}`)
-    } catch (error) {
-        console.error(`[QStash] Failed to initialize schedule:`, error)
-        // Don't throw - allow app to continue even if scheduling fails
-    }
+        const refreshUrl = `${baseUrl}/api/refresh`
+        const cronPattern = config.app.cronSchedule
+
+        try {
+            const existing = await findScheduleByDestination(refreshUrl, cronPattern)
+
+            if (existing) {
+                logger.info("QStash schedule already exists", {
+                    scheduleId: existing.scheduleId,
+                    url: refreshUrl,
+                    cron: cronPattern
+                })
+                isInitialized = true
+                return
+            }
+
+            await createSchedule(refreshUrl, cronPattern)
+            logger.info("QStash schedule initialized", { refreshUrl, cronPattern })
+            isInitialized = true
+        } catch (error) {
+            if (error instanceof Error && error.message.includes("already exists")) {
+                logger.info("QStash schedule already exists (race condition handled)")
+                isInitialized = true
+                return
+            }
+
+            logger.error("QStash initialization failed", error)
+            throw error
+        }
+    })()
+
+    await initializationPromise
 }

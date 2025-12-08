@@ -1,6 +1,6 @@
-/**
- * Authentication and session management for ABIMM portal
- */
+import { DateTime } from "luxon"
+import { config } from "../config"
+import { logger } from "./logger"
 
 interface LoginCredentials {
     userId: string
@@ -14,19 +14,16 @@ interface SessionInfo {
     employeeFullName?: string
 }
 
-/**
- * Logs into the ABIMM portal and extracts session information
- */
-export async function login(credentials: LoginCredentials): Promise<SessionInfo> {
+function calculateTimezoneOffset(): number {
+    const now = DateTime.now().setZone(config.app.timezone)
+
+    return -now.offset / 60
+}
+
+function buildLoginFormData(credentials: LoginCredentials, tzOffset: number): URLSearchParams {
     const { userId, pin, venueId } = credentials
-
-    // Calculate timezone offset (in hours, negative for UTC offset)
-    // JavaScript's getTimezoneOffset() returns minutes, positive for behind UTC
-    // We need hours, negative for behind UTC (e.g., PST is -8, so offset is 8)
-    const tzOffset = Math.round(new Date().getTimezoneOffset() / 60)
-
-    // Build form data for login
     const formData = new URLSearchParams()
+
     formData.append("APPNAME", "S22")
     formData.append("PRGNAME", "Login_Page")
     formData.append("arguments", "Venue_Id,Action")
@@ -39,6 +36,25 @@ export async function login(credentials: LoginCredentials): Promise<SessionInfo>
     formData.append("tz_offset_s", "<!$MG_SpecifiedTimeZone>")
     formData.append("req_counter_l", "    1")
 
+    return formData
+}
+
+function extractHiddenField(html: string, fieldName: string): string | null {
+    const pattern = new RegExp(`<input[^>]*name=["']${fieldName}["'][^>]*value=["']([^"']+)["']`, "i")
+    const match = html.match(pattern)
+
+    return match ? match[1] : null
+}
+
+function validateLoginResponse(html: string): void {
+    if (html.includes("login_failed") || html.includes("Please enter your User ID and PIN")) {
+        logger.error("Login validation failed: Invalid credentials")
+
+        throw new Error("Login failed: Invalid credentials")
+    }
+}
+
+async function performLoginRequest(formData: URLSearchParams): Promise<string> {
     const response = await fetch("https://ess.abimm.com/ABIMM_ASP/Request.aspx", {
         method: "POST",
         headers: {
@@ -50,56 +66,40 @@ export async function login(credentials: LoginCredentials): Promise<SessionInfo>
     })
 
     if (!response.ok) {
-        throw new Error(`Login failed: ${response.status} ${response.statusText}`)
+        logger.error("Login request failed", { status: response.status, statusText: response.statusText })
+
+        throw new Error(`Login request failed: ${response.status}`)
     }
 
-    const html = await response.text()
-
-    // Check if login was successful by looking for error messages or main menu
-    if (html.includes("login_failed") || html.includes("Please enter your User ID and PIN")) {
-        throw new Error("Login failed: Invalid credentials or login error")
-    }
-
-    // Extract SessionKey from hidden form fields in the response
-    // Format: <input type="hidden" name="SessionKey" value="...">
-    const sessionKeyMatch = html.match(/<input[^>]*name=["']SessionKey["'][^>]*value=["']([^"']+)["']/i)
-    if (!sessionKeyMatch) {
-        throw new Error("Login succeeded but SessionKey not found in response")
-    }
-
-    const sessionKey = sessionKeyMatch[1]
-
-    // Extract EmployeeId from hidden form fields
-    // Format: <input type="hidden" name="EmployeeId" value="...">
-    const employeeIdMatch = html.match(/<input[^>]*name=["']EmployeeId["'][^>]*value=["']([^"']+)["']/i)
-    if (!employeeIdMatch) {
-        throw new Error("Login succeeded but EmployeeId not found in response")
-    }
-
-    const employeeId = employeeIdMatch[1]
-
-    // Extract EmployeeFullName if available (optional)
-    const employeeFullNameMatch = html.match(/<input[^>]*name=["']EmployeeFullName["'][^>]*value=["']([^"']+)["']/i)
-    const employeeFullName = employeeFullNameMatch ? employeeFullNameMatch[1] : undefined
-
-    return {
-        sessionKey,
-        employeeId,
-        employeeFullName
-    }
+    return await response.text()
 }
 
-/**
- * Gets a fresh session by logging in with credentials from environment variables
- */
-export async function getFreshSession(): Promise<SessionInfo> {
-    const userId = process.env.ABIMM_USER_ID
-    const pin = process.env.ABIMM_PIN
-    const venueId = process.env.ABIMM_VENUE_ID || "IDH"
+export async function login(credentials: LoginCredentials): Promise<SessionInfo> {
+    const tzOffset = calculateTimezoneOffset()
+    const formData = buildLoginFormData(credentials, tzOffset)
+    const html = await performLoginRequest(formData)
+    validateLoginResponse(html)
 
-    if (!userId || !pin) {
-        throw new Error("Missing required environment variables: ABIMM_USER_ID and ABIMM_PIN")
+    const sessionKey = extractHiddenField(html, "SessionKey")
+    const employeeId = extractHiddenField(html, "EmployeeId")
+
+    if (!sessionKey || !employeeId) {
+        logger.error("Login response missing required fields")
+
+        throw new Error("Login succeeded but required fields not found in response")
     }
 
-    return login({ userId, pin, venueId })
+    const employeeFullName = extractHiddenField(html, "EmployeeFullName") ?? undefined
+
+    logger.info("Login successful")
+
+    return { sessionKey, employeeId, employeeFullName }
+}
+
+export async function getFreshSession(): Promise<SessionInfo> {
+    return login({
+        userId: config.abimm.userId,
+        pin: config.abimm.pin,
+        venueId: config.abimm.venueId
+    })
 }

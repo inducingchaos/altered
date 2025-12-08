@@ -1,42 +1,61 @@
 /**
- * Core calendar fetching and parsing logic
+ *
  */
 
+import { DateTime } from "luxon"
 import { parseCalendarHtml, type CalendarEvent } from "./parser"
 import { fetchCalendarData } from "./fetcher"
 import { getFreshSession } from "./auth"
+import { config } from "../config"
+import { logger } from "./logger"
 
-export async function fetchAndParseCalendar(): Promise<CalendarEvent[]> {
-    // Get fresh session by logging in dynamically
-    // This ensures we always have a valid, non-expired session key
-    const session = await getFreshSession()
-    const { sessionKey, employeeId } = session
-    const venueId = process.env.ABIMM_VENUE_ID || "IDH"
-
-    // Get current month and next 2 months for better coverage
-    const now = new Date()
+function generateMonthKeys(count: number): string[] {
+    const now = DateTime.now().setZone(config.app.timezone)
     const months: string[] = []
 
-    for (let i = 0; i < 3; i++) {
-        const date = new Date(now.getFullYear(), now.getMonth() + i, 1)
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, "0")
+    for (let i = 0; i < count; i++) {
+        const date = now.plus({ months: i }).startOf("month")
+        const year = date.year
+        const month = String(date.month).padStart(2, "0")
+
         months.push(`${year}${month}01`)
     }
 
-    const allEvents: CalendarEvent[] = []
+    return months
+}
 
-    for (const calendarMonth of months) {
-        const html = await fetchCalendarData({
-            sessionKey,
-            employeeId,
-            venueId,
-            calendarMonth
-        })
+async function fetchMonthEvents(sessionKey: string, employeeId: string, venueId: string, calendarMonth: string): Promise<CalendarEvent[]> {
+    const html = await fetchCalendarData({ sessionKey, employeeId, venueId, calendarMonth })
 
-        const events = parseCalendarHtml(html)
-        allEvents.push(...events)
+    return parseCalendarHtml(html)
+}
+
+export async function fetchAndParseCalendar(): Promise<CalendarEvent[]> {
+    try {
+        const session = await getFreshSession()
+        const { sessionKey, employeeId } = session
+
+        const venueId = config.abimm.venueId
+        const months = generateMonthKeys(config.app.monthsToFetch)
+
+        const allEvents: CalendarEvent[] = []
+
+        for (const calendarMonth of months) {
+            try {
+                const events = await fetchMonthEvents(sessionKey, employeeId, venueId, calendarMonth)
+
+                allEvents.push(...events)
+            } catch (error) {
+                logger.error("Failed to fetch month events", { calendarMonth, error })
+
+                throw error
+            }
+        }
+
+        return allEvents
+    } catch (error) {
+        logger.error("Calendar fetch and parse failed", error)
+
+        throw error
     }
-
-    return allEvents
 }

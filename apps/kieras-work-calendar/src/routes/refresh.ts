@@ -1,38 +1,54 @@
 /**
- * Manual refresh endpoint handler. Supports both GET and POST methods.
+ *
  */
 
 import type { Context } from "elysia"
+import { DateTime } from "luxon"
+import { config } from "../config"
 import { fetchAndParseCalendar } from "../lib/calendar"
+import { logger } from "../lib/logger"
+
+function isQStashRequest(headers: Record<string, string | undefined>): boolean {
+    return !!(headers["upstash-signature"] && config.qstash.currentSigningKey)
+}
+
+function isManualRequest(headers: Record<string, string | undefined>): boolean {
+    const providedSecret = headers["x-refresh-secret"]
+
+    return !!(config.internal.secret && providedSecret === config.internal.secret)
+}
+
+function isAuthorized(headers: Record<string, string | undefined>): boolean {
+    return isQStashRequest(headers) || isManualRequest(headers)
+}
 
 export async function handleRefresh({ headers, set }: Context) {
-    const authSecret = process.env.REFRESH_SECRET
-    const providedSecret = headers["x-refresh-secret"]
-    const qstashSignature = headers["upstash-signature"]
-
-    // Allow QStash webhooks or manual refresh with secret
-    const isQStash = qstashSignature && process.env.QSTASH_CURRENT_SIGNING_KEY
-    const isManual = authSecret && providedSecret === authSecret
-
-    if (!isQStash && !isManual) {
+    if (!isAuthorized(headers)) {
         set.status = 401
+
         return { error: "Unauthorized" }
     }
 
     try {
-        console.log(`[Refresh] Starting calendar refresh at ${new Date().toISOString()}`)
+        logger.info("Calendar refresh started")
+
         const events = await fetchAndParseCalendar()
-        console.log(`[Refresh] Calendar refresh completed: ${events.length} events`)
+
+        logger.info("Calendar refresh completed", { eventCount: events.length })
+
         set.status = 200
+
         return {
             success: true,
             message: "Calendar refreshed",
-            timestamp: new Date().toISOString(),
+            timestamp: DateTime.now().setZone(config.app.timezone).toISO(),
             eventCount: events.length
         }
     } catch (error) {
-        console.error(`[Refresh] Calendar refresh failed:`, error)
+        logger.error("Calendar refresh failed", error)
+
         set.status = 500
+
         return {
             error: "Failed to refresh calendar",
             message: error instanceof Error ? error.message : "Unknown error"

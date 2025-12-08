@@ -6,68 +6,53 @@ A service that syncs work schedule from ABIMM portal to an iCal subscription fee
 
 ### 1. Environment Variables
 
-Required credentials:
+**Required:**
 
-- **ABIMM_USER_ID**: Your login user ID (e.g., "HUNT8107")
-- **ABIMM_PIN**: Your PIN/password
-- **ABIMM_VENUE_ID**: `IDH` (optional, defaults to "IDH")
-- **REFRESH_SECRET**: A secret string for manual refresh endpoint authentication (generate a random string)
-- **QSTASH_TOKEN**: (Optional) Upstash QStash token for scheduled refreshes
+- `ABIMM_USER_ID` - Login user ID
+- `ABIMM_PIN` - Login PIN/password
+- `INTERNAL_SECRET` - Secret for manual refresh endpoint authentication
 
-**Note**: The app now uses dynamic login - it automatically logs in on each request to get a fresh session key. No need to manually update session keys anymore!
+**Optional:**
+
+- `ABIMM_VENUE_ID` - Venue ID (defaults to "IDH")
+- `QSTASH_URL` - QStash endpoint URL
+- `QSTASH_TOKEN` - QStash authentication token
+- `QSTASH_CURRENT_SIGNING_KEY` - QStash current signing key for webhook verification
+- `QSTASH_NEXT_SIGNING_KEY` - QStash next signing key for webhook verification
+- `ENABLE_LOGGING` - Set to "true" to enable verbose logging
+- `CRON_SCHEDULE` - Cron pattern for QStash scheduling (defaults to "0 _/8 _ \* \*")
+- `MONTHS_TO_FETCH` - Number of months to fetch ahead (defaults to 3)
+- `TIMEZONE` - IANA timezone identifier (defaults to "America/Edmonton")
+- `CALENDAR_NAME` - Name of the calendar in ICS file (defaults to "ICE District Authentics Work Schedule")
+
+**Note**: The app uses dynamic login - it automatically authenticates on each request to get a fresh session key.
 
 ### 2. Local Development
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Create .env file with credentials
 cp .env.example .env
 # Edit .env with your values
-
-# Run diagnostics to test
 pnpm execute diagnose
-
-# Run locally
 pnpm dev
-
-# The app will run on http://localhost:3000
-# Test endpoints:
-# - http://localhost:3000/calendar.ics
-# - http://localhost:3000/api/refresh (with X-Refresh-Secret header)
 ```
 
 ### 3. Deploy to Vercel
 
 1. Push to GitHub and connect to Vercel
-2. Set environment variables in Vercel dashboard:
-    - `ABIMM_USER_ID` (your login user ID)
-    - `ABIMM_PIN` (your PIN/password)
-    - `ABIMM_VENUE_ID` (optional, defaults to "IDH")
-    - `REFRESH_SECRET` (for manual refresh endpoint)
-    - `QSTASH_TOKEN` (optional, for QStash scheduling)
-
+2. Set environment variables in Vercel dashboard
 3. Vercel will automatically detect Elysia and deploy
 
 ### 4. Subscribe to Calendar
 
 1. Get your calendar URL: `https://your-app.vercel.app/calendar.ics`
-2. In iOS Calendar app:
-    - Settings > Calendars > Add Calendar > Add Subscription Calendar
-    - Paste the URL
-    - The calendar will auto-refresh daily
+2. In iOS Calendar: Settings > Calendars > Add Calendar > Add Subscription Calendar
+3. Paste the URL
 
 ## How it works
 
-- **`/calendar.ics`**: Serves the aggregated calendar file (subscription endpoint)
-- **`/api/refresh`**: Manual refresh endpoint (requires `X-Refresh-Secret` header)
-- **QStash** (Optional): Scheduled refreshes every 8 hours via Upstash QStash
-
-The service:
-
 1. Automatically logs into the ABIMM portal to get a fresh session key
-2. Fetches calendar HTML from the ABIMM portal for current + 2 months
+2. Fetches calendar HTML for current + N months ahead
 3. Parses events from HTML (dates, times, facilities, addresses)
 4. Generates a single ICS file with all events
 5. Serves it for iOS Calendar subscription
@@ -75,24 +60,19 @@ The service:
 ## Scripts
 
 - `pnpm dev` - Run development server
-- `pnpm execute diagnose` - Run diagnostic script to test calendar fetching
-- `pnpm execute diagnose --json` - Output events as JSON file
-- `pnpm execute diagnose --output-ics` - Save ICS file for validation
-- `pnpm execute validate-ics [path]` - Validate and inspect an ICS file
-- `pnpm typecheck` - Type check without building
+- `pnpm execute diagnose` - Test calendar fetching
+- `pnpm execute diagnose --json` - Output events as JSON
+- `pnpm execute diagnose --output-ics` - Save ICS file
+- `pnpm execute validate-ics [path]` - Validate ICS file
+- `pnpm typecheck` - Type check
 
 ## Manual Refresh
 
-To manually trigger a calendar refresh:
-
 ```bash
 curl -X GET https://your-app.vercel.app/api/refresh \
-  -H "X-Refresh-Secret: your-refresh-secret"
+  -H "X-Refresh-Secret: your-internal-secret"
 ```
 
-## Notes
+## Configuration
 
-- **Dynamic Login**: The app automatically logs in on each calendar request to get a fresh session key
-- No need to manually update session keys - they're fetched dynamically
-- The calendar refreshes every 8 hours via QStash (if configured)
-- Calendar fetches data for current month + 2 months ahead
+Set `ENABLE_LOGGING=true` to enable verbose logging. Adjust `CRON_SCHEDULE` to change refresh frequency.

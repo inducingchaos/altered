@@ -1,32 +1,41 @@
+/**
+ *
+ */
+
 import { Elysia } from "elysia"
 import { handleCalendarICS } from "./routes/calendar"
 import { handleRefresh } from "./routes/refresh"
-import { initializeQStashSchedule } from "./lib/qstash"
-
-// Dynamic login is now implemented - session keys are fetched automatically on each calendar request
-// This ensures we always have a fresh, valid session key without manual intervention
+import { logger } from "./lib/logger"
 
 const app = new Elysia()
+    .onError(({ code, error, set }) => {
+        const errorMessage = error instanceof Error ? error.message : String(error)
+
+        logger.error("Request error", { code, error: errorMessage })
+
+        if (code === "NOT_FOUND") {
+            set.status = 404
+
+            return { error: "Not found" }
+        }
+
+        set.status = 500
+
+        return {
+            error: "Internal server error",
+            message: errorMessage
+        }
+    })
     .get("/", () => "Kiera's Work Calendar API")
     .get("/health", () => ({ status: "ok" }))
     .get("/calendar.ics", handleCalendarICS)
     .get("/api/refresh", handleRefresh)
     .post("/api/refresh", handleRefresh)
 
-// Initialize QStash schedule on startup (only in production/serverless)
-if (process.env.VERCEL_URL || process.env.QSTASH_TOKEN) {
-    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : process.env.BASE_URL || "http://localhost:3000"
-    initializeQStashSchedule(baseUrl).catch(error => {
-        console.error("[QStash] Failed to initialize schedule:", error)
-    })
-}
-
-// For local development
 if (process.env.NODE_ENV !== "production") {
-    const PORT = process.env.PORT || 3000
+    const PORT = process.env.PORT ?? 3000
     app.listen(PORT)
-    console.log(`Kiera's Work Calendar API running on port ${PORT}`)
+    logger.info("Server started", { port: PORT })
 }
 
-// Export for Vercel serverless
 export default app

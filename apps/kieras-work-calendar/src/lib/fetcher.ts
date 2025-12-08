@@ -1,26 +1,32 @@
 /**
- * Fetches calendar HTML from the ABIMM portal
+ *
  */
 
 interface FetchCalendarParams {
     sessionKey: string
     employeeId: string
     venueId: string
-    calendarMonth: string // Format: YYYYMMDD
+    calendarMonth: string
 }
 
-export async function fetchCalendarData(params: FetchCalendarParams): Promise<string> {
+function buildCalendarFormData(params: FetchCalendarParams): FormData {
     const { sessionKey, employeeId, venueId, calendarMonth } = params
-
     const formData = new FormData()
+
     formData.append("appname", "S22")
     formData.append("prgname", "WebCalendar")
     formData.append("arguments", "EmployeeId,CalendarMonth,Action,Venue_Id")
-    formData.append("Action", "C") // C for Calendar view
+    formData.append("Action", "C")
     formData.append("EmployeeId", employeeId)
     formData.append("SessionKey", sessionKey)
     formData.append("CalendarMonth", calendarMonth)
     formData.append("Venue_Id", venueId)
+
+    return formData
+}
+
+export async function fetchCalendarData(params: FetchCalendarParams): Promise<string> {
+    const formData = buildCalendarFormData(params)
 
     const response = await fetch("https://ess.abimm.com/ABIMM_ASP/Request.aspx", {
         method: "POST",
@@ -32,7 +38,9 @@ export async function fetchCalendarData(params: FetchCalendarParams): Promise<st
     })
 
     if (!response.ok) {
-        throw new Error(`Failed to fetch calendar: ${response.status} ${response.statusText}`)
+        const error = new Error(`Calendar fetch failed: ${response.status}`)
+
+        throw error
     }
 
     return await response.text()
