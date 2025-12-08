@@ -13,6 +13,7 @@
         "execute": "sh -c 'IFS=\"\" tsx --env-file ./.env ./src/scripts/$1.ts $*' sh"
     },
     "dependencies": {
+        "@altered/objective": "workspace:*",
         "@hookform/resolvers": "^5.2.2",
         "@orpc/arktype": "^1.11.3",
         "@orpc/client": "^1.10.4",
