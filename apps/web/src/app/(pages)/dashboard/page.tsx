@@ -25,8 +25,8 @@ export default async function DashboardPage() {
     return (
         <Container>
             <Section>
-                <Wrapper className="gap-4 px-4 flex-col w-full max-w-6xl">
-                    <h1 className="text-2xl font-semibold">Thoughts</h1>
+                <Wrapper className="gap-4 px-4 items-start flex-col w-full max-w-6xl">
+                    <h1 className="text-3xl font-bold font-px-grotesk-mono tracking-tighter">Welcome, Riley</h1>
                     <ThoughtsTable data={thoughts} />
                 </Wrapper>
             </Section>
