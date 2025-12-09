@@ -3,7 +3,7 @@
  */
 
 import { type } from "arktype"
-import { creatableThoughtSchema, thoughtSchema } from "~/server/data/schema"
+import { creatableThoughtSchema, thoughtSchema } from "~/server/data/store"
 import { contractFactory } from "./factory"
 
 export const thoughtsContract = {

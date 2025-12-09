@@ -4,7 +4,7 @@
 
 import { ORPCError } from "@orpc/server"
 import { auth } from "~/lib/auth"
-import { db } from "~/server/data/connection"
+import { db } from "~/server/data/store"
 import { apiFactory } from "../factory"
 
 export const dbProvider = apiFactory.middleware(({ next }) => next({ context: { db } }))

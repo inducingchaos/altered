@@ -2,10 +2,8 @@
  *
  */
 
-import { relations } from "drizzle-orm"
 import { boolean, pgTable, timestamp, varchar } from "drizzle-orm/pg-core"
 import { nanoid } from "nanoid"
-import { thoughts } from "./thoughts"
 
 export const users = pgTable("users", {
     id: varchar().primaryKey().notNull().$defaultFn(nanoid),
@@ -20,18 +18,9 @@ export const users = pgTable("users", {
         .$onUpdateFn(() => new Date())
 })
 
-export const usersRelations = relations(users, ({ many }) => ({
-    sessions: many(sessions),
-    accounts: many(accounts),
-
-    thoughts: many(thoughts)
-}))
-
 export const sessions = pgTable("sessions", {
     id: varchar().primaryKey().notNull().$defaultFn(nanoid),
-    userId: varchar()
-        .notNull()
-        .references(() => users.id),
+    userId: varchar().notNull(),
     token: varchar().notNull().unique(),
     expiresAt: timestamp().notNull(),
     ipAddress: varchar(),
@@ -43,18 +32,9 @@ export const sessions = pgTable("sessions", {
         .$onUpdateFn(() => new Date())
 })
 
-export const sessionsRelations = relations(sessions, ({ one }) => ({
-    user: one(users, {
-        fields: [sessions.userId],
-        references: [users.id]
-    })
-}))
-
 export const accounts = pgTable("accounts", {
     id: varchar().primaryKey().notNull().$defaultFn(nanoid),
-    userId: varchar()
-        .notNull()
-        .references(() => users.id),
+    userId: varchar().notNull(),
     accountId: varchar().notNull(),
     providerId: varchar().notNull(),
     accessToken: varchar(),
@@ -71,18 +51,65 @@ export const accounts = pgTable("accounts", {
         .$onUpdateFn(() => new Date())
 })
 
-export const accountsRelations = relations(accounts, ({ one }) => ({
-    user: one(users, {
-        fields: [accounts.userId],
-        references: [users.id]
-    })
-}))
-
 export const verifications = pgTable("verifications", {
     id: varchar().primaryKey().notNull().$defaultFn(nanoid),
     identifier: varchar().notNull(),
     value: varchar().notNull(),
     expiresAt: timestamp().notNull(),
+    createdAt: timestamp().notNull().defaultNow(),
+    updatedAt: timestamp()
+        .notNull()
+        .defaultNow()
+        .$onUpdateFn(() => new Date())
+})
+
+export const oauthApplications = pgTable("oauth_applications", {
+    id: varchar().primaryKey().notNull().$defaultFn(nanoid),
+    clientId: varchar().notNull().unique(),
+    clientSecret: varchar(),
+    name: varchar().notNull(),
+    redirectUrls: varchar().notNull(),
+    metadata: varchar(),
+    type: varchar().notNull(),
+    disabled: boolean().notNull().default(false),
+    userId: varchar().references(() => users.id),
+    createdAt: timestamp().notNull().defaultNow(),
+    updatedAt: timestamp()
+        .notNull()
+        .defaultNow()
+        .$onUpdateFn(() => new Date())
+})
+
+export const oauthAccessTokens = pgTable("oauth_access_tokens", {
+    id: varchar().primaryKey().notNull().$defaultFn(nanoid),
+    accessToken: varchar().notNull(),
+    refreshToken: varchar().notNull(),
+    accessTokenExpiresAt: timestamp().notNull(),
+    refreshTokenExpiresAt: timestamp().notNull(),
+    clientId: varchar()
+        .notNull()
+        .references(() => oauthApplications.clientId),
+    userId: varchar()
+        .notNull()
+        .references(() => users.id),
+    scopes: varchar().notNull(),
+    createdAt: timestamp().notNull().defaultNow(),
+    updatedAt: timestamp()
+        .notNull()
+        .defaultNow()
+        .$onUpdateFn(() => new Date())
+})
+
+export const oauthConsents = pgTable("oauth_consents", {
+    id: varchar().primaryKey().notNull().$defaultFn(nanoid),
+    userId: varchar()
+        .notNull()
+        .references(() => users.id),
+    clientId: varchar()
+        .notNull()
+        .references(() => oauthApplications.clientId),
+    scopes: varchar().notNull(),
+    consentGiven: boolean().notNull(),
     createdAt: timestamp().notNull().defaultNow(),
     updatedAt: timestamp()
         .notNull()

@@ -7,7 +7,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { nextCookies } from "better-auth/next-js"
 import { nanoid } from "nanoid"
 import { application, localization } from "~/config"
-import { db } from "~/server/data/connection"
+import { db } from "~/server/data/store"
 
 export const auth = betterAuth({
     appName: localization.identity.name,
