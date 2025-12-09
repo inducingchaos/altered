@@ -3,7 +3,7 @@
  */
 
 import { AuthContext } from "~/lib/auth/client"
-import { Database } from "~/server/data/connection"
+import { Database } from "~/server/data/store"
 
 type APIBaseContext = { _: { headers: Headers } }
 type APIDatabaseContext = { db: Database }

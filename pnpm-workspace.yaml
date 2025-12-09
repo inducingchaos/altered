@@ -9,7 +9,12 @@ onlyBuiltDependencies:
 
 catalogs:
   react:
-    react: 19.2.0
-    react-dom: 19.2.0
-    "@types/react": 19.2.0
-    "@types/react-dom": 19.2.0
+    react: 19.2.1
+    react-dom: 19.2.1
+    "@types/react": 19.2.1
+    "@types/react-dom": 19.2.1
+  drizzle:
+    drizzle-orm: 1.0.0-beta.2-86f844e
+    drizzle-kit: 1.0.0-beta.2-86f844e
+  better-auth:
+    better-auth: 1.4.5
