@@ -89,6 +89,8 @@
         }
     ],
     "dependencies": {
+        "@altered/harness": "workspace:*",
+        "@orpc/client": "catalog:orpc",
         "@raycast/api": "^1.103.6",
         "@raycast/utils": "^1.17.0",
         "better-auth": "catalog:better-auth"

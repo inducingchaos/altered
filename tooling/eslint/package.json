@@ -1,0 +1,8 @@
+{
+    "name": "@altered-internal/eslint",
+    "version": "0.1.0",
+    "private": true,
+    "devDependencies": {
+        "@altered-internal/typescript": "workspace:*"
+    }
+}

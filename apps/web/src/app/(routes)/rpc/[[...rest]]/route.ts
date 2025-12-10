@@ -2,9 +2,9 @@
  *
  */
 
+import { router } from "@altered-internal/harness"
 import { RPCHandler } from "@orpc/server/fetch"
 import { headers } from "next/headers"
-import { router } from "~/server/api"
 
 const handler = new RPCHandler(router)
 

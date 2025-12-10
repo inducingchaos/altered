@@ -4,10 +4,10 @@
 
 "use client"
 
+import { authClient } from "@altered-internal/auth/client"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { DynamicTextSizer } from "~/components/ui/_legacy"
-import { authClient } from "~/lib/auth/client"
 
 type ButtonState = {
     buttonText: string

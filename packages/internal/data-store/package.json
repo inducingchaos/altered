@@ -1,0 +1,20 @@
+{
+    "name": "@altered-internal/data/store",
+    "version": "0.1.0",
+    "private": true,
+    "main": "src/index.ts",
+    "types": "src/index.ts",
+    "scripts": {
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@altered/data/shapes": "workspace:*",
+        "@altered-internal/config": "workspace:*",
+        "drizzle-orm": "catalog:drizzle",
+        "postgres": "^3.4.7"
+    },
+    "devDependencies": {
+        "@altered-internal/typescript": "workspace:*",
+        "typescript": "^5"
+    }
+}

@@ -2,9 +2,9 @@
  *
  */
 
+import { auth } from "@altered-internal/auth"
 import { headers } from "next/headers"
 import { Suspense } from "react"
-import { auth } from "~/lib/auth"
 import { AuthButtonWithoutSession } from "./client"
 
 export async function AuthButtonWithoutSuspense() {

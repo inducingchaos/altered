@@ -6,10 +6,10 @@ import { createORPCClient, createSafeClient } from "@orpc/client"
 import { RPCLink } from "@orpc/client/fetch"
 import type { RouterClient } from "@orpc/server"
 import { createTanstackQueryUtils } from "@orpc/tanstack-query"
-import { router } from "~/server/api"
+import { Router } from "@altered-internal/harness"
 
 declare global {
-    var $client: RouterClient<typeof router> | undefined
+    var $client: RouterClient<Router> | undefined
 }
 
 const link = new RPCLink({
@@ -23,7 +23,7 @@ const link = new RPCLink({
 /**
  * Fallback to client-side client if server-side client is not available.
  */
-const client: RouterClient<typeof router> = globalThis.$client ?? createORPCClient(link)
+const client: RouterClient<Router> = globalThis.$client ?? createORPCClient(link)
 const safeClient = createSafeClient(client)
 
 export const api = createTanstackQueryUtils(safeClient)
