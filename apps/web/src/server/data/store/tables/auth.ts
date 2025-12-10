@@ -86,9 +86,13 @@ export const oauthAccessTokens = pgTable("oauth_access_tokens", {
     refreshToken: varchar().notNull(),
     accessTokenExpiresAt: timestamp().notNull(),
     refreshTokenExpiresAt: timestamp().notNull(),
-    clientId: varchar()
-        .notNull()
-        .references(() => oauthApplications.clientId),
+    /**
+     * @remarks The recommended FK to `oauthApplications.clientId` errors when using trusted OIDC clients without having them as a database entry - disabling the reference works for now.
+     *
+     * @see https://github.com/better-auth/better-auth/issues/6649
+     */
+    clientId: varchar().notNull(),
+    // .references(() => oauthApplications.clientId),
     userId: varchar()
         .notNull()
         .references(() => users.id),

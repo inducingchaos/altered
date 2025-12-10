@@ -8,14 +8,34 @@ export const configSchema = z
     .object({
         environment: z.enum(["development", "production"]),
 
+        appName: z.string(),
+        appDescription: z.string(),
+        appIcon: z.string(),
+
         productionBaseUrl: z.url(),
-        developmentBaseUrl: z.url()
+        developmentBaseUrl: z.url(),
+
+        oauthProviderId: z.string(),
+        oauthProviderDescription: z.string(),
+
+        oauthClientId: z.string(),
+        oauthClientScope: z.string()
     })
     .transform(config => {
         return {
             ...config,
 
             baseUrl: config.environment === "development" ? config.developmentBaseUrl : config.productionBaseUrl
+        }
+    })
+    .transform(config => {
+        return {
+            ...config,
+
+            oauthAuthorizationEndpoint: `${config.baseUrl}/api/auth/oauth2/authorize`,
+            oauthTokenEndpoint: `${config.baseUrl}/api/auth/oauth2/token`,
+            oauthUserInfoEndpoint: `${config.baseUrl}/api/auth/oauth2/userinfo`,
+            oauthRevokeEndpoint: `${config.baseUrl}/api/auth/oauth2/revoke`
         }
     })
 

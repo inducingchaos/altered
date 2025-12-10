@@ -1,5 +1,6 @@
 /**
  * @todo [P2] Build a proper sign in page.
+ * @todo [P3] Add typed routes?
  */
 
 import { Route } from "next"
@@ -8,10 +9,11 @@ import { redirect } from "next/navigation"
 import { Container, P, Section } from "~/components/ui/_legacy"
 import { auth } from "~/lib/auth"
 import { SignInOnMount } from "./_components"
+import { resolveCallbackUrl, SignInSearchParams } from "./_utils/resolve-callback"
 
-export default async function SignInPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
-    const { "callback-url": _callbackUrl } = await searchParams
-    const callbackUrl = (typeof _callbackUrl === "string" ? _callbackUrl : undefined) ?? "/"
+export default async function SignInPage({ searchParams }: { searchParams: Promise<SignInSearchParams> }) {
+    const params = await searchParams
+    const callbackUrl = resolveCallbackUrl(params)
 
     const session = await auth.api.getSession({
         headers: await headers()
