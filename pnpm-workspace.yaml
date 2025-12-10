@@ -1,6 +1,8 @@
 packages:
   - apps/*
-  - packages/*
+  - packages/public/*
+  - packages/internal/*
+  - tooling/*
 
 onlyBuiltDependencies:
   - esbuild

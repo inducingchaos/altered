@@ -1,0 +1,26 @@
+{
+    "name": "@altered-internal/harness",
+    "version": "0.1.0",
+    "private": true,
+    "main": "src/index.ts",
+    "types": "src/index.ts",
+    "scripts": {
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@altered/data/shapes": "workspace:*",
+        "@altered/harness": "workspace:*",
+        "@orpc/arktype": "catalog:orpc",
+        "@orpc/client": "catalog:orpc",
+        "@orpc/contract": "catalog:orpc",
+        "@orpc/openapi": "catalog:orpc",
+        "@orpc/server": "catalog:orpc",
+        "@orpc/tanstack-query": "catalog:orpc",
+        "@orpc/zod": "catalog:orpc",
+        "arktype": "^2.1.27"
+    },
+    "devDependencies": {
+        "@altered-internal/typescript": "workspace:*",
+        "typescript": "^5"
+    }
+}

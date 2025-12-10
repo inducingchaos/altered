@@ -13,3 +13,5 @@ export const contract = {
 
 export type RouterContractInputs = InferContractRouterInputs<typeof contract>
 export type RouterContractOutputs = InferContractRouterOutputs<typeof contract>
+
+export type RouterContract = typeof contract
