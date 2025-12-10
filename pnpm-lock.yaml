@@ -323,6 +323,19 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  packages/internal/auth:
+    dependencies:
+      better-auth:
+        specifier: catalog:better-auth
+        version: 1.4.5(next@16.0.8(@babel/core@7.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+    devDependencies:
+      '@altered-internal/typescript':
+        specifier: workspace:*
+        version: link:../../../tooling/typescript
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
   packages/internal/config:
     dependencies:
       zod:
@@ -379,6 +392,12 @@ importers:
 
   packages/internal/harness:
     dependencies:
+      '@altered-internal/auth':
+        specifier: workspace:*
+        version: link:../auth
+      '@altered-internal/data/store':
+        specifier: workspace:*
+        version: link:../data-store
       '@altered/data/shapes':
         specifier: workspace:*
         version: link:../../public/data-shapes

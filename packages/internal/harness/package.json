@@ -9,6 +9,8 @@
     },
     "dependencies": {
         "@altered/data/shapes": "workspace:*",
+        "@altered-internal/auth": "workspace:*",
+        "@altered-internal/data/store": "workspace:*",
         "@altered/harness": "workspace:*",
         "@orpc/arktype": "catalog:orpc",
         "@orpc/client": "catalog:orpc",
