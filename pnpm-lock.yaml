@@ -323,6 +323,19 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  packages/internal/config:
+    dependencies:
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.13
+    devDependencies:
+      '@altered-internal/typescript':
+        specifier: workspace:*
+        version: link:../../../tooling/typescript
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
   packages/internal/data-access:
     dependencies:
       '@altered-internal/data/store':
@@ -344,6 +357,9 @@ importers:
 
   packages/internal/data-store:
     dependencies:
+      '@altered-internal/config':
+        specifier: workspace:*
+        version: link:../config
       '@altered/data/shapes':
         specifier: workspace:*
         version: link:../../public/data-shapes
