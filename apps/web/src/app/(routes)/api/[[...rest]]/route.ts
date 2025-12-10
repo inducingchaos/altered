@@ -2,12 +2,12 @@
  *
  */
 
+import { router } from "@altered-internal/harness"
 import { experimental_ArkTypeToJsonSchemaConverter as ArkTypeToJsonSchemaConverter } from "@orpc/arktype"
 import { OpenAPIHandler } from "@orpc/openapi/fetch"
 import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins"
 import { onError } from "@orpc/server"
 import { CORSPlugin } from "@orpc/server/plugins"
-import { router } from "~/server/api"
 
 const handler = new OpenAPIHandler(router, {
     plugins: [

@@ -8,7 +8,7 @@ import Image from "next/image"
 import { redirect } from "next/navigation"
 import { Suspense } from "react"
 import { Button, Container, P, Section, Wrapper } from "~/components/ui/_legacy"
-import { auth } from "~/lib/auth"
+import { auth } from "@altered-internal/auth"
 import { ClientRPCTest, ServerRPCTest } from "./_components"
 
 export default async function ProtectedExamplePage() {

@@ -10,3 +10,5 @@ export const router = apiFactory.router({
     thoughts: thoughtsRouter,
     experimental: experimentalRouter
 })
+
+export type Router = typeof router

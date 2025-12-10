@@ -8,8 +8,8 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@altered-internal/auth": "workspace:*",
         "@altered-internal/data/store": "workspace:*",
-        "@altered-internal/harness": "workspace:*",
         "@orpc/client": "catalog:orpc"
     },
     "devDependencies": {

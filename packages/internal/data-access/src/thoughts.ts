@@ -2,10 +2,10 @@
  *
  */
 
-import { type ProtectedRouteContext } from "@altered-internal/harness"
 import { ORPCError } from "@orpc/client"
+import type { ProtectedContext } from "./context"
 
-export async function getLatestThought({ ctx }: { ctx: ProtectedRouteContext }) {
+export async function getLatestThought({ ctx }: { ctx: ProtectedContext }) {
     try {
         const thought = await ctx.db.query.thoughts.findFirst({
             orderBy: { createdAt: "desc" },

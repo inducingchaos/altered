@@ -1,5 +1,0 @@
-/**
- *
- */
-
-export { router } from "./router"

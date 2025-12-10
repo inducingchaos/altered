@@ -4,9 +4,9 @@
 
 import "server-only"
 
+import { router } from "@altered-internal/harness"
 import { createRouterClient } from "@orpc/server"
 import { headers } from "next/headers"
-import { router } from "~/server/api"
 
 globalThis.$client = createRouterClient(router, {
     /**
