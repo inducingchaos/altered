@@ -1,17 +1,22 @@
 {
-  "name": "@altered-internal/auth",
-  "version": "0.1.0",
-  "private": true,
-  "main": "src/index.ts",
-  "types": "src/index.ts",
-  "scripts": {
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "better-auth": "catalog:better-auth"
-  },
-  "devDependencies": {
-    "@altered-internal/typescript": "workspace:*",
-    "typescript": "^5"
-  }
+    "name": "@altered-internal/auth",
+    "version": "0.1.0",
+    "private": true,
+    "exports": {
+        ".": "./src/index.ts",
+        "./client": "./src/client.ts"
+    },
+    "scripts": {
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@altered-internal/config": "workspace:*",
+        "@altered-internal/data/store": "workspace:*",
+        "better-auth": "catalog:better-auth",
+        "nanoid": "^5.1.6"
+    },
+    "devDependencies": {
+        "@altered-internal/typescript": "workspace:*",
+        "typescript": "^5"
+    }
 }

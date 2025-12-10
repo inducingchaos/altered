@@ -13,3 +13,5 @@ export type Database = typeof db
 
 export * from "./tables"
 export * from "./relations"
+
+export { eq, or, sql } from "drizzle-orm"

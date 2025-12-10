@@ -325,9 +325,18 @@ importers:
 
   packages/internal/auth:
     dependencies:
+      '@altered-internal/config':
+        specifier: workspace:*
+        version: link:../config
+      '@altered-internal/data/store':
+        specifier: workspace:*
+        version: link:../data-store
       better-auth:
         specifier: catalog:better-auth
         version: 1.4.5(next@16.0.8(@babel/core@7.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      nanoid:
+        specifier: ^5.1.6
+        version: 5.1.6
     devDependencies:
       '@altered-internal/typescript':
         specifier: workspace:*
@@ -395,6 +404,9 @@ importers:
       '@altered-internal/auth':
         specifier: workspace:*
         version: link:../auth
+      '@altered-internal/data/access':
+        specifier: workspace:*
+        version: link:../data-access
       '@altered-internal/data/store':
         specifier: workspace:*
         version: link:../data-store
