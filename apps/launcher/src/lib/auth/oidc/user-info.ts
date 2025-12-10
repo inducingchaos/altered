@@ -1,0 +1,33 @@
+/**
+ *
+ */
+
+import { config } from "~/config"
+
+export type OAuthUserInfo = {
+    sub: string
+    name?: string
+    email?: string
+    email_verified?: boolean
+    picture?: string
+    [key: string]: unknown
+}
+
+/**
+ * Fetches information from the OAuth provider's user info endpoint.
+ */
+export async function getUserInfo(accessToken: string): Promise<OAuthUserInfo> {
+    const response = await fetch(config.oauthUserInfoEndpoint, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+    })
+
+    if (!response.ok) {
+        const errorText = await response.text()
+
+        console.error("Failed to fetch user info:", errorText)
+
+        throw new Error(`Failed to fetch user info: ${response.statusText}`)
+    }
+
+    return (await response.json()) as OAuthUserInfo
+}

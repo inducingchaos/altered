@@ -1,16 +1,18 @@
-import { Tool } from "@raycast/api";
+import { Tool } from "@raycast/api"
 
 type Input = {
-  /** The description for the input property */
-  query: string;
-};
-
-export default async function (input: Input) {
-  // Your tool code here
+    /** The description for the input property */
+    query: string
 }
 
-export const confirmation: Tool.Confirmation<Input> = async (input) => {
-  return {
-    title: "Run Tool",
-  };
-};
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default async function (_input: Input) {
+    // Your tool code here
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const confirmation: Tool.Confirmation<Input> = async _input => {
+    return {
+        message: "Run Tool"
+    }
+}
