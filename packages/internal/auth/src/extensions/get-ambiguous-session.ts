@@ -21,13 +21,9 @@ export async function getAmbiguousSession({ headers }: { headers: Headers }): Pr
         if (session) return { data: session }
     }
 
-    if (headers.get("authorization")) {
-        const sessionResult = await getOAuth2Session({ headers })
-
-        if (sessionResult.data) return sessionResult
-    }
+    if (headers.get("authorization")) return getOAuth2Session({ headers })
 
     if (!headers.get("cookie") && !headers.get("authorization")) return { error: { code: "BAD_REQUEST", message: "No authentication headers were provided.", cause: { authorization: headers.get("authorization"), cookie: headers.get("cookie") } } }
 
-    return { error: { code: "UNAUTHORIZED", message: "No authentication session could be found.", cause: { authorization: headers.get("authorization"), cookie: headers } } }
+    return { error: { code: "UNAUTHORIZED", message: "No authentication session could be found.", cause: { authorization: headers.get("authorization"), cookie: headers.get("cookie") } } }
 }
