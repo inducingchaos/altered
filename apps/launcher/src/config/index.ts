@@ -7,6 +7,7 @@ import { ConfigDef, configSchema } from "./schema"
 
 const configDef: ConfigDef = {
     environment: "development",
+    logLevel: "debug",
 
     appName: "ALTERED",
     appDescription: "Knowledge systems for the obsessed.",

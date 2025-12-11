@@ -7,6 +7,7 @@ import { z } from "zod"
 export const configSchema = z
     .object({
         environment: z.enum(["development", "production"]),
+        logLevel: z.enum(["debug", "info", "warn", "error"]),
 
         appName: z.string(),
         appDescription: z.string(),
@@ -31,6 +32,8 @@ export const configSchema = z
     .transform(config => {
         return {
             ...config,
+
+            rpcEndpoint: `${config.baseUrl}/rpc`,
 
             oauthAuthorizationEndpoint: `${config.baseUrl}/api/auth/oauth2/authorize`,
             oauthTokenEndpoint: `${config.baseUrl}/api/auth/oauth2/token`,

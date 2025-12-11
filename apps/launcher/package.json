@@ -15,10 +15,10 @@
     "license": "MIT",
     "commands": [
         {
-            "name": "show-detail",
-            "title": "Show Detail",
-            "subtitle": "Subtitle Test",
-            "description": "Description test.",
+            "name": "show-latest-thought",
+            "title": "Show Latest Thought",
+            "subtitle": "Show the latest thought from your ALTERED brain.",
+            "description": "Show the latest thought from your ALTERED brain.",
             "mode": "view"
         },
         {
@@ -46,9 +46,10 @@
             "mode": "menu-bar"
         },
         {
-            "name": "run-script",
-            "title": "Run Script",
-            "description": "",
+            "name": "get-latest-thought",
+            "title": "Get Latest Thought",
+            "subtitle": "Get the latest thought from your ALTERED brain.",
+            "description": "Get the latest thought from your ALTERED brain.",
             "mode": "no-view"
         },
         {
@@ -90,9 +91,12 @@
     ],
     "dependencies": {
         "@altered/harness": "workspace:*",
+        "@altered/data/shapes": "workspace:*",
         "@orpc/client": "catalog:orpc",
+        "@orpc/tanstack-query": "catalog:orpc",
         "@raycast/api": "^1.103.6",
         "@raycast/utils": "^1.17.0",
+        "@tanstack/react-query": "^5.90.10",
         "better-auth": "catalog:better-auth"
     },
     "devDependencies": {

@@ -11,4 +11,4 @@ export const authClient = createAuthClient({
     baseURL: undefined
 })
 
-export type AuthContext = typeof authClient.$Infer.Session
+export type ClientAuthContext = typeof authClient.$Infer.Session

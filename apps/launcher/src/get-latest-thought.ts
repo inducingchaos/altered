@@ -1,0 +1,26 @@
+/**
+ *
+ */
+
+import { closeMainWindow, showToast, Toast } from "@raycast/api"
+import { api } from "./lib/api"
+import { withAuthentication } from "./lib/auth"
+
+/**
+ * @todo [P0] Investigate why authenticated "no-view" commands block on network responses. Ideally, we should execute the command and await on the the access token, showing a loading state or a toast in the meantime.
+ */
+async function getLatestThought() {
+    closeMainWindow()
+
+    await showToast({ title: "Loading your thoughts...", style: Toast.Style.Animated })
+
+    const { data, error } = await api.thoughts.getLatest.call()
+    if (error) return showToast({ title: "Error loading thoughts", style: Toast.Style.Failure })
+
+    const { thought } = data
+    if (!thought) return showToast({ title: "No thought found", style: Toast.Style.Failure })
+
+    showToast({ title: "Thought loaded successfully", style: Toast.Style.Success })
+}
+
+export default withAuthentication(getLatestThought)

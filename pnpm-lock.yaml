@@ -62,18 +62,27 @@ importers:
 
   apps/launcher:
     dependencies:
+      '@altered/data/shapes':
+        specifier: workspace:*
+        version: link:../../packages/public/data-shapes
       '@altered/harness':
         specifier: workspace:*
         version: link:../../packages/public/harness
       '@orpc/client':
         specifier: catalog:orpc
         version: 1.12.2
+      '@orpc/tanstack-query':
+        specifier: catalog:orpc
+        version: 1.12.2(@orpc/client@1.12.2)(@tanstack/query-core@5.90.10)
       '@raycast/api':
         specifier: ^1.103.6
         version: 1.103.7(@types/node@22.13.10)(@types/react@19.0.10)
       '@raycast/utils':
         specifier: ^1.17.0
         version: 1.19.1(@raycast/api@1.103.7(@types/node@22.13.10)(@types/react@19.0.10))
+      '@tanstack/react-query':
+        specifier: ^5.90.10
+        version: 5.90.10(react@19.2.1)
       better-auth:
         specifier: catalog:better-auth
         version: 1.4.5(next@16.0.8(@babel/core@7.28.5)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -111,6 +120,12 @@ importers:
       '@altered-internal/harness':
         specifier: workspace:*
         version: link:../../packages/internal/harness
+      '@altered/data/shapes':
+        specifier: workspace:*
+        version: link:../../packages/public/data-shapes
+      '@altered/harness':
+        specifier: workspace:*
+        version: link:../../packages/public/harness
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.66.1(react@19.2.1))
