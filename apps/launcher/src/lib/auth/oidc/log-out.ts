@@ -2,8 +2,9 @@
  *
  */
 
-import { revokeTokens } from "./revoke"
+import { logger } from "~/lib/observability"
 import { createPKCEClient } from "./client"
+import { revokeTokens } from "./revoke"
 
 export async function logOut() {
     const client = createPKCEClient()
@@ -16,9 +17,11 @@ export async function logOut() {
 
             await revokeTokens(token, tokenTypeHint)
         } catch (error) {
-            console.error("Failed to revoke tokens:", error)
+            logger.error({ title: "Failed to Revoke Tokens", data: { error } })
         }
     }
 
     await client.removeTokens()
+
+    logger.log({ title: "Logged Out" })
 }

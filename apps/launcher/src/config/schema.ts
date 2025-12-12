@@ -3,11 +3,15 @@
  */
 
 import { z } from "zod"
+import { logComponentsConfigSchema, logLevels } from "~/lib/observability/logger"
 
 export const configSchema = z
     .object({
         environment: z.enum(["development", "production"]),
-        logLevel: z.enum(["debug", "info", "warn", "error"]),
+
+        logLevel: z.enum(logLevels).optional(),
+        logSearch: z.string().optional(),
+        logComponents: logComponentsConfigSchema.optional(),
 
         appName: z.string(),
         appDescription: z.string(),

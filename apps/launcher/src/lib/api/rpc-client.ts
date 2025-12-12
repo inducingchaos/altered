@@ -7,22 +7,20 @@ import { createORPCClient, createSafeClient, onError } from "@orpc/client"
 import { RPCLink } from "@orpc/client/fetch"
 import { createTanstackQueryUtils } from "@orpc/tanstack-query"
 import { config } from "~/config"
-import { getAccessToken } from "~/lib/auth/oidc"
-
-const enableLogging = ["error", "debug"].includes(config.logLevel)
+import { retrieveAccessToken } from "~/lib/auth/oidc"
 
 const link = new RPCLink({
     url: config.rpcEndpoint,
 
     headers: async () => {
-        const token = await getAccessToken()
+        const token = await retrieveAccessToken()
 
         return {
             authorization: token ? `Bearer ${token}` : undefined
         }
     },
 
-    interceptors: [onError(createOrpcErrorLogger({ enable: enableLogging, preset: "client" }))]
+    interceptors: [onError(createOrpcErrorLogger({ enable: true, preset: "client" }))]
 })
 
 const client: ContractRouterClient<RouterContract> = createORPCClient(link)
