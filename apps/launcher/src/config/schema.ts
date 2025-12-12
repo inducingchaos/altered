@@ -3,7 +3,7 @@
  */
 
 import { z } from "zod"
-import { logComponentsConfigSchema, logLevels } from "~/lib/observability/logger"
+import { logComponentsConfigSchema, logLevels } from "~/lib/observability/logger/constants"
 
 export const configSchema = z
     .object({

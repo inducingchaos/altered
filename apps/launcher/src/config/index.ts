@@ -10,7 +10,7 @@ export const configDef = {
 
     logLevel: "debug",
     logComponents: {
-        timestamp: true
+        timestamp: false
     },
 
     appName: "ALTERED",
