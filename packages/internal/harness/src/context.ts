@@ -3,6 +3,7 @@
  */
 
 import { AuthContext } from "@altered-internal/auth"
+import { ProtectedContext } from "@altered-internal/data/access"
 import { Database } from "@altered-internal/data/store"
 
 type APIBaseContext = { _: { headers: Headers } }
@@ -11,4 +12,4 @@ type APIAuthContext = { auth: AuthContext }
 
 export type APIContext = APIBaseContext & Partial<APIDatabaseContext> & Partial<APIAuthContext>
 export type PublicRouteContext = APIContext & APIDatabaseContext
-export type ProtectedRouteContext = APIContext & APIDatabaseContext & APIAuthContext
+export type ProtectedRouteContext = APIBaseContext & ProtectedContext

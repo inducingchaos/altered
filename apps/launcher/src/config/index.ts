@@ -5,8 +5,16 @@
 
 import { ConfigDef, configSchema } from "./schema"
 
-const configDef: ConfigDef = {
+export const configDef = {
+    cwd: "/Users/inducingchaos/Workspace/containers/altered/apps/launcher",
     environment: "development",
+
+    logLevel: "debug",
+    logSearch: "",
+    logParts: {
+        timestamp: false
+    },
+    logToFile: true,
 
     appName: "ALTERED",
     appDescription: "Knowledge systems for the obsessed.",
@@ -19,7 +27,7 @@ const configDef: ConfigDef = {
     oauthProviderDescription: "Connect your ALTERED account to your thoughts.",
 
     oauthClientId: "altered-launcher",
-    oauthClientScope: "openid profile email"
-}
+    oauthClientScope: "openid profile email offline_access"
+} satisfies ConfigDef
 
 export const config = configSchema.parse(configDef)

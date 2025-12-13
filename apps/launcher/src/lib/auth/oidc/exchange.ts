@@ -2,8 +2,11 @@
  *
  */
 
-import { config } from "~/config"
 import { OAuth } from "@raycast/api"
+import { config } from "~/config"
+import { configureLogger } from "~/lib/observability"
+
+const logger = configureLogger({ defaults: { scope: "oauth:exchange" } })
 
 /**
  * Exchanges an OAuth authorization code for an access token and refresh token.
@@ -26,10 +29,25 @@ export async function exchangeCodeForTokens(authRequest: OAuth.AuthorizationRequ
     if (!response.ok) {
         const errorText = await response.text()
 
-        console.error("Failed to exchange authorization code for tokens:", errorText)
+        logger.error({
+            title: "Failed to Exchange Code for Tokens",
+            data: { status: response.status, statusText: response.statusText, body: errorText }
+        })
 
         throw new Error(`Failed to exchange authorization code for tokens: ${response.statusText}`)
     }
 
-    return (await response.json()) as OAuth.TokenResponse
+    const tokenResponse = (await response.json()) as OAuth.TokenResponse
+
+    logger.log({
+        title: "Exchanged Code for Tokens",
+        data: {
+            hasAccessToken: Boolean(tokenResponse.access_token),
+            hasRefreshToken: Boolean(tokenResponse.refresh_token),
+            expires_in: tokenResponse.expires_in,
+            scope: tokenResponse.scope
+        }
+    })
+
+    return tokenResponse
 }

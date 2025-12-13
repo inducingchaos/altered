@@ -12,7 +12,7 @@ import { auth } from "@altered-internal/auth"
 import { ClientRPCTest, ServerRPCTest } from "./_components"
 
 export default async function ProtectedExamplePage() {
-    const session = await auth.api.getSession({
+    const { data: session } = await auth.api.getSession({
         headers: await headers()
     })
 

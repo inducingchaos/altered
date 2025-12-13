@@ -3,6 +3,9 @@
  */
 
 import { config } from "~/config"
+import { configureLogger } from "~/lib/observability"
+
+const logger = configureLogger({ defaults: { scope: "oauth:revoke" } })
 
 /**
  * Revokes the given OAuth token set from the provider. Accepts a lookup token and the type of token.
@@ -20,9 +23,5 @@ export async function revokeTokens(token: string, tokenTypeHint?: "access_token"
         body: params
     })
 
-    if (!response.ok && response.status !== 200) {
-        const errorText = await response.text()
-
-        console.error("Failed to revoke token:", errorText)
-    }
+    if (!response.ok && response.status !== 200) logger.error({ title: "Failed to Revoke Token", data: { response: await response.text() } })
 }
