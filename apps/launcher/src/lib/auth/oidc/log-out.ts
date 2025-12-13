@@ -2,9 +2,11 @@
  *
  */
 
-import { logger } from "~/lib/observability"
+import { configureLogger } from "~/lib/observability"
 import { createPKCEClient } from "./client"
 import { revokeTokens } from "./revoke"
+
+const logger = configureLogger({ defaults: { scope: "oauth:log-out" } })
 
 export async function logOut() {
     const client = createPKCEClient()

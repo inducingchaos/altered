@@ -1,17 +1,19 @@
 /**
- *
+ * @todo [P4] Figure out if there's a way to prevent circular imports (by moving code to different files) instead of having to import from `~/lib/observability/logger/constants` here.
  */
 
 import { z } from "zod"
-import { logComponentsConfigSchema, logLevels } from "~/lib/observability/logger/constants"
+import { logLevels, logPartsConfigSchema } from "~/lib/observability/logger/constants"
 
 export const configSchema = z
     .object({
+        cwd: z.string(),
         environment: z.enum(["development", "production"]),
 
         logLevel: z.enum(logLevels).optional(),
         logSearch: z.string().optional(),
-        logComponents: logComponentsConfigSchema.optional(),
+        logParts: logPartsConfigSchema.optional(),
+        logToFile: z.boolean().optional(),
 
         appName: z.string(),
         appDescription: z.string(),

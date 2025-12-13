@@ -4,9 +4,9 @@
 
 import { OAuth } from "@raycast/api"
 import { config } from "~/config"
-import { createLogger } from "~/lib/observability"
+import { configureLogger } from "~/lib/observability"
 
-const logger = createLogger({ defaults: { scope: "oauth:refresh" } })
+const logger = configureLogger({ defaults: { scope: "oauth:refresh" } })
 
 /**
  * Refreshes the access token using the refresh token.

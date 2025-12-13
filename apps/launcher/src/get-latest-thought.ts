@@ -5,11 +5,16 @@
 import { closeMainWindow, showToast, Toast } from "@raycast/api"
 import { api } from "./lib/api"
 import { withAuthentication } from "./lib/auth"
+import { configureLogger } from "./lib/observability"
+
+const logger = configureLogger({ defaults: { scope: "commands:get-latest-thought" } })
 
 /**
  * @todo [P0] Investigate why authenticated "no-view" commands block on network responses. Ideally, we should execute the command and await on the the access token, showing a loading state or a toast in the meantime.
  */
 async function getLatestThought() {
+    logger.log()
+
     closeMainWindow()
 
     await showToast({ title: "Loading your thoughts...", style: Toast.Style.Animated })

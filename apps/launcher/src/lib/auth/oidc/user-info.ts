@@ -3,6 +3,9 @@
  */
 
 import { config } from "~/config"
+import { configureLogger } from "~/lib/observability"
+
+const logger = configureLogger({ defaults: { scope: "oauth:user-info" } })
 
 export type OAuthUserInfo = {
     sub: string
@@ -22,9 +25,7 @@ export async function getUserInfo(accessToken: string): Promise<OAuthUserInfo> {
     })
 
     if (!response.ok) {
-        const errorText = await response.text()
-
-        console.error("Failed to fetch user info:", errorText)
+        logger.error({ title: "Failed to Fetch User Info", data: { response: await response.text() } })
 
         throw new Error(`Failed to fetch user info: ${response.statusText}`)
     }

@@ -2,14 +2,14 @@
  *
  */
 
-import { createLogger } from "~/lib/observability"
+import { configureLogger } from "~/lib/observability"
 import { createPKCEClient } from "./client"
 import { exchangeCodeForTokens } from "./exchange"
 import { refreshTokens } from "./refresh"
 import { requestAuthorizationCode } from "./request"
 import { revokeTokens } from "./revoke"
 
-const logger = createLogger({ defaults: { scope: "oauth:authorize" } })
+const logger = configureLogger({ defaults: { scope: "oauth:authorize" } })
 
 /**
  * Checks if our tokens are valid, refreshes them if needed, or initiates the full OAuth flow if there are no existing tokens. Returns the access token.

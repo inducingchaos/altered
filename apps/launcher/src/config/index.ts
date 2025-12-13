@@ -6,12 +6,15 @@
 import { ConfigDef, configSchema } from "./schema"
 
 export const configDef = {
+    cwd: "/Users/inducingchaos/Workspace/containers/altered/apps/launcher",
     environment: "development",
 
     logLevel: "debug",
-    logComponents: {
+    logSearch: undefined,
+    logParts: {
         timestamp: false
     },
+    logToFile: true,
 
     appName: "ALTERED",
     appDescription: "Knowledge systems for the obsessed.",

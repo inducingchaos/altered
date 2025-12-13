@@ -2,10 +2,10 @@
  *
  */
 
-import { createLogger } from "~/lib/observability"
+import { configureLogger } from "~/lib/observability"
 import { createPKCEClient } from "./client"
 
-const logger = createLogger({ defaults: { scope: "oauth:retrieve" } })
+const logger = configureLogger({ defaults: { scope: "oauth:retrieve" } })
 
 export async function retrieveAccessToken() {
     const client = createPKCEClient()
