@@ -3,13 +3,17 @@
  */
 
 import { ActionPanel, Detail } from "@raycast/api"
+import { getAccessToken } from "@raycast/utils"
 import { useQuery } from "@tanstack/react-query"
 import { LogOutAction } from "~/components/actions"
 import { withContext } from "~/components/providers"
-import { api } from "~/lib/api"
 import { withAuthentication } from "~/lib/auth"
+import { queryApi } from "./lib/api"
+import { configureLogger } from "./lib/observability"
 
-function GlobalActionPanel() {
+const logger = configureLogger({ defaults: { scope: "commands:show-latest-thought" } })
+
+function ThoughtDetailActionPanel() {
     return (
         <ActionPanel>
             <LogOutAction />
@@ -18,28 +22,25 @@ function GlobalActionPanel() {
 }
 
 const ThoughtDetail = ({ content }: { content: string }) => {
-    return <Detail markdown={content} actions={<GlobalActionPanel />} />
+    return <Detail markdown={content} actions={<ThoughtDetailActionPanel />} />
 }
 
 function ShowLatestThought() {
-    const { data: queryData, error: queryError, isLoading } = useQuery(api.thoughts.getLatest.queryOptions())
+    logger.log()
+
+    const { token: authToken } = getAccessToken()
+
+    const { data, error, isLoading } = useQuery(queryApi.thoughts.getLatest.queryOptions({ context: { authToken } }))
 
     if (isLoading) return <ThoughtDetail content="Loading..." />
 
-    if (!queryData) {
-        console.error(queryError)
+    if (!data) {
+        console.error(error)
 
         return <ThoughtDetail content="Network error." />
     }
 
-    const { data: apiData, error: apiError } = queryData
-    if (!apiData) {
-        console.error(apiError)
-
-        return <ThoughtDetail content="API error." />
-    }
-
-    const { thought } = apiData
+    const { thought } = data
     if (!thought) {
         return <ThoughtDetail content="No thought found." />
     }

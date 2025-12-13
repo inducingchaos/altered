@@ -5,7 +5,7 @@
 import { Action, Icon, popToRoot, showToast, Toast } from "@raycast/api"
 import { logOut } from "~/lib/auth/oidc"
 
-export async function LogOutAction() {
+export function LogOutAction() {
     const handleLogOut = async () => {
         await showToast({ style: Toast.Style.Animated, title: "Logging out..." })
 

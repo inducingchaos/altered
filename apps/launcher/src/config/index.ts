@@ -10,7 +10,7 @@ export const configDef = {
     environment: "development",
 
     logLevel: "debug",
-    logSearch: undefined,
+    logSearch: "",
     logParts: {
         timestamp: false
     },

@@ -3,6 +3,7 @@
  */
 
 import { closeMainWindow, showToast, Toast } from "@raycast/api"
+import { getAccessToken } from "@raycast/utils"
 import { api } from "./lib/api"
 import { withAuthentication } from "./lib/auth"
 import { configureLogger } from "./lib/observability"
@@ -16,16 +17,17 @@ async function getLatestThought() {
     logger.log()
 
     closeMainWindow()
-
     await showToast({ title: "Loading your thoughts...", style: Toast.Style.Animated })
 
-    const { data, error } = await api.thoughts.getLatest.call()
+    const { token: authToken } = getAccessToken()
+
+    const { data, error } = await api.thoughts.getLatest({}, { context: { authToken } })
     if (error) return showToast({ title: "Error loading thoughts", style: Toast.Style.Failure })
 
     const { thought } = data
     if (!thought) return showToast({ title: "No thought found", style: Toast.Style.Failure })
 
-    showToast({ title: "Thought loaded successfully", style: Toast.Style.Success })
+    showToast({ title: thought.content, style: Toast.Style.Success })
 }
 
 export default withAuthentication(getLatestThought)
