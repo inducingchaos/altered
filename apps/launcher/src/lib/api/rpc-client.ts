@@ -8,12 +8,12 @@ import { RPCLink } from "@orpc/client/fetch"
 import { createTanstackQueryUtils } from "@orpc/tanstack-query"
 import { config } from "~/config"
 
-type ClientContext = { authToken: string }
+type ClientContext = { authToken?: string | null }
 
 const link = new RPCLink<ClientContext>({
     url: config.rpcEndpoint,
 
-    headers: async ({ context: { authToken } }) => ({ authorization: `Bearer ${authToken}` }),
+    headers: async ({ context: { authToken } }) => (authToken ? { authorization: `Bearer ${authToken}` } : {}),
 
     interceptors: [onError(createOrpcErrorLogger({ enable: true, preset: "client" }))]
 })

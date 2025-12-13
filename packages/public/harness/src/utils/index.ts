@@ -4,10 +4,22 @@
 
 import { ORPCError } from "@orpc/contract"
 
+/**
+ * @remarks AbortErrors are expected when React Query cancels queries.
+ */
+const isAbortError = (error: unknown): boolean => {
+    if (error instanceof Error && error.name === "AbortError") return true
+    if (error instanceof Error && error.cause instanceof Error && error.cause.name === "AbortError") return true
+
+    return false
+}
+
 export function createOrpcErrorLogger({ enable, preset }: { enable: boolean; preset: "client" | "server" }) {
     if (!enable) return () => {}
 
     return (error: unknown) => {
+        if (isAbortError(error)) return
+
         let errorResult: ORPCError<string, unknown> | undefined = undefined
 
         const isOrpcError = error instanceof ORPCError
