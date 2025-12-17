@@ -2,6 +2,7 @@
  * @todo [P4] Figure out if there's a way to prevent circular imports (by moving code to different files) instead of having to import from `~/lib/observability/logger/constants` here.
  */
 
+import { environment } from "@raycast/api"
 import { z } from "zod"
 import { logLevels, logPartsConfigSchema } from "~/lib/observability/logger/constants"
 
@@ -32,7 +33,9 @@ export const configSchema = z
         return {
             ...config,
 
-            baseUrl: config.environment === "development" ? config.developmentBaseUrl : config.productionBaseUrl
+            baseUrl: config.environment === "development" ? config.developmentBaseUrl : config.productionBaseUrl,
+
+            appIcon: environment.appearance === "dark" ? config.appIcon.split(".").reduce((previous, current, index, original) => (index === original.length - 1 ? `${previous}@dark.${current}` : previous ? `${previous}.${current}` : current), "") : config.appIcon
         }
     })
     .transform(config => {

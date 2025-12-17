@@ -18,13 +18,13 @@ export const configDef = {
 
     appName: "ALTERED",
     appDescription: "Knowledge systems for the obsessed.",
-    appIcon: "extension-icon.png",
+    appIcon: "altered/extension-icon.png",
 
     developmentBaseUrl: "http://localhost:258",
     productionBaseUrl: "https://altered.app",
 
     oauthProviderId: "altered",
-    oauthProviderDescription: "Connect your ALTERED account to your thoughts.",
+    oauthProviderDescription: "Connect your ALTERED account to access your thoughts.",
 
     oauthClientId: "altered-launcher",
     oauthClientScope: "openid profile email offline_access"
