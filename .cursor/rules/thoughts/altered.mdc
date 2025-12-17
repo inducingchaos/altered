@@ -1,0 +1,155 @@
+---
+description: Thought Cache for Dataset: ALTERED
+alwaysApply: true
+---
+
+> **About This File: This file will eventually be auto-populated with thoughts in the "ALTERED" dataset from inside the ALTERED app. While the dev server is running, we will either (a) run a script on save to hit the ALTERED API and fetch any new thoughts, or (b) create a persistent connection that subscribes to updates from the database, or (c) update a Redis value whenever our API inserts a thought, then subscribe to that value locally - and whenever we get an update using any of those strategies, we will fetch all thoughts and replace (not append) this file with the thoughts. In the future, we can _just_ get the most recent ones, but we would also have to account for deletions, which is over-complex for this implementation. For now, I will manually list thoughts about ALTERED below.**
+
+# Constructs
+
+- Restricted Definition: Constructs that are used by the system and are not modifiable.
+- Aliases Definition: Many constructs have Aliases, such as Thoughts, Datasets, and Attributes. Aliases are meant to be arbitrarily-named identifiers for entities. In almost all cases, these entities can have multiple Aliases, where a primary Alias can be set to show up everywhere in the UI, but other Aliases can still be search for and viewed by hovering over the primary Alias.
+
+- Data Definition: Primitive values assigned to the Attribute of a Thought. Data can be of any type, like a file or string (and possibly more types like numbers, but most others will be defined as Constraints). Data of an Attribute must adhere to the Attribute's Constraints.
+- Data Groups Definition: A group of multiple Data values. These are simplified representations of what might be called objects, sets, strings, or dictionaries in programming languages. These may be complex to implement and will come later.
+
+- Thoughts Definition: A collection of Data with a primary "Content" Attribute and a secondary "Alias" Attribute (however in the Dataset UI, the Alias appears to the left). Each field is optional in the database but required in the ALTERED app, however if left blank the Thought will reside in the Drafts Dataset. This provides a surface for humans and AI to fully understand the purpose of, and interact with the Thought and it's associated Data. Could be compared to a row in a database. Under the hood, Thoughts will be automatically be indexed by Tags, which are derived with AI from all of the Thought's Attributes. On a primitive level, thoughts are a Restricted Dataset.
+- Thought Drafts Definition: A special type of Restricted Dataset where Thoughts go to when they don't conform to the Schemas of their assigned Datasets, or lack sufficient data to adhere to the base Thought (e.g., a file without any Thought content, or a Thought without an Alias). Drafts are excluded from most views and searches (including Datasets they are assigned) unless explicitly included. Drafts can be removed from drafts when all requirements are met, and then the user can remove the thought from drafts from the Raycast action panel.
+- Thought Relations Definition: To be defined. Regards how certain thoughts interact with, and depend on other thoughts.
+
+- Datasets Definition: A named group of Thoughts, represented as a Thought. Datasets can be compared to the table of a database, which provide functionality for arbitrary grouping. Each Dataset requires a Schema.
+- Dataset Schemas Definition: Dataset Schemas define the Attributes and their Constraints for a Dataset. This is experimental but Schemas may be able to be represented as a Dataset of Thoughts, each defining an Attribute of it's corresponding Dataset.
+- Computed Datasets Definition: A Dataset that automatically assumes any Thoughts that adhere to the Schema, rather than adding them manually. Computed Datasets will allow merging and aggregating Thoughts for several purposes, such as sharing. The exact specifications of this are yet to be defined.
+
+- Attributes Definition: Attributes are just columns of Data on a Thought. Attributes are defined in the Dataset Schema. Attributes from different Datasets all exist on the same Thought, but are are only shown in the Datasets they belong to.
+- Attribute Constraints Definition: Attributes are essentially sub-types of Data that apply limitations to narrow the type. Think of these like validation rules - they assume an input with autocompletion, and reject/error if the input does not conform. Attributes come as presets that can be customized with parameters.
+- Attribute Constraints Examples: Some example constraints for the "Text" type might be "Kebab-Case", "Literal" (enum), "Number" (may be a separate type, but I like the idea of building from strings), or "Number > Precision" with a parameter specifying 2 decimal places.
+
+- Brains Definition: The most top-level collections of Thoughts. An ALTERED Brain could be compared to an organization in a generic SaaS - it is a container for all user-interactive data.
+- Switching Brains: When switching Brains, you leave all of your Systems, Thoughts, Preferences, etc behind, with only your Identity remaining (user model) - which is the only thing above the Brain model.
+- Application and System Preferences: **ALL** of ALTERED will eventually store it's state in a user-accessible place: the ALTERED brain. This means things that you _don't need to know about_, like app-level preferences and intra-System variables will be stored in this other Brain. This means if you really wanted to, you could version, manipulate, and share ALTERED internal app state from the ALTERED Brain, within the constraints set on the Attributes and Datasets in that brain.
+- Brain Interoperability: Since by default, internal app state will exist in a different dedicated brain, we will need to have functionality for referencing and duplicating/moving Thoughts between Brains. For example, this might mean creating a reference to a "General AI Prompt" within the user's Brain, and wiring that up to a preference in the ALTERED Brain. Cross-brain references will have clear markers that indicate a dependency to make the data boundary clear.
+- Example Brains: Some examples of Brains and their use cases might be: Riley Barabash (me - everything I care about knowing); ALTERED (state for Systems and internal operations); Anyone (or <SYSTEM_NAME> - a Brain to collect responses from a public System); or External (outside data or references that want to be cross-referenced from within the primary brain, but want to avoid information pollution).
+
+- Operations Definition: Operations are universalized, serializable functions written in code that can perform arbitrary functionality and/or leverage the tooling exposed by the ALTERED SDK. Operations must export schemas for their input and output, define metadata, dependencies, state, and more. The exact specifications for this may change.
+- Extensions Definition: Extensions are bundles of code that expose Operations to ALTERED. Think of these like npm packages - except we will make the publishing process easier, and the code will be included in our codebase via GitHub PRs. The shape and process for this is yet to be defined.
+
+- Use Cases for Extensions: The case for Extensions is still subjective. Since our UI, logic, and data will all be serializable, most customization can be done by either (a) building custom Systems/Actions that utilize existing Operations, and/or (b) making an API request to a remote server. If a user doesn't want to host a server or can't achieve certain functionality without code, an Extension (or possibly, a singular custom code or templating syntax block) could be viable.
+
+- Components Definition: Components are the primitive building blocks of the UI. They expose several parameters similar to Operations (yet to be defined).
+- Interfaces Definition: Interfaces (comparable to views/screens) are composed of a set of Components that interact with Operations to form stateful and functional user experiences. Interfaces will expose several parameters, such as inputs/outputs as well.
+- Interface Flows Definition: A sequence of connected Interfaces that make up an Action.
+
+- Actions Definition: Actions are orchestrations of Interface Flows that create a sufficient platform for a user to achieve a specific objective. These are the main entry points in ALTERED, and show up as commands in Raycast.
+
+- Systems Definition: Sets of Actions with a Guide on to use them and additional metadata for the Marketplace, among other things.
+- System Guides Definition: Interactive docs that help users navigate, understand and use a System.
+
+# Development
+
+## Goals
+
+- Launch MVP: Develop a true, polished MVP that is minimal, stylistic, ergonomic, novel, capable, and outright impressive - while limiting the number and scope of features to be realistic within a short timeframe.
+- MVP Details: This includes a dynamic landing page (cms blocks generated, approved, and pushed via the ALTERED app using our Thoughts), our core app UX with the ALTERED Raycast extension, the backend to support it, and all relevant infrastructure.
+- Need for Revenue: While our product is important, it will not live without revenue. Our primary objective is to stabilize at $2k MRR and grow from there. We need to achieve this ASAP, and will do so using ALTERED itself.
+- Market Offer Guidelines: My idea is to create an offer between $200 and $5,000 - probably starting on the lower end (or even free, and do separate outreach for micro-investments) until we build some testimonials and momentum that people can see. The app could be marketed either as a 1-1, high-ticket tailored program, a yearly subscription, or an early-access, test-group program.
+- Possible Ecom Campaign: I've also considered running an ecom marketing campaign where we sell well-designed print-on-demand apparel such as hoodies and stickers at a premium price, including free, 3-month full access to ALTERED Hyper, our paid subscription, when it launches (this approach would take some obligation out of delivering quickly on the app, as it is not the core product but an incentive).
+- Marketing Needs Revision: Ultimately our marketing, client acquisition, and offer is still subjective is will be precisely refined when we have all of our Thoughts about ALTERED together. I plan to implement a System that leverages Alex Hormozi's $100M Offers, Leads, and Money Models trainings to revise our plan once it's drafted.
+- Systems for Personal and Corporate Success: In order to achieve our number one goal of getting ALTERED stable revenue-wise, we will build and use Systems for both business strategy and personal performance to achieve consistency, volume, and effectiveness across every domain necessary to make this work. **ALTERED should be a case study for itself.**
+
+## Plan
+
+### Core
+
+- Our first objective is to rebuild this "./cursor/rules/altered.mdc" file exactly as-is, dynamically from our "ALTERED" dataset as specified in "About This File".
+
+- We will first focus on simply uploading thoughts and files, then expanding that functionality to CRUD on each type. Additionally, we will add tooling for selecting multiple items in a List, re-ordering them, and performing Operations on them using Raycast's Action Panel.
+- At this stage, we will not overly work to serialize anything - our core objective is to get multiple feature-rich proof-of-concept Actions and Systems up and running so that we can more clearly define our constructs. However, when obviously beneficial and low-complexity, we can refactor to-be-serializable data (CMS-like, constant values, and iterative patterns) to a part of the project dedicated to mocks that will eventually come over the network.
+- In addition to our core Data type CRUD implementations, we should start to flesh out each of the constructs we defined. Even if not completely serialized (e.g., a tree of React components for a specialized Action) we should compartmentalize as much as possible to start shaping the specifications of our serialization language. In addition to compartmentalization, we should minimally implement each construct (e.g., switching Brains, adding Datasets, defining Schemas, Attributes, Constraints, etc).
+- One of the most urgent construct implementations is for Brains. We need to adjust our database schema to assign all Thoughts to a Brain, rather than a user. Hopefully we can just add a column, remove the old one, and manually paste in the Brain ID in Supabase - but we may need to export and truncate.
+- For all construct implementations, we should start by hardcoding them as specialized proof-of-concept features - then when viable to refactor, we can convert them to mocks / constant data, and after that we can transition to pulling that data over the network from our server, and finally if applicable, we could add user-facing inputs to control this data.
+- Thought lookup/search will be a MAJOR feature of our infrastructure, offering comprehensive indexing and querying strategies. Initially, we just need this to be usable (so an all-thoughts, full-text fuzzy search is sufficient).
+
+### Demos
+
+#### Guidelines
+
+- For both using ourselves to make ALTERED succeed and showing others, our MVP will include multiple user-facing Systems, each with various Actions. Some Actions will be part of ALTERED Core, others will be pre-built for ALTERED by ALTERED, as well as personally by me, @inducingchaos.
+- Core Actions will be defined as hard-coded commands in the Raycast `package.json`, each with its own corresponding entry point file. Additional actions (which are dynamic by design) cannot be implemented like this, and instead will be listed in the "Open Actions Palette" command.
+
+#### Specifications
+
+##### ALTERED Core Actions
+
+- Actions Palette Action Definition: An Action called "Actions Palette" in the ALTERED Core System that opens a grid of all of a user's installed Actions, grouped by their parent System.
+- Actions Palette Groups: Each group will have the System title as the group title, and the System name as the subtitle. Typing in the search bar in the top will filter the Actions by all of their metadata, including their parent System.
+- Actions Palette Shortcuts: Accessing an Action quickly is key, so we will integrate chords/aliases as a way to open them once the Palette is open. This will consist of configuring a command with a string (e.g., "view" for viewing Thoughts), then simply typing it in the Palette search and confirming it with either a space, tab, or any character (this will currently become a constant that we can test, but may become a user preference). When a chord is recognized, the Raycast `navigationTitle` prop will be updated to show a confirmation.
+
+- Capture Thought Action Definition: An Action called "Capture Thought" in the ALTERED Core System that opens a form for creating a Thought. This will be a multi-step Flow, with the first step being an isolated text input, and subsequent steps (we can try to put all in one) for adding an Alias, assigning Datasets, etc.
+- Capture Thought AI Inference: Part of the reason for splitting the form across multiple Interfaces is that we want to prefetch and load the most relevant suggestions for the Thought's Attributes, such as the Alias and Datasets.
+- Capture Thought File Inclusion: We won't create another Action for uploading files, since Thoughts are the primitive type and files should always be attached to thoughts. There will also be no folders in ALTERED, as we fundamentally use tag-based indexing over filesystem paths. This means that we will only select one file at a time when capturing a Thought (with the exception of the Warp Thoughts Action, which can upload multiple files at once).
+
+- Warp Thoughts Action Definition: An action called "Warp Thought" in the ALTERED Core system that reads from the clipboard and saves any text or files as a Thought to your ALTERED Drafts Dataset. Displays a HUD (achieved by hiding a Raycast toast) with a primary action that opens the submitted Thought.
+
+- "View Thoughts": A Raycast list view. Will include functionality for viewing, archiving, inspecting, and editing thoughts.
+- "Create Dataset": An Interface for creating a Dataset.
+- "View Datasets": A Raycast list view. Will provide functionality for viewing, inspecting, archiving, and editing Datasets and their Schemas.
+- "Switch Brain": A Raycast list view of all of your existing Brains, with the ability to create a new one.
+
+##### ALTERED IO
+
+- "Update Indexed Files": Reads a file or directory, and re-uploads indexed files (based on a UUID filename or hidden metadata property) that have changed (based on the file's hash, metadata, or otherwise)
+- "Generate LLMs.txt": Select Thoughts with a query, and copy to clipboard or save to file.
+- "Download Filetree": Select various Thoughts, derive an optimal structure based on the Datasets of each Thought, and export as a directory of organized folders.
+- "Offload to Disk": Export or backup (all, or a selection of) Thoughts and files to an SSD or local drive (to save on storage costs, edit/use the files, or access without the internet).
+
+##### ALTERED History
+
+- "View History": See all changes and interact with them, with the ability to revert to a certain point.
+
+##### ALTERED Version Control
+
+- "Validation Scopes": Add validation scopes to a specific Dataset or all Thoughts.
+- "Validate thoughts": Review thoughts and validate/invalidate them based on a specific scope.
+
+##### [EXPERIMENTAL] Site Manager: All of the tools you need to manage a website.
+
+- "Edit CMS": Allows you to adjust the text values displayed on your site.
+- "Feature Flags": A basic flags provider to toggle features in real time.
+- "Layout Editor": Rearrange the components on your site, populating them with data from your CMS.
+
+##### [EXPERIMENTAL] Product Market Fit: A suite of AI composition tools to take you from product to revenue.
+
+- "Brand Guidelines": Generate or adjust a set of brand values, then adhere to them within other Actions.
+- "Client Acquisition Funnel": Formulate an A-Z map, step by step, each with the clearly-defined inputs needed to complete them.
+- "Offer Optimization": A transformation tool that leverages concepts from Alex Hormozi's $100M Offers to produce an irresistible offer.
+- "Outreach Scripting": Uses your brand and product resources to predict prospect behaviour and optimize responses.
+- "Objection Handler": Tackle sales obstacles and solve them using the context of your business.
+
+##### [EXPERIMENTAL] Kaizen: The personal productivity toolkit.
+
+- "Vision": Your goals for the future, expressed in different frames/increments of time.
+- "Self-Prompt": A compilation of all of your most important advice for yourself, a preview of your vision, etc. for you to play through every morning.
+- "Plan": Plan thoroughly by breaking down all of your objectives into timely, concise, executable actions.
+- "Tasks": Experience TODOs like never before. Consumes your plan items and optimizes the order on a daily basis for success.
+- "Reasoning/Purpose": Attach motivations and consequences to your actions in a way that forces you to execute.
+- "Wants/Wishlist": A way to store and manage material items that you would like to purchase.
+- "Library": A way to revisit external references, such as books, social media videos, and more.
+
+### Other
+
+- We should deeply consider extending ALTERED to be a Custom AI provider (without MCP, but could have MCP too as a backup) to integrate things like dynamic context filling and even performing edit operations within ALTERED (with the proper guardrails and approval, of course). Each user could get a custom base URL and/or API key assigned to their Brain. This would extend ALTERED beyond just a context management app, and place it in competition with the models it's built on, like OpenAI and Anthropic. Plug the custom provider details into Cursor, Raycast AI (my preferred chat app), ChatGPT with Connectors (using MCP fallback), or even just the ALTERED Chat (which will be a while yet) - and now you have superhuman specificity and context tooling within your code or general conversations. This may just be the money pot for investors and low-effort technical users.
+
+- Our Raycast extension should be designed in a universal, dynamic way that the most complex system should require no updates to the extension - instead simply rendering configurations sent over the network.
+
+# Marketing
+
+## Value Proposition
+
+- Store and develop your thoughts using ALTERED for desktop.
+- Organize and preserve your files with ALTERED.
+- Gain a competitive advantage with AI by using the next generation of context management.
+
+## Additional Notes
+
+- Each ALTERED system can, and is designed to be marketed as an individual app. In fact, the log-term plan is for creators to be able to attach their systems to a domain and monetize them through a paywall - with custom styling, logic, and more. At that point ALTERED will become a full-fledged app-building platform. On the surface, it may look like a database/logic/ui builder with knowledge capabilities, but under the surface it is a simplified, standardized way to create AI-ready apps. Even if the app has nothing to do with "intelligence" (an inventory manager), our advanced indexing/search and tooling composition enables almost unlimited possibilities that would have required LOADS of work before.
