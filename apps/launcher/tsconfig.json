@@ -14,7 +14,8 @@
         "jsx": "react-jsx",
         "resolveJsonModule": true,
         "paths": {
-            "~/*": ["./src/*"]
+            "app/*": ["./src/app/*"],
+            "~/*": ["./src/features/*"]
         }
     }
 }
