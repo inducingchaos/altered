@@ -11,6 +11,7 @@ export async function getLatestThought({ ctx }: { ctx: ProtectedContext }) {
             orderBy: { createdAt: "desc" },
             where: { userId: ctx.auth.user.id }
         })
+        if (!thought) return { thought: null }
 
         return { thought: thought }
     } catch (error) {

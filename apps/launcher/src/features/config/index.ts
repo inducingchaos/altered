@@ -19,6 +19,7 @@ export const configDef = {
     appName: "ALTERED",
     appDescription: "Knowledge systems for the obsessed.",
     appIcon: "altered/extension-icon.png",
+    appVersion: "0.1.0",
 
     developmentBaseUrl: "http://localhost:258",
     productionBaseUrl: "https://altered.app",

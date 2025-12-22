@@ -5,6 +5,7 @@
 import { Action, ActionPanel, Color, Grid, Icon } from "@raycast/api"
 import { createInterfaceAdapter } from "~/adapters"
 import { ActionPaletteProvider, useActionPalette } from "./state"
+import { ContextProvider } from "~/shared/components"
 
 function ActionPalette() {
     const {
@@ -63,8 +64,10 @@ function ActionPalette() {
 
 export function ActionPaletteCommand() {
     return (
-        <ActionPaletteProvider>
-            <ActionPalette />
-        </ActionPaletteProvider>
+        <ContextProvider>
+            <ActionPaletteProvider>
+                <ActionPalette />
+            </ActionPaletteProvider>
+        </ContextProvider>
     )
 }

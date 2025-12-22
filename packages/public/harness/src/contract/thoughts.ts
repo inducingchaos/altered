@@ -2,8 +2,8 @@
  *
  */
 
+import { creatableThoughtSchema, readableThoughtSchema, thoughtSchema } from "@altered/data/shapes"
 import { type } from "arktype"
-import { creatableThoughtSchema, thoughtSchema } from "@altered/data/shapes"
 import { contractFactory } from "./factory"
 
 export const thoughtsContract = {
@@ -49,7 +49,7 @@ export const thoughtsContract = {
      */
     getLatest: contractFactory.route({ method: "GET", path: "/get-latest" }).output(
         type({
-            thought: thoughtSchema.optional()
+            thought: readableThoughtSchema
         })
     )
 }

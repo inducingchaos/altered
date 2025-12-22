@@ -2,23 +2,28 @@
  *
  */
 
-import { createOrpcErrorLogger, type ContractRouterClient, type RouterContract } from "@altered/harness"
+import { createOrpcErrorLogger, type APIContract, type ContractRouterClient } from "@altered/harness"
 import { createORPCClient, createSafeClient, onError } from "@orpc/client"
 import { RPCLink } from "@orpc/client/fetch"
-import { createTanstackQueryUtils } from "@orpc/tanstack-query"
 import { config } from "~/config"
 
-type ClientContext = { authToken?: string | null }
+export type ClientContext = { authToken?: string | null }
 
 const link = new RPCLink<ClientContext>({
     url: config.rpcEndpoint,
 
-    headers: async ({ context: { authToken } }) => (authToken ? { authorization: `Bearer ${authToken}` } : {}),
+    headers: async ({ context: { authToken } }) => {
+        const headers: Record<string, string> = {}
+
+        if (authToken) headers.authorization = `Bearer ${authToken}`
+        headers["x-client-version"] = config.appVersion
+
+        return headers
+    },
 
     interceptors: [onError(createOrpcErrorLogger({ enable: true, preset: "client" }))]
 })
 
-export const client: ContractRouterClient<RouterContract, ClientContext> = createORPCClient(link)
+export const client: ContractRouterClient<APIContract, ClientContext> = createORPCClient(link)
 
 export const api = createSafeClient(client)
-export const queryApi = createTanstackQueryUtils(client)

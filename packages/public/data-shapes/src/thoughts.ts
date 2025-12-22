@@ -35,4 +35,5 @@ export const thoughtSchema = type({
     updatedAt: "Date"
 })
 
+export const readableThoughtSchema = thoughtSchema.or("null")
 export const creatableThoughtSchema = thoughtSchema.omit("id", "createdAt", "updatedAt")

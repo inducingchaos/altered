@@ -19,6 +19,7 @@ export const configSchema = z
         appName: z.string(),
         appDescription: z.string(),
         appIcon: z.string(),
+        appVersion: z.string(),
 
         productionBaseUrl: z.url(),
         developmentBaseUrl: z.url(),
