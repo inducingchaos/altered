@@ -4,7 +4,7 @@
 
 import { Action } from "@altered/data/shapes"
 import { Icon } from "@raycast/api"
-import { viewThoughtsInterface } from "app/interfaces"
+import { viewThoughtsCustomInterface } from "app/interfaces"
 
 export const viewThoughtsAction = {
     id: "action-view-thoughts",
@@ -20,5 +20,5 @@ export const viewThoughtsAction = {
 
     trigger: "v",
 
-    interfaces: [viewThoughtsInterface]
+    interfaces: [viewThoughtsCustomInterface]
 } satisfies Action

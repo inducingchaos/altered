@@ -13,6 +13,8 @@ type ActionPaletteContextValue = {
     searchText: string
     setSearchText: (text: string) => void
     onSearchTextChange: (searchText: string) => void
+    selectedItemId: string | null
+    setSelectedItemId: (id: string | null) => void
 
     selectedActionId: string | null
     setSelectedActionId: (id: string | null) => void
@@ -35,6 +37,7 @@ export function ActionPaletteProvider({ children }: { children: ReactNode }) {
      */
     const [isLoading] = useState(false)
     const [searchText, setSearchText] = useState("")
+    const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
 
     const [selectedActionId, setSelectedActionId] = useState<string | null>(null)
     const [renderSelectedAction, setRenderSelectedAction] = useState(false)
@@ -42,7 +45,7 @@ export function ActionPaletteProvider({ children }: { children: ReactNode }) {
     const systems = Object.values(staticSystems)
     const filteredSystems = filterSystems(systems, {
         searchText,
-        searchableKeyPaths: ["name", "title", "description", "actions.name", "actions.title", "actions.description"]
+        searchableKeyPaths: ["name", "title", "description", "actions.name", "actions.title", "actions.description", "actions.trigger"]
     })
 
     const selectedAction = systems.flatMap(system => system.actions).find(action => action.id === selectedActionId) ?? null
@@ -70,6 +73,7 @@ export function ActionPaletteProvider({ children }: { children: ReactNode }) {
     const resetState = () => {
         setSearchText("")
 
+        setSelectedItemId(null)
         setSelectedActionId(null)
 
         setRenderSelectedAction(false)
@@ -83,6 +87,8 @@ export function ActionPaletteProvider({ children }: { children: ReactNode }) {
                 searchText,
                 setSearchText,
                 onSearchTextChange,
+                selectedItemId,
+                setSelectedItemId,
 
                 selectedActionId,
                 setSelectedActionId,

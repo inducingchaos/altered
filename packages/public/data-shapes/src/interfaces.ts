@@ -2,7 +2,7 @@
  *
  */
 
-import { ReactNode } from "react"
+import type { JSX } from "react"
 import { Component, testComponent } from "./components"
 import { ConstructState, RenderableConstruct } from "./constructs"
 
@@ -23,7 +23,7 @@ export type CustomInterface<ID extends string = string, State extends ConstructS
 
     components?: never
 
-    react: () => ReactNode
+    react: () => JSX.Element
 }
 
 export type Interface<ID extends string = string, State extends ConstructState = ConstructState> = DefinedInterface<ID, State> | CustomInterface<ID, State>

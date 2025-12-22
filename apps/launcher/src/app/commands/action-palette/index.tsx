@@ -2,7 +2,8 @@
  *
  */
 
-import { Action, ActionPanel, Color, Detail, Grid, Icon } from "@raycast/api"
+import { Action, ActionPanel, Color, Grid, Icon } from "@raycast/api"
+import { createInterfaceAdapter } from "~/adapters"
 import { ActionPaletteProvider, useActionPalette } from "./state"
 
 function ActionPalette() {
@@ -10,7 +11,10 @@ function ActionPalette() {
         isLoading,
         searchText,
         onSearchTextChange,
+        selectedItemId,
+        setSelectedItemId,
 
+        selectedActionId,
         setSelectedActionId,
         renderSelectedAction,
         setRenderSelectedAction,
@@ -20,15 +24,16 @@ function ActionPalette() {
         navigationTitle
     } = useActionPalette()
 
-    if (selectedAction && renderSelectedAction) return <Detail markdown={"# Test"} />
+    if (selectedAction && renderSelectedAction) return createInterfaceAdapter(selectedAction.interfaces, { platform: "raycast" })
 
     return (
-        <Grid columns={8} inset={Grid.Inset.Large} isLoading={isLoading} searchBarAccessory={undefined} actions={undefined} filtering={false} searchBarPlaceholder="Search your ALTERED Systems..." searchText={searchText} onSearchTextChange={onSearchTextChange} navigationTitle={navigationTitle}>
+        <Grid columns={8} inset={Grid.Inset.Large} isLoading={isLoading} searchBarAccessory={undefined} actions={undefined} filtering={false} searchBarPlaceholder="Search your ALTERED Systems..." searchText={searchText} selectedItemId={selectedActionId ?? selectedItemId ?? undefined} onSelectionChange={setSelectedItemId} onSearchTextChange={onSearchTextChange} navigationTitle={navigationTitle}>
             {filteredSystems.length ? (
                 filteredSystems.map(system => (
                     <Grid.Section key={system.id} title={system.title} subtitle={system.name}>
                         {system.actions.map(action => (
                             <Grid.Item
+                                id={action.id}
                                 key={action.id}
                                 content={{ value: { source: action.icon ?? Icon.Box, tintColor: Color.SecondaryText }, tooltip: action.name }}
                                 title={action.name}
