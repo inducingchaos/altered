@@ -1,0 +1,30 @@
+---
+alwaysApply: true
+---
+
+## Import Paths
+
+Our `tsconfig.json` is configured with module paths as follows:
+
+```json
+"paths": {
+    "app/*": ["./src/app/*"],
+    "~/*": ["./src/features/*"]
+}
+```
+
+Use these paths when importing.
+
+### Examples
+
+```tsx
+import { config } from "~/config"
+
+const isDevelopment = config.environment === "development"
+```
+
+```tsx
+import { ActionPalette } from "app/action-palette"
+
+export default ActionPalette
+```

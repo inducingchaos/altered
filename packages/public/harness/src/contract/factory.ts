@@ -1,12 +1,21 @@
 /**
- *
+ * @todo [P3] Extract to error layer or data shapes.
  */
 
-import { oc } from "@orpc/contract"
+import { AnySchema, ErrorMap, ErrorMapItem, MergedErrorMap, oc } from "@orpc/contract"
 
-/**
- * @todo [P3] Move errors to an error layer.
- */
+export const apiErrorDefs = {
+    VERSION_INCOMPATIBLE: {
+        status: 412,
+        message: "Version Incompatible"
+    }
+} as const
+
+export type APIErrorCode = keyof typeof apiErrorDefs
+export type APIErrorMap = MergedErrorMap<ErrorMap, { [key in APIErrorCode]?: ErrorMapItem<AnySchema> }>
+
+export const apiErrorCodes = Object.fromEntries(Object.entries(apiErrorDefs).map(([key]) => [key, key])) as Record<APIErrorCode, APIErrorCode>
+
 export const contractFactory = oc.errors({
     UNAUTHORIZED: {
         status: 401
@@ -16,5 +25,9 @@ export const contractFactory = oc.errors({
     },
     INTERNAL_SERVER_ERROR: {
         status: 500
+    },
+
+    VERSION_INCOMPATIBLE: {
+        status: 412
     }
-})
+} satisfies APIErrorMap)

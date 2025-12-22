@@ -3,7 +3,7 @@
     "name": "altered-launcher",
     "title": "ALTERED",
     "description": "Knowledge systems for the obsessed.",
-    "icon": "extension-icon.png",
+    "icon": "altered/extension-icon.png",
     "author": "inducingchaos",
     "platforms": [
         "macOS",
@@ -15,89 +15,37 @@
     "license": "MIT",
     "commands": [
         {
-            "name": "show-latest-thought",
-            "title": "Show Latest Thought",
-            "subtitle": "Show the latest thought from your ALTERED brain.",
-            "description": "Show the latest thought from your ALTERED brain.",
+            "name": "action-palette",
+            "title": "Action Palette",
+            "description": "Access your ALTERED Systems from one shortcut.",
             "mode": "view"
-        },
-        {
-            "name": "submit-form",
-            "title": "Submit Form",
-            "description": "",
-            "mode": "view"
-        },
-        {
-            "name": "show-grid",
-            "title": "Show Grid",
-            "description": "",
-            "mode": "view"
-        },
-        {
-            "name": "show-list-and-detail",
-            "title": "Show List and Detail",
-            "description": "",
-            "mode": "view"
-        },
-        {
-            "name": "menu-bar-extra",
-            "title": "Menu Bar Extra",
-            "description": "",
-            "mode": "menu-bar"
         },
         {
             "name": "get-latest-thought",
             "title": "Get Latest Thought",
-            "subtitle": "Get the latest thought from your ALTERED brain.",
             "description": "Get the latest thought from your ALTERED brain.",
             "mode": "no-view"
         },
         {
-            "name": "show-list",
-            "title": "Show List",
-            "description": "",
+            "name": "show-latest-thought",
+            "title": "Show Latest Thought",
+            "description": "Show the latest thought from your ALTERED brain.",
             "mode": "view"
-        },
-        {
-            "name": "show-typeahead-results",
-            "title": "Show Typeahead Results",
-            "description": "",
-            "mode": "view"
-        },
-        {
-            "name": "ai",
-            "title": "AI",
-            "description": "",
-            "mode": "view"
-        },
-        {
-            "name": "blank",
-            "title": "Blank",
-            "description": "",
-            "mode": "no-view"
         }
     ],
-    "tools": [
-        {
-            "name": "tool-with-confirmation",
-            "title": "Tool with Confirmation",
-            "description": ""
-        },
-        {
-            "name": "blank-tool",
-            "title": "Blank Tool",
-            "description": ""
-        }
-    ],
+    "tools": [],
     "dependencies": {
-        "@altered/harness": "workspace:*",
         "@altered/data/shapes": "workspace:*",
+        "@altered/harness": "workspace:*",
+        "@altered/utils": "workspace:*",
         "@orpc/client": "catalog:orpc",
         "@orpc/tanstack-query": "catalog:orpc",
         "@raycast/api": "^1.103.6",
         "@raycast/utils": "^1.17.0",
         "@tanstack/react-query": "^5.90.10",
-        "better-auth": "catalog:better-auth"
+        "better-auth": "catalog:better-auth",
+        "nanoid": "^5.1.6",
+        "zustand": "^5.0.9"
     },
     "devDependencies": {
         "@raycast/eslint-config": "^2.0.4",
