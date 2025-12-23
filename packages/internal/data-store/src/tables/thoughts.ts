@@ -2,13 +2,19 @@
  *
  */
 
-import { pgTable, timestamp, varchar } from "drizzle-orm/pg-core"
+import { pgEnum, pgTable, timestamp, varchar } from "drizzle-orm/pg-core"
 import { nanoid } from "nanoid"
 
 export const thoughts = pgTable("thoughts", {
     id: varchar().primaryKey().$defaultFn(nanoid),
+    /**
+     * @todo [P1] Drop once migrated to brain-owned thought schema.
+     */
     userId: varchar().notNull(),
-    content: varchar().notNull(),
+    brainId: varchar().notNull(),
+    kind: pgEnum("kind", ["dataset", "attribute", "preference"])(),
+    alias: varchar(),
+    content: varchar(),
     createdAt: timestamp().notNull().defaultNow(),
     updatedAt: timestamp()
         .notNull()
