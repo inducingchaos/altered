@@ -1,5 +1,5 @@
 {
-    "name": "@altered-internal/data/access",
+    "name": "@altered-internal/data/shapes",
     "version": "0.1.0",
     "private": true,
     "main": "src/index.ts",
@@ -8,10 +8,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
-        "@altered-internal/auth": "workspace:*",
-        "@altered-internal/data/shapes": "workspace:*",
-        "@altered-internal/data/store": "workspace:*",
-        "@orpc/client": "catalog:orpc"
+        "arktype": "^2.1.27"
     },
     "devDependencies": {
         "@altered-internal/typescript": "workspace:*",

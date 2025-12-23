@@ -28,5 +28,5 @@ export async function getLatestThoughtCommand() {
     const { thought } = data
     if (!thought) return await showToast({ title: "No thought found", style: Toast.Style.Failure })
 
-    await showToast({ title: thought.content, style: Toast.Style.Success })
+    await showToast({ title: thought.content ?? "No content.", style: Toast.Style.Success })
 }
