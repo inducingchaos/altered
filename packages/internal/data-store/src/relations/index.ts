@@ -27,6 +27,12 @@ export const relations = defineRelations(tables, r => ({
             from: r.users.id,
             to: r.oauthConsents.userId
         }),
+
+        systemPreferences: r.many.systemPreferences({
+            from: r.users.id,
+            to: r.systemPreferences.userId
+        }),
+
         brains: r.many.brains({
             from: r.users.id,
             to: r.brains.userId
