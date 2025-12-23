@@ -15,9 +15,11 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
     const params = await searchParams
     const callbackUrl = resolveCallbackUrl(params)
 
-    const session = await auth.api.getSession({
+    const sessionResult = await auth.api.getSession({
         headers: await headers()
     })
+
+    const session = "data" in sessionResult ? sessionResult.data : null
 
     if (session) redirect(callbackUrl as Route)
 
