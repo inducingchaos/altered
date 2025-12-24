@@ -424,6 +424,9 @@ importers:
 
   packages/internal/data-shapes:
     dependencies:
+      '@altered/data/shapes':
+        specifier: workspace:*
+        version: link:../../public/data-shapes
       arktype:
         specifier: ^2.1.27
         version: 2.1.27

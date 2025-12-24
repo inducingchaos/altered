@@ -18,7 +18,11 @@ export const findThoughtProcedure = protectedRouteFactory.thoughts.find.handler(
     return { thought: internalTestThought }
 })
 
-export const createThoughtProcedure = protectedRouteFactory.thoughts.create.handler(async ({ input, context }) => ({ thought: await createThought({ thought: input, db: context.db }) }))
+export const createThoughtProcedure = protectedRouteFactory.thoughts.create.handler(async ({ input, context }) => {
+    const internalThought = await createThought({ thought: { ...input, kind: null }, db: context.db })
+
+    return { thought: internalThought }
+})
 
 export const getLatestThoughtProcedure = protectedRouteFactory.thoughts.getLatest.handler(async ({ context }) => ({ thought: await getLatestThought({ userId: context.auth.user.id, db: context.db }) }))
 
