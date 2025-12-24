@@ -15,9 +15,9 @@ const logger = configureLogger({ defaults: { scope: "commands:show-latest-though
 function ShowLatestThought() {
     logger.log()
 
-    const { isAuthed, authenticate, authToken } = useAuthentication()
+    const { isLoading, isAuthed, token, authenticate } = useAuthentication()
 
-    if (isAuthed === null) return <Detail isLoading={true} />
+    if (isLoading) return <Detail isLoading={true} />
 
     if (!isAuthed)
         return (
@@ -31,7 +31,7 @@ function ShowLatestThought() {
             />
         )
 
-    return <LatestThoughtView authToken={authToken} />
+    return <LatestThoughtView authToken={token} />
 }
 
 const ThoughtDetail = ({ content, isLoading }: { content: string; isLoading?: boolean }) => {

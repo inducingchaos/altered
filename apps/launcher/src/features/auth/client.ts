@@ -10,21 +10,27 @@ export function createAuthClient(): { isAuthed: () => Promise<boolean>; authenti
     const isAuthed = async () => {
         if (token || token === null) return !!token
 
-        token = await retrieveAccessToken()
+        const currentToken = await retrieveAccessToken()
+        const isAuthed = !!(currentToken && !currentToken.isExpired)
 
-        return !!token
+        if (isAuthed) token = currentToken.token
+
+        return isAuthed
     }
 
     const authenticate = async () => {
-        token = await authenticateWithTokens()
+        const newToken = await authenticateWithTokens()
+
+        token = newToken
     }
 
     const getToken = async () => {
-        if (token || token === null) return token
+        if (await isAuthed()) return token!
 
-        token = await retrieveAccessToken()
+        const newToken = await authenticateWithTokens()
+        token = newToken
 
-        return token
+        return newToken
     }
 
     return {
