@@ -14,7 +14,7 @@ export const thoughts = pgTable(
          */
         userId: varchar().notNull(),
         brainId: varchar().notNull(),
-        kind: pgEnum("kind", ["dataset", "attribute", "preference"])(),
+        kind: varchar({ enum: ["dataset", "attribute", "preference"] }),
         alias: varchar(),
         content: varchar(),
         createdAt: timestamp().notNull().defaultNow(),
