@@ -24,13 +24,11 @@ export type Thought<ID extends string = string> = {
 
 export type ALTEREDThought<ID extends string = string> = Thought<ID>
 
-/**
- * @todo [P1] Needs to be updated to match our constructs.
- */
 export const thoughtSchema = type({
     id: "string",
-    userId: "string",
-    content: "string",
+    brainId: "string",
+    alias: "string | null",
+    content: "string | null",
     createdAt: "Date",
     updatedAt: "Date"
 })

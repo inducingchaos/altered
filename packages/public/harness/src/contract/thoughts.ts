@@ -2,7 +2,7 @@
  *
  */
 
-import { creatableThoughtSchema, readableThoughtSchema, thoughtSchema } from "@altered/data/shapes"
+import { internalCreatableThoughtSchema, internalReadableThoughtSchema, internalThoughtSchema } from "@altered-internal/data/shapes"
 import { type } from "arktype"
 import { contractFactory } from "./factory"
 
@@ -17,25 +17,25 @@ export const thoughtsContract = {
         )
         .output(
             type({
-                thoughts: thoughtSchema.array()
+                thoughts: internalThoughtSchema.array()
             })
         ),
 
     find: contractFactory
         .route({ tags: ["internal"] })
-        .input(thoughtSchema.pick("content"))
+        .input(internalThoughtSchema.pick("content"))
         .output(
             type({
-                thought: thoughtSchema
+                thought: internalThoughtSchema
             })
         ),
 
     create: contractFactory
         .route({ tags: ["internal"] })
-        .input(creatableThoughtSchema)
+        .input(internalCreatableThoughtSchema)
         .output(
             type({
-                thought: thoughtSchema
+                thought: internalThoughtSchema
             })
         ),
 
@@ -49,7 +49,7 @@ export const thoughtsContract = {
      */
     getLatest: contractFactory.route({ method: "GET", path: "/get-latest" }).output(
         type({
-            thought: readableThoughtSchema
+            thought: internalReadableThoughtSchema
         })
     )
 }

@@ -59,7 +59,7 @@ export function LatestThoughtView({ authToken }: { authToken: string | null }) {
     const { thought } = data
     if (!thought) return <ThoughtDetail content="No thought found." />
 
-    return <ThoughtDetail content={thought.content} />
+    return <ThoughtDetail content={thought.content ?? "No content."} />
 }
 
 export const ShowLatestThoughtCommand = withContext(ShowLatestThought)

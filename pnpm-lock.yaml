@@ -402,12 +402,28 @@ importers:
       '@altered-internal/auth':
         specifier: workspace:*
         version: link:../auth
+      '@altered-internal/data/shapes':
+        specifier: workspace:*
+        version: link:../data-shapes
       '@altered-internal/data/store':
         specifier: workspace:*
         version: link:../data-store
       '@orpc/client':
         specifier: catalog:orpc
         version: 1.12.2
+    devDependencies:
+      '@altered-internal/typescript':
+        specifier: workspace:*
+        version: link:../../../tooling/typescript
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
+  packages/internal/data-shapes:
+    dependencies:
+      arktype:
+        specifier: ^2.1.27
+        version: 2.1.27
     devDependencies:
       '@altered-internal/typescript':
         specifier: workspace:*
@@ -434,6 +450,15 @@ importers:
       '@altered-internal/typescript':
         specifier: workspace:*
         version: link:../../../tooling/typescript
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
+      drizzle-kit:
+        specifier: catalog:drizzle
+        version: 1.0.0-beta.2-86f844e
+      tsx:
+        specifier: ^4.20.6
+        version: 4.20.6
       typescript:
         specifier: ^5
         version: 5.9.3
@@ -446,6 +471,9 @@ importers:
       '@altered-internal/data/access':
         specifier: workspace:*
         version: link:../data-access
+      '@altered-internal/data/shapes':
+        specifier: workspace:*
+        version: link:../data-shapes
       '@altered-internal/data/store':
         specifier: workspace:*
         version: link:../data-store
