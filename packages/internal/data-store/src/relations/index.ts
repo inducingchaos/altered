@@ -36,16 +36,8 @@ export const relations = defineRelations(tables, r => ({
         brains: r.many.brains({
             from: r.users.id,
             to: r.brains.userId
-        }),
-        /**
-         * @todo [P1] Drop once migrated to brain-owned thought schema.
-         */
-        thoughts: r.many.thoughts({
-            from: r.users.id,
-            to: r.thoughts.userId
         })
     },
-
     oauthApplications: {
         oauthAccessTokens: r.many.oauthAccessTokens({
             from: r.oauthApplications.clientId,
@@ -56,6 +48,7 @@ export const relations = defineRelations(tables, r => ({
             to: r.oauthConsents.clientId
         })
     },
+
     brains: {
         thoughts: r.many.thoughts({
             from: r.brains.id,

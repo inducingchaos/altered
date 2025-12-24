@@ -1,10 +1,10 @@
 /**
- *
+ * @todo [P3] Resolve ambiguity between the `ALTEREDThought` construct and the `Thought` type.
  */
 
 import { type } from "arktype"
 
-export type Thought<ID extends string = string> = {
+export type ALTEREDThought<ID extends string = string> = {
     id: ID
 
     /**
@@ -22,8 +22,6 @@ export type Thought<ID extends string = string> = {
     content: string
 }
 
-export type ALTEREDThought<ID extends string = string> = Thought<ID>
-
 export const thoughtSchema = type({
     id: "string",
     brainId: "string",
@@ -35,3 +33,8 @@ export const thoughtSchema = type({
 
 export const readableThoughtSchema = thoughtSchema.or("null")
 export const creatableThoughtSchema = thoughtSchema.omit("id", "createdAt", "updatedAt")
+
+export type Thought = typeof thoughtSchema.infer
+
+export type ReadableThought = typeof readableThoughtSchema.infer
+export type CreatableThought = typeof creatableThoughtSchema.infer

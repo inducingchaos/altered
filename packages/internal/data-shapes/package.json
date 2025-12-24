@@ -8,7 +8,8 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
-        "arktype": "^2.1.27"
+        "arktype": "^2.1.27",
+        "@altered/data/shapes": "workspace:*"
     },
     "devDependencies": {
         "@altered-internal/typescript": "workspace:*",

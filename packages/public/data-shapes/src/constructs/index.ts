@@ -2,11 +2,11 @@
  *
  */
 
-import { Thought } from "../thoughts"
+import { ALTEREDThought } from "../thoughts"
 
 export type ConstructType = "thought" | "system" | "action" | "component" | "operation" | "interface" | "state"
 
-export type Construct<ID extends string = string> = Thought<ID> & {
+export type Construct<ID extends string = string> = ALTEREDThought<ID> & {
     /**
      * Helps discriminate different types of Constructs from the generic Thought type.
      */

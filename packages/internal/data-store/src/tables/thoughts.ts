@@ -9,10 +9,6 @@ export const thoughts = pgTable(
     "thoughts",
     {
         id: varchar().primaryKey().$defaultFn(nanoid),
-        /**
-         * @todo [P1] Drop once migrated to brain-owned thought schema.
-         */
-        userId: varchar().notNull(),
         brainId: varchar().notNull(),
         kind: varchar({ enum: ["dataset", "attribute", "preference"] }),
         alias: varchar(),
