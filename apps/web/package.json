@@ -8,8 +8,6 @@
         "start": "next start",
         "lint": "eslint",
         "typecheck": "tsc --noEmit",
-        "db:push": "drizzle-kit push",
-        "db:studio": "drizzle-kit studio",
         "execute": "sh -c 'IFS=\"\" tsx --env-file ./.env ./src/scripts/$1.ts $*' sh"
     },
     "dependencies": {

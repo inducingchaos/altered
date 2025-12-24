@@ -450,6 +450,12 @@ importers:
       '@altered-internal/typescript':
         specifier: workspace:*
         version: link:../../../tooling/typescript
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
+      drizzle-kit:
+        specifier: catalog:drizzle
+        version: 1.0.0-beta.2-86f844e
       typescript:
         specifier: ^5
         version: 5.9.3
