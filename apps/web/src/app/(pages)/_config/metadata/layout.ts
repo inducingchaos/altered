@@ -2,8 +2,8 @@
  *
  */
 
+import { application, localization } from "@altered-internal/config"
 import { Metadata } from "next"
-import { application, localization } from "~/config"
 
 /**
  * @todo [P3] Review all metadata values.

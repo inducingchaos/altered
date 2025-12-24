@@ -120,6 +120,9 @@ importers:
       '@altered-internal/auth':
         specifier: workspace:*
         version: link:../../packages/internal/auth
+      '@altered-internal/config':
+        specifier: workspace:*
+        version: link:../../packages/internal/config
       '@altered-internal/data/access':
         specifier: workspace:*
         version: link:../../packages/internal/data-access

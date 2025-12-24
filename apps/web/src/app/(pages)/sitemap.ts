@@ -2,8 +2,8 @@
  *
  */
 
+import { application } from "@altered-internal/config"
 import type { MetadataRoute } from "next"
-import { application } from "~/config"
 
 /**
  * @todo [P3] Optimize sitemap once MVP is stable.
