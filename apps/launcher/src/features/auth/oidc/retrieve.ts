@@ -21,5 +21,10 @@ export async function retrieveAccessToken() {
         }
     })
 
-    return tokenSet?.accessToken ?? null
+    if (!tokenSet) return null
+
+    return {
+        token: tokenSet.accessToken,
+        isExpired: tokenSet.isExpired()
+    }
 }

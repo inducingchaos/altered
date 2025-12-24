@@ -3,46 +3,41 @@
  */
 
 import { useEffect, useState } from "react"
-import { configureLogger } from "~/observability"
 import { authenticateWithTokens, retrieveAccessToken } from "../oidc"
 
-const logger = configureLogger({ defaults: { scope: "hooks:use-authentication" } })
+/**
+ * @todo [P4] We could likely refactor this to use the same auth functions as `createAuthClient` instead of duplicating the logic here.
+ */
+export function useAuthentication(): { isAuthed: boolean; isLoading: boolean; token: string | null; authenticate: () => Promise<string> } {
+    const [token, setToken] = useState<string | null | undefined>()
 
-export function useAuthentication(): { isAuthed: boolean | null; authenticate: () => Promise<void>; authToken: string | null } {
-    const [authToken, setAuthToken] = useState<string | null>(null)
-    const [authStatus, setAuthStatus] = useState<boolean | null>(null)
+    const isLoading = token === undefined
+    const isAuthed = !!token
 
-    useEffect(() => {
-        retrieveAccessToken()
-            .then(token => {
-                setAuthToken(token)
+    const getAuthStatus = async () => {
+        if (token || token === null) return !!token
 
-                setAuthStatus(Boolean(token))
-            })
-            .catch(error => {
-                logger.error({ title: "Failed to Check Auth Status", data: { error } })
+        const currentToken = await retrieveAccessToken()
+        const isAuthed = !!(currentToken && !currentToken.isExpired)
 
-                setAuthStatus(false)
-            })
-    }, [])
+        if (isAuthed) setToken(currentToken.token)
 
-    const authenticate = async () => {
-        try {
-            const token = await authenticateWithTokens()
-
-            setAuthToken(token)
-
-            setAuthStatus(true)
-        } catch (error) {
-            logger.error({ title: "Failed to Authenticate", data: { error } })
-
-            setAuthStatus(false)
-        }
+        return isAuthed
     }
 
+    const authenticate = async () => {
+        const newToken = await authenticateWithTokens()
+
+        setToken(newToken)
+        return newToken
+    }
+
+    useEffect(() => void getAuthStatus(), [])
+
     return {
-        isAuthed: authStatus,
-        authenticate,
-        authToken
+        isLoading,
+        isAuthed,
+        token: token ?? null,
+        authenticate
     }
 }
