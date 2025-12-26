@@ -4,12 +4,12 @@
 
 import { Database } from "@altered-internal/data/store"
 import { ORPCError } from "@orpc/client"
-import { getMostRecentBrainId } from "../brains"
 
-export async function getLatestThought({ userId, db }: { userId: string; db: Database }) {
+/**
+ * @todo [P3] Should remove null type for `brainId` once we properly initialize a brain in an onboarding flow or middleware (should also change context type).
+ */
+export async function getLatestThought({ brainId, db }: { brainId: string | null; db: Database }) {
     try {
-        const brainId = await getMostRecentBrainId({ userId, db })
-
         if (!brainId) return null
 
         const thought = await db.query.thoughts.findFirst({

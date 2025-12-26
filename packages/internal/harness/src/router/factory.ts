@@ -4,7 +4,7 @@
 
 import { onError, ORPCError, ValidationError } from "@orpc/server"
 import { apiFactory } from "../factory"
-import { checkVersion, dbProvider, logError, requireAuth } from "../middleware"
+import { appContextProvider, checkVersion, dbProvider, logError, requireAuth } from "../middleware"
 
 /**
  * Logs expanded Type Validation errors to the console.
@@ -30,3 +30,4 @@ const logValidationError = (error: unknown) => {
 
 export const publicRouteFactory = apiFactory.use(logError).use(onError(logValidationError)).use(checkVersion).use(dbProvider)
 export const protectedRouteFactory = publicRouteFactory.use(requireAuth)
+export const appRouteFactory = protectedRouteFactory.use(appContextProvider)
