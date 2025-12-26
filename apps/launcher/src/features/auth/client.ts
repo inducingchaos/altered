@@ -14,6 +14,7 @@ export function createAuthClient(): { isAuthed: () => Promise<boolean>; authenti
         const isAuthed = !!(currentToken && !currentToken.isExpired)
 
         if (isAuthed) token = currentToken.token
+        else token = null
 
         return isAuthed
     }
