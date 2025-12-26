@@ -3,5 +3,5 @@
  */
 
 export const systemPreferenceKeys = {
-    mostRecentBrainId: "most-recent-brain-id"
+    selectedBrainId: "selected-brain-id"
 } as const

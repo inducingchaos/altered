@@ -2,10 +2,9 @@
  *
  */
 
-import type { AuthContext } from "@altered-internal/auth"
-import type { Database } from "@altered-internal/data/store"
-
-export type ProtectedContext = {
-    auth: AuthContext
-    db: Database
+/**
+ * @todo [P3] Move to the "harness" or "data-shapes" package.
+ */
+export type AppContext = {
+    selectedBrainId: string | null
 }
