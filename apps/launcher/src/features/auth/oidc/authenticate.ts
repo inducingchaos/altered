@@ -12,6 +12,11 @@ import { revokeTokens } from "./revoke"
 const logger = configureLogger({ defaults: { scope: "oauth:authorize" } })
 
 /**
+ * A promise mutex to prevent duplicate token refresh attempts.
+ */
+let refreshPromise: Promise<string> | null = null
+
+/**
  * Checks if our tokens are valid, refreshes them if needed, or initiates the full OAuth flow if there are no existing tokens. Returns the access token.
  */
 export async function authenticateWithTokens(): Promise<string> {
@@ -31,19 +36,35 @@ export async function authenticateWithTokens(): Promise<string> {
     if (tokenSet?.accessToken) {
         if (tokenSet.isExpired()) {
             if (tokenSet.refreshToken) {
-                const refreshedTokens = await refreshTokens(tokenSet.refreshToken)
-                await client.setTokens(refreshedTokens)
+                if (refreshPromise) {
+                    logger.log({ title: "Waiting for Concurrent Refresh" })
 
-                logger.log({
-                    title: "Refreshed and Stored Tokens",
-                    data: {
-                        expires_in: refreshedTokens.expires_in,
-                        hasAccessToken: Boolean(refreshedTokens.access_token),
-                        hasRefreshToken: Boolean(refreshedTokens.refresh_token)
+                    return await refreshPromise
+                }
+
+                const refreshToken = tokenSet.refreshToken
+
+                refreshPromise = (async () => {
+                    try {
+                        const refreshedTokens = await refreshTokens(refreshToken)
+                        await client.setTokens(refreshedTokens)
+
+                        logger.log({
+                            title: "Refreshed and Stored Tokens",
+                            data: {
+                                expires_in: refreshedTokens.expires_in,
+                                hasAccessToken: Boolean(refreshedTokens.access_token),
+                                hasRefreshToken: Boolean(refreshedTokens.refresh_token)
+                            }
+                        })
+
+                        return refreshedTokens.access_token
+                    } finally {
+                        refreshPromise = null
                     }
-                })
+                })()
 
-                return refreshedTokens.access_token
+                return await refreshPromise
             }
 
             try {

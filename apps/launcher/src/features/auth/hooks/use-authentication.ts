@@ -21,6 +21,7 @@ export function useAuthentication(): { isAuthed: boolean; isLoading: boolean; to
         const isAuthed = !!(currentToken && !currentToken.isExpired)
 
         if (isAuthed) setToken(currentToken.token)
+        else setToken(null)
 
         return isAuthed
     }
