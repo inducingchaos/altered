@@ -11,3 +11,4 @@ import { authenticateWithTokens } from "./oidc"
 export const withAuthentication = withAccessToken({ authorize: authenticateWithTokens })
 
 export * from "./client"
+export * from "./provider"

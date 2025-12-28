@@ -34,6 +34,8 @@ export const thoughtSchema = type({
 export const readableThoughtSchema = thoughtSchema.or("null")
 export const creatableThoughtSchema = thoughtSchema.omit("id", "createdAt", "updatedAt")
 
+export const readableThoughtsSchema = thoughtSchema.array().or("null")
+
 export type Thought = typeof thoughtSchema.infer
 
 export type ReadableThought = typeof readableThoughtSchema.infer

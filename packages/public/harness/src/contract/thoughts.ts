@@ -2,7 +2,7 @@
  *
  */
 
-import { creatableThoughtSchema, readableThoughtSchema, thoughtSchema } from "@altered/data/shapes"
+import { creatableThoughtSchema, readableThoughtSchema, readableThoughtsSchema, thoughtSchema } from "@altered/data/shapes"
 import { type } from "arktype"
 import { contractFactory } from "./factory"
 
@@ -11,13 +11,13 @@ export const thoughtsContract = {
         .route({ tags: ["internal"] })
         .input(
             type({
-                cursor: "number.integer >= 0",
+                "offset?": "number.integer >= 0",
                 "limit?": "1 <= number.integer <= 100"
-            })
+            }).or("undefined")
         )
         .output(
             type({
-                thoughts: thoughtSchema.array()
+                thoughts: readableThoughtsSchema
             })
         ),
 

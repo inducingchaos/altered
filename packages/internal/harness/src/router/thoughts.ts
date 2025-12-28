@@ -2,15 +2,16 @@
  *
  */
 
-import { createThought, getLatestThought } from "@altered-internal/data/access"
+import { createThought, getLatestThought, getThoughts } from "@altered-internal/data/access"
 import { internalTestThought } from "@altered-internal/data/shapes"
 import { appRouteFactory, protectedRouteFactory } from "./factory"
 
-export const getThoughtsProcedure = protectedRouteFactory.thoughts.get.handler(async () => {
-    console.warn("`getThoughts` is using a test value.")
-
-    return { thoughts: [internalTestThought] }
-})
+/**
+ * @todo [P2] Investigate why this route takes ~1,400ms to complete.
+ */
+export const getThoughtsProcedure = appRouteFactory.thoughts.get.handler(async ({ input, context }) => ({
+    thoughts: await getThoughts({ ctx: { brainId: context.app.selectedBrainId, db: context.db }, query: { offset: input?.offset, limit: input?.limit } })
+}))
 
 export const findThoughtProcedure = protectedRouteFactory.thoughts.find.handler(async () => {
     console.warn("`findThought` is using a test value.")

@@ -21,6 +21,12 @@
             "mode": "view"
         },
         {
+            "name": "view-thoughts",
+            "title": "View Thoughts",
+            "description": "View and manage the thoughts in your ALTERED Brain.",
+            "mode": "view"
+        },
+        {
             "name": "get-latest-thought",
             "title": "Get Latest Thought",
             "description": "Get the latest thought from your ALTERED brain.",

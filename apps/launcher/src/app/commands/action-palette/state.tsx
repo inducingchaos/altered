@@ -108,10 +108,10 @@ export function ActionPaletteProvider({ children }: { children: ReactNode }) {
     )
 }
 
-export function useActionPalette() {
+export function useActionPalette<Safe extends boolean = false, Result = Safe extends true ? ActionPaletteContextValue | null : ActionPaletteContextValue>(props?: { safe?: Safe }): Result {
     const context = use(ActionPaletteContext)
 
-    if (!context) throw new Error("`useActionPalette` must be used within an `ActionPaletteProvider`.")
+    if (!context && !props?.safe) throw new Error("`useActionPalette` must be used within an `ActionPaletteProvider`.")
 
-    return context
+    return context as Result
 }
