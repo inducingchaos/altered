@@ -411,6 +411,9 @@ importers:
       '@altered-internal/data/store':
         specifier: workspace:*
         version: link:../data-store
+      '@altered/data/shapes':
+        specifier: workspace:*
+        version: link:../../public/data-shapes
       '@orpc/client':
         specifier: catalog:orpc
         version: 1.12.2

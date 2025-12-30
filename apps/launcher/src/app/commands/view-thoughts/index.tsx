@@ -2,9 +2,10 @@
  *
  */
 
-import { Action, ActionPanel, Icon, List } from "@raycast/api"
-import { useQuery } from "@tanstack/react-query"
-import { api } from "~/api/react"
+import type { CursorDefinition } from "@altered/data/shapes"
+import { Action, ActionPanel, Icon, List, popToRoot, showToast, Toast } from "@raycast/api"
+import { usePromise } from "@raycast/utils"
+import { api } from "~/api"
 import { isVersionIncompatibleError, VersionIncompatibleError } from "~/api/utils"
 import { useAuthentication } from "~/auth"
 import { configureLogger } from "~/observability"
@@ -35,11 +36,48 @@ function AuthView() {
 }
 
 function ThoughtsList({ authToken }: { authToken: string }) {
-    const { error, isLoading, isPending, data } = useQuery(api.thoughts.get.queryOptions({ input: { limit: 25, offset: 0 }, context: { authToken } }))
+    const { isLoading, data, error, pagination } = usePromise(
+        (authToken: string) => async (pagination: { cursor?: CursorDefinition }) => {
+            const { data: apiData, error: apiError } = await api.thoughts.get(
+                {
+                    pagination: {
+                        type: "cursor",
+                        cursors: pagination.cursor ? [pagination.cursor] : null,
+                        limit: 25
+                    }
+                },
+
+                { context: { authToken } }
+            )
+
+            if (apiError) throw apiError
+
+            const thoughts = apiData.thoughts ?? []
+            const hasMore = thoughts.length === 25
+            const cursor = { field: "created-at", value: thoughts[thoughts.length - 1].createdAt }
+
+            return { data: thoughts, hasMore, cursor }
+        },
+
+        [authToken]
+    )
 
     const actionPaletteContext = useActionPalette({ safe: true })
 
-    if (error && isVersionIncompatibleError(error)) return <VersionIncompatibleError />
+    if (error) {
+        if (isVersionIncompatibleError(error)) return <VersionIncompatibleError />
+
+        showToast({
+            style: Toast.Style.Failure,
+            title: "Error Getting Thoughts",
+            message: "Please try again later."
+        })
+
+        if (actionPaletteContext) actionPaletteContext.resetState()
+        else popToRoot({ clearSearchBar: true })
+
+        console.error(error)
+    }
 
     const actions = (
         <ActionPanel>
@@ -50,29 +88,23 @@ function ThoughtsList({ authToken }: { authToken: string }) {
     )
 
     return (
-        <List isLoading={isLoading} actions={actions}>
-            {isPending && null}
+        <List isLoading={isLoading} actions={actions} pagination={pagination}>
+            {data?.length === 0 && <List.EmptyView title="No thoughts found." description="Create your first thought to get started." icon={Icon.PlusTopRightSquare} />}
 
-            {error && <List.EmptyView title="Error getting thoughts." description="Please try again later." icon={Icon.Xmark} />}
-
-            {data?.thoughts === null && <List.EmptyView title="No thoughts found." description="Create your first thought to get started." icon={Icon.PlusTopRightSquare} />}
-
-            {!isPending &&
-                !error &&
-                data.thoughts?.map(thought => (
-                    <List.Item
-                        key={thought.id}
-                        title={thought.alias ?? "Untitled"}
-                        subtitle={thought.content ?? ""}
-                        actions={actions}
-                        accessories={[
-                            {
-                                date: thought.createdAt,
-                                tooltip: `Created: ${thought.createdAt.toLocaleString()}`
-                            }
-                        ]}
-                    />
-                ))}
+            {data?.map(thought => (
+                <List.Item
+                    key={thought.id}
+                    title={thought.alias ?? "Untitled"}
+                    subtitle={thought.content ?? ""}
+                    actions={actions}
+                    accessories={[
+                        {
+                            date: thought.createdAt,
+                            tooltip: `Created: ${thought.createdAt.toLocaleString()}`
+                        }
+                    ]}
+                />
+            ))}
         </List>
     )
 }

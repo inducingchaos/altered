@@ -10,6 +10,7 @@
     "dependencies": {
         "@altered-internal/auth": "workspace:*",
         "@altered-internal/data/shapes": "workspace:*",
+        "@altered/data/shapes": "workspace:*",
         "@altered-internal/data/store": "workspace:*",
         "@orpc/client": "catalog:orpc"
     },

@@ -10,7 +10,7 @@ import { appRouteFactory, protectedRouteFactory } from "./factory"
  * @todo [P2] Investigate why this route takes ~1,400ms to complete.
  */
 export const getThoughtsProcedure = appRouteFactory.thoughts.get.handler(async ({ input, context }) => ({
-    thoughts: await getThoughts({ ctx: { brainId: context.app.selectedBrainId, db: context.db }, query: { offset: input?.offset, limit: input?.limit } })
+    thoughts: await getThoughts({ pagination: input.pagination, context: { brainId: context.app.selectedBrainId, db: context.db } })
 }))
 
 export const findThoughtProcedure = protectedRouteFactory.thoughts.find.handler(async () => {

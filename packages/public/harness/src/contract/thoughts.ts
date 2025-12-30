@@ -2,24 +2,15 @@
  *
  */
 
-import { creatableThoughtSchema, readableThoughtSchema, readableThoughtsSchema, thoughtSchema } from "@altered/data/shapes"
+import { creatableThoughtSchema, paginationOptionsSchema, readableThoughtSchema, readableThoughtsSchema, thoughtSchema } from "@altered/data/shapes"
 import { type } from "arktype"
 import { contractFactory } from "./factory"
 
 export const thoughtsContract = {
     get: contractFactory
         .route({ tags: ["internal"] })
-        .input(
-            type({
-                "offset?": "number.integer >= 0",
-                "limit?": "1 <= number.integer <= 100"
-            }).or("undefined")
-        )
-        .output(
-            type({
-                thoughts: readableThoughtsSchema
-            })
-        ),
+        .input(type({ pagination: paginationOptionsSchema }))
+        .output(type({ thoughts: readableThoughtsSchema })),
 
     find: contractFactory
         .route({ tags: ["internal"] })
