@@ -15,5 +15,5 @@ export function LogOutAction() {
         await popToRoot({ clearSearchBar: true })
     }
 
-    return <Action title="Log out" style={Action.Style.Destructive} icon={Icon.Logout} onAction={handleLogOut} />
+    return <Action title="Log out" style={Action.Style.Destructive} icon={Icon.Logout} onAction={handleLogOut} shortcut={{ modifiers: ["cmd", "shift"], key: "l" }} />
 }

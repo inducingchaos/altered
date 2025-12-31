@@ -4,6 +4,7 @@
 
 import { ALTEREDAction, System } from "@altered/data/shapes"
 import { filterSystems } from "@altered/utils"
+import { clearSearchBar } from "@raycast/api"
 import * as staticSystems from "app/systems"
 import { createContext, ReactNode, use, useState } from "react"
 
@@ -18,14 +19,16 @@ type ActionPaletteContextValue = {
 
     selectedActionId: string | null
     setSelectedActionId: (id: string | null) => void
-    renderSelectedAction: boolean
-    setRenderSelectedAction: (render: boolean) => void
+    renderedActionId: string | null
 
     systems: System[]
     filteredSystems: System[]
     selectedAction: ALTEREDAction | null
+    renderedAction: ALTEREDAction | null
+    isRenderingAction: boolean
     navigationTitle: string | undefined
 
+    renderAction: (id: string) => void
     resetState: () => void
 }
 
@@ -40,7 +43,7 @@ export function ActionPaletteProvider({ children }: { children: ReactNode }) {
     const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
 
     const [selectedActionId, setSelectedActionId] = useState<string | null>(null)
-    const [renderSelectedAction, setRenderSelectedAction] = useState(false)
+    const [renderedActionId, setRenderedActionId] = useState<string | null>(null)
 
     const systems = Object.values(staticSystems)
     const filteredSystems = filterSystems(systems, {
@@ -48,9 +51,13 @@ export function ActionPaletteProvider({ children }: { children: ReactNode }) {
         searchableKeyPaths: ["name", "title", "description", "actions.name", "actions.title", "actions.description", "actions.trigger"]
     })
 
-    const selectedAction = systems.flatMap(system => system.actions).find(action => action.id === selectedActionId) ?? null
+    const findAction = (id: string) => systems.flatMap(system => system.actions).find(action => action.id === id) ?? null
 
-    const navigationTitle = selectedActionId && !renderSelectedAction ? `Confirm: Press "space" to open "${selectedAction?.name}"` : undefined
+    const selectedAction = selectedActionId ? findAction(selectedActionId) : null
+    const renderedAction = renderedActionId ? findAction(renderedActionId) : null
+    const isRenderingAction = renderedActionId !== null
+
+    const navigationTitle = selectedActionId && !isRenderingAction ? `Confirm: Press "space" to open "${selectedAction?.name}"` : undefined
 
     const handleAutoSelect = (searchText: string) => {
         const confirmCharacter = " "
@@ -61,7 +68,7 @@ export function ActionPaletteProvider({ children }: { children: ReactNode }) {
 
         setSelectedActionId(matchedAction ? matchedAction.id : null)
 
-        if (matchedAction && containsConfirmCharacter) setRenderSelectedAction(true)
+        if (matchedAction && containsConfirmCharacter) renderAction(matchedAction.id)
     }
 
     const onSearchTextChange = (searchText: string) => {
@@ -70,19 +77,29 @@ export function ActionPaletteProvider({ children }: { children: ReactNode }) {
         handleAutoSelect(searchText)
     }
 
+    const renderAction = (id: string) => {
+        setRenderedActionId(id)
+
+        setSearchText("")
+
+        //  Additionally required when conditionally rendering views, since the search bar state is stored globally by Raycast.
+        clearSearchBar()
+    }
+
     const resetState = () => {
         setSearchText("")
 
         setSelectedItemId(null)
         setSelectedActionId(null)
 
-        setRenderSelectedAction(false)
+        setRenderedActionId(null)
     }
 
     return (
         <ActionPaletteContext
             value={{
                 isLoading,
+                isRenderingAction,
 
                 searchText,
                 setSearchText,
@@ -92,14 +109,15 @@ export function ActionPaletteProvider({ children }: { children: ReactNode }) {
 
                 selectedActionId,
                 setSelectedActionId,
-                renderSelectedAction,
-                setRenderSelectedAction,
+                renderedActionId,
 
                 systems,
                 filteredSystems,
                 selectedAction,
+                renderedAction,
                 navigationTitle,
 
+                renderAction,
                 resetState
             }}
         >

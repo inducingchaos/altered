@@ -2,8 +2,9 @@
  *
  */
 
-import { Action, testInterface } from "@altered/data/shapes"
+import { Action } from "@altered/data/shapes"
 import { Icon } from "@raycast/api"
+import { captureThoughtCustomInterface } from "app/interfaces"
 
 /**
  * @todo [P1] Implement the Capture Thought Interface (register as a form component).
@@ -11,16 +12,16 @@ import { Icon } from "@raycast/api"
 export const captureThoughtAction = {
     id: "action-capture-thought",
     alias: "Capture Thought Action",
-    content: "An ALTERED Action for capturing a new thought.",
+    content: "An ALTERED Action for capturing a thought.",
 
     type: "action",
 
     icon: Icon.SpeechBubbleActive,
     name: "Capture Thought",
     title: "Capture a Thought",
-    description: "Capture a new thought to your ALTERED Brain.",
+    description: "Capture a thought to your ALTERED Brain.",
 
     trigger: "c",
 
-    interfaces: [testInterface]
+    interfaces: [captureThoughtCustomInterface]
 } satisfies Action

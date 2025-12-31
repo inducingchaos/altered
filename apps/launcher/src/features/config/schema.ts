@@ -21,6 +21,8 @@ export const configSchema = z
         appIcon: z.string(),
         appVersion: z.string(),
 
+        themeIcons: z.boolean(),
+
         productionBaseUrl: z.url(),
         developmentBaseUrl: z.url(),
 
