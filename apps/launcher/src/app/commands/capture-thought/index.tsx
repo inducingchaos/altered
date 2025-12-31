@@ -37,49 +37,62 @@ function AuthView() {
     )
 }
 
-function ThoughtForm({ authToken, pop, shouldCloseOnSubmit = true }: { authToken: string; pop?: () => void; shouldCloseOnSubmit?: boolean }) {
+type ThoughtFormProps = {
+    authToken: string
+    pop?: () => void
+    shouldCloseOnSubmit?: boolean
+    onCreateThought?: (thought: { content: string; alias: string | null }) => Promise<void>
+}
+
+function ThoughtForm({ authToken, pop, shouldCloseOnSubmit = true, onCreateThought }: ThoughtFormProps) {
+    const actionPaletteContext = useActionPalette({ safe: true })
+
     const { handleSubmit, itemProps } = useForm<{
         content: string
     }>({
         onSubmit: async formValues => {
             if (shouldCloseOnSubmit) await closeMainWindow({ clearRootSearch: false, popToRootType: PopToRootType.Suspended })
 
-            await showToast({
-                style: Toast.Style.Animated,
-                title: "Creating Thought..."
-            })
-
             if (pop) pop()
             else if (actionPaletteContext) actionPaletteContext.resetState()
 
-            const { error } = await api.thoughts.create({ content: formValues.content, alias: null }, { context: { authToken } })
+            const thoughtInput = { content: formValues.content, alias: null }
 
-            if (error) {
-                logger.error({ title: "Failed to Create Thought", description: error.message, data: { cause: error.cause } })
-
+            if (onCreateThought) {
+                await onCreateThought(thoughtInput)
+            } else {
                 await showToast({
-                    style: Toast.Style.Failure,
-                    title: "Failed to Create Thought",
-                    message: "Please try again later."
+                    style: Toast.Style.Animated,
+                    title: "Creating Thought..."
                 })
 
-                return
+                const { error } = await api.thoughts.create(thoughtInput, { context: { authToken } })
+
+                if (error) {
+                    logger.error({ title: "Failed to Create Thought", description: error.message, data: { cause: error.cause } })
+
+                    await showToast({
+                        style: Toast.Style.Failure,
+                        title: "Failed to Create Thought",
+                        message: "Please try again later."
+                    })
+
+                    return
+                }
+
+                await showToast({
+                    style: Toast.Style.Success,
+                    title: "Thought Created"
+                })
+
+                if (!actionPaletteContext && !pop) popToRoot({ clearSearchBar: true })
             }
-
-            await showToast({
-                style: Toast.Style.Success,
-                title: "Thought Created"
-            })
-
-            if (!actionPaletteContext && !pop) popToRoot({ clearSearchBar: true })
         },
 
         validation: {
             content: FormValidation.Required
         }
     })
-
-    const actionPaletteContext = useActionPalette({ safe: true })
 
     const createActions = () => (
         <ActionPanel>
@@ -100,7 +113,13 @@ function ThoughtForm({ authToken, pop, shouldCloseOnSubmit = true }: { authToken
     )
 }
 
-export function CaptureThought(props: { pop?: () => void; shouldCloseOnSubmit?: boolean }) {
+type CaptureThoughtProps = {
+    pop?: () => void
+    shouldCloseOnSubmit?: boolean
+    onCreateThought?: (thought: { content: string; alias: string | null }) => Promise<void>
+}
+
+export function CaptureThought(props: CaptureThoughtProps) {
     logger.log()
 
     const { isAuthed, token } = useAuthentication()

@@ -91,6 +91,42 @@ function ThoughtsList({ authToken }: { authToken: string }) {
     const resolveItemTitle = (thought: Thought) => (thought.alias?.length ? thought.alias : (thought.content ?? "No content."))
     const resolveItemSubtitle = (thought: Thought) => (thought.alias?.length ? (thought.content ?? "No content.") : null)
 
+    const handleCreateThought = async (thoughtInput: { content: string; alias: string | null }) => {
+        setIsMutating(true)
+
+        try {
+            await mutate(
+                api.thoughts.create(thoughtInput, { context: { authToken } }).then(({ error }) => {
+                    if (error) throw error
+                }),
+
+                {
+                    optimisticUpdate: oldThoughts => {
+                        const optimisticThought: Thought = {
+                            id: `optimistic-${Date.now()}`,
+                            alias: thoughtInput.alias,
+                            content: thoughtInput.content,
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                        }
+
+                        return [optimisticThought, ...(oldThoughts ?? [])]
+                    }
+                }
+            )
+        } catch (error) {
+            logger.error({ title: "Failed to Create Thought", data: { error } })
+
+            await showToast({
+                style: Toast.Style.Failure,
+                title: "Failed to Create Thought",
+                message: "Please try again later."
+            })
+        } finally {
+            setIsMutating(false)
+        }
+    }
+
     const handleDeleteThought = async (thought: Thought, { showConfirmation = true }: { showConfirmation?: boolean } = {}) => {
         if (showConfirmation) {
             const thoughtSummary = thought.alias ?? thought.content ?? null
@@ -168,7 +204,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 
     const itemDetailNoContentText = { value: "-", color: Color.SecondaryText }
 
-    if (isCreatingThought) return <CaptureThought pop={() => setIsCreatingThought(false)} shouldCloseOnSubmit={false} />
+    if (isCreatingThought) return <CaptureThought pop={() => setIsCreatingThought(false)} shouldCloseOnSubmit={false} onCreateThought={handleCreateThought} />
 
     return (
         <List isLoading={isLoading || isMutating} actions={createActions()} pagination={pagination} navigationTitle="View Thoughts" isShowingDetail={isInspectorOpen}>
