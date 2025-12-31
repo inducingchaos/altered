@@ -6,7 +6,7 @@ import type { CursorDefinition, Thought } from "@altered/data/shapes"
 import { Action, ActionPanel, Alert, Color, confirmAlert, Icon, List, popToRoot, showToast, Toast } from "@raycast/api"
 import { usePromise } from "@raycast/utils"
 import { DateTime } from "luxon"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { api } from "~/api"
 import { isVersionIncompatibleError, VersionIncompatibleError } from "~/api/utils"
 import { useAuthentication } from "~/auth"
@@ -40,12 +40,22 @@ function AuthView() {
 
 function ThoughtsList({ authToken }: { authToken: string }) {
     const [isInspectorOpen, setIsInspectorOpen] = useState(false)
-
+    /**
+     * @remarks This serves as single-use-case navigation history state for the `CaptureThought` form. Once we have our own generic history implemented, we can replace this state.
+     */
     const [isCreatingThought, setIsCreatingThought] = useState(false)
 
-    const [isMutating, setIsMutating] = useState(false)
+    const [pendingMutationCount, setPendingMutationCount] = useState(0)
+    const thoughtsAbortControllerRef = useRef<AbortController | null>(null)
 
-    const { isLoading, data, error, pagination, mutate } = usePromise(
+    const {
+        isLoading: isFetchingThoughts,
+        data,
+        error,
+        pagination,
+        mutate,
+        revalidate
+    } = usePromise(
         (authToken: string) => async (pagination: { cursor?: CursorDefinition }) => {
             const { data: apiData, error: apiError } = await api.thoughts.get(
                 {
@@ -68,10 +78,15 @@ function ThoughtsList({ authToken }: { authToken: string }) {
             return { data: thoughts, hasMore, cursor }
         },
 
-        [authToken]
+        [authToken],
+
+        { abortable: thoughtsAbortControllerRef }
     )
 
     const actionPaletteContext = useActionPalette({ safe: true })
+
+    const isFetchingMutation = pendingMutationCount > 0
+    const isFetching = isFetchingThoughts || isFetchingMutation
 
     if (error) {
         if (isVersionIncompatibleError(error)) return <VersionIncompatibleError />
@@ -92,7 +107,9 @@ function ThoughtsList({ authToken }: { authToken: string }) {
     const resolveItemSubtitle = (thought: Thought) => (thought.alias?.length ? (thought.content ?? "No content.") : null)
 
     const handleCreateThought = async (thoughtInput: { content: string; alias: string | null }) => {
-        setIsMutating(true)
+        thoughtsAbortControllerRef.current?.abort()
+
+        setPendingMutationCount(count => count + 1)
 
         try {
             await mutate(
@@ -111,7 +128,9 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                         }
 
                         return [optimisticThought, ...(oldThoughts ?? [])]
-                    }
+                    },
+
+                    shouldRevalidateAfter: false
                 }
             )
         } catch (error) {
@@ -123,7 +142,14 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                 message: "Please try again later."
             })
         } finally {
-            setIsMutating(false)
+            setPendingMutationCount(count => {
+                const finishedCount = count - 1
+
+                const noPendingMutations = finishedCount === 0
+                if (noPendingMutations) revalidate()
+
+                return finishedCount
+            })
         }
     }
 
@@ -146,7 +172,9 @@ function ThoughtsList({ authToken }: { authToken: string }) {
             if (!isConfirmed) return
         }
 
-        setIsMutating(true)
+        thoughtsAbortControllerRef.current?.abort()
+
+        setPendingMutationCount(count => count + 1)
 
         try {
             await mutate(
@@ -162,7 +190,9 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                     }),
 
                 {
-                    optimisticUpdate: oldThoughts => (oldThoughts ?? []).filter(oldThought => oldThought.id !== thought.id)
+                    optimisticUpdate: oldThoughts => (oldThoughts ?? []).filter(oldThought => oldThought.id !== thought.id),
+
+                    shouldRevalidateAfter: false
                 }
             )
         } catch (error) {
@@ -174,7 +204,14 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                 message: "Please try again later."
             })
         } finally {
-            setIsMutating(false)
+            setPendingMutationCount(count => {
+                const finishedCount = count - 1
+
+                const noPendingMutations = finishedCount === 0
+                if (noPendingMutations) revalidate()
+
+                return finishedCount
+            })
         }
     }
 
@@ -207,7 +244,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
     if (isCreatingThought) return <CaptureThought pop={() => setIsCreatingThought(false)} shouldCloseOnSubmit={false} onCreateThought={handleCreateThought} />
 
     return (
-        <List isLoading={isLoading || isMutating} actions={createActions()} pagination={pagination} navigationTitle="View Thoughts" isShowingDetail={isInspectorOpen}>
+        <List isLoading={isFetching} actions={createActions()} pagination={pagination} navigationTitle="View Thoughts" isShowingDetail={isInspectorOpen}>
             {data?.length === 0 && <List.EmptyView title="No thoughts found." description="Create your first thought to get started." icon={Icon.PlusTopRightSquare} />}
 
             {data?.map(thought => (
