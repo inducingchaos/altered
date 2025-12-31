@@ -38,22 +38,14 @@ function AuthView() {
     )
 }
 
-/**
- * @todo [P3] We should instead get this value from the user's preferences, both cached locally and in our database.
- */
-const shouldConfirmDelete = false
-
 function ThoughtsList({ authToken }: { authToken: string }) {
     const [isInspectorOpen, setIsInspectorOpen] = useState(false)
 
     const [isCreatingThought, setIsCreatingThought] = useState(false)
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [setOptimisticThoughts] = useState<Thought[]>([])
+    const [isMutating, setIsMutating] = useState(false)
 
-    //  REMARKS: When we create a thought via our API using the `CaptureThought`, with RQ our `ThoughtsList` would usually be automatically invalidated and re-fetched, however since we're using Raycast's `usePromise`, we need to manually invalidate and update the data. While doing so, we should use `usePromise`'s optimistic feature to provide an update immediately.
-
-    const { isLoading, data, error, pagination, revalidate } = usePromise(
+    const { isLoading, data, error, pagination, mutate } = usePromise(
         (authToken: string) => async (pagination: { cursor?: CursorDefinition }) => {
             const { data: apiData, error: apiError } = await api.thoughts.get(
                 {
@@ -99,8 +91,8 @@ function ThoughtsList({ authToken }: { authToken: string }) {
     const resolveItemTitle = (thought: Thought) => (thought.alias?.length ? thought.alias : (thought.content ?? "No content."))
     const resolveItemSubtitle = (thought: Thought) => (thought.alias?.length ? (thought.content ?? "No content.") : null)
 
-    const handleDeleteThought = async (thought: Thought) => {
-        if (shouldConfirmDelete) {
+    const handleDeleteThought = async (thought: Thought, { showConfirmation = true }: { showConfirmation?: boolean } = {}) => {
+        if (showConfirmation) {
             const thoughtSummary = thought.alias ?? thought.content ?? null
             const thoughtDescriptor = thoughtSummary ? `"${thoughtSummary.length > 10 ? thoughtSummary.slice(0, 16) + "..." : thoughtSummary}"` : "this thought"
 
@@ -118,31 +110,36 @@ function ThoughtsList({ authToken }: { authToken: string }) {
             if (!isConfirmed) return
         }
 
-        await showToast({
-            style: Toast.Style.Animated,
-            title: "Deleting Thought..."
-        })
+        setIsMutating(true)
 
-        const { error } = await api.thoughts.delete({ id: thought.id }, { context: { authToken } })
+        try {
+            await mutate(
+                api.thoughts
+                    .delete(
+                        {
+                            id: thought.id
+                        },
+                        { context: { authToken } }
+                    )
+                    .then(({ error }) => {
+                        if (error) throw error
+                    }),
 
-        if (error) {
-            logger.error({ title: "Failed to Delete Thought", description: error.message, data: { cause: error.cause } })
+                {
+                    optimisticUpdate: oldThoughts => (oldThoughts ?? []).filter(oldThought => oldThought.id !== thought.id)
+                }
+            )
+        } catch (error) {
+            logger.error({ title: "Failed to Delete Thought", data: { error } })
 
             await showToast({
                 style: Toast.Style.Failure,
                 title: "Failed to Delete Thought",
                 message: "Please try again later."
             })
-
-            return
+        } finally {
+            setIsMutating(false)
         }
-
-        await showToast({
-            style: Toast.Style.Success,
-            title: "Thought Deleted"
-        })
-
-        await revalidate()
     }
 
     const createActions = (thought?: Thought) => (
@@ -152,11 +149,13 @@ function ThoughtsList({ authToken }: { authToken: string }) {
             </ActionPanel.Section>
 
             <ActionPanel.Section title="Modify">
-                <Action title="Create Thought" onAction={() => setIsCreatingThought(true)} shortcut={{ modifiers: ["cmd"], key: "n" }} icon={Icon.PlusSquare} />
+                <Action title="Create" onAction={() => setIsCreatingThought(true)} shortcut={{ modifiers: ["cmd"], key: "n" }} icon={Icon.PlusSquare} />
 
-                <Action title="Edit Thought" onAction={() => {}} shortcut={{ modifiers: ["cmd"], key: "e" }} icon={Icon.Pencil} />
+                <Action title="Edit" onAction={() => {}} shortcut={{ modifiers: ["cmd"], key: "e" }} icon={Icon.Pencil} />
 
-                {thought && <Action title="Delete Thought" onAction={() => handleDeleteThought(thought)} shortcut={{ modifiers: ["cmd", "shift"], key: "delete" }} icon={Icon.Trash} style={Action.Style.Destructive} />}
+                {thought && <Action title="Delete" onAction={() => handleDeleteThought(thought)} shortcut={{ modifiers: ["shift"], key: "delete" }} icon={Icon.Trash} style={Action.Style.Destructive} />}
+
+                {thought && <Action title="Force Delete" onAction={() => handleDeleteThought(thought, { showConfirmation: false })} shortcut={{ modifiers: ["shift", "cmd"], key: "delete" }} icon={Icon.ExclamationMark} style={Action.Style.Destructive} />}
             </ActionPanel.Section>
 
             <ActionPanel.Section title="Navigate">{actionPaletteContext && <ReturnToActionPaletteAction resetNavigationState={actionPaletteContext.resetState} />}</ActionPanel.Section>
@@ -172,7 +171,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
     if (isCreatingThought) return <CaptureThought pop={() => setIsCreatingThought(false)} shouldCloseOnSubmit={false} />
 
     return (
-        <List isLoading={isLoading} actions={createActions()} pagination={pagination} navigationTitle="View Thoughts" isShowingDetail={isInspectorOpen}>
+        <List isLoading={isLoading || isMutating} actions={createActions()} pagination={pagination} navigationTitle="View Thoughts" isShowingDetail={isInspectorOpen}>
             {data?.length === 0 && <List.EmptyView title="No thoughts found." description="Create your first thought to get started." icon={Icon.PlusTopRightSquare} />}
 
             {data?.map(thought => (
