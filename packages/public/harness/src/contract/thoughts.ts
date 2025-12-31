@@ -2,15 +2,23 @@
  *
  */
 
-import { creatableThoughtSchema, paginationOptionsSchema, readableThoughtSchema, readableThoughtsSchema, thoughtSchema } from "@altered/data/shapes"
+import { creatableThoughtSchema, paginationOptionsSchema, thoughtSchema } from "@altered/data/shapes"
 import { type } from "arktype"
 import { contractFactory } from "./factory"
 
 export const thoughtsContract = {
     get: contractFactory
         .route({ tags: ["internal"] })
-        .input(type({ pagination: paginationOptionsSchema }))
-        .output(type({ thoughts: readableThoughtsSchema })),
+        .input(
+            type({
+                pagination: paginationOptionsSchema
+            })
+        )
+        .output(
+            type({
+                thoughts: thoughtSchema.array().or("null")
+            })
+        ),
 
     find: contractFactory
         .route({ tags: ["internal"] })
@@ -38,9 +46,14 @@ export const thoughtsContract = {
      * `unnoq` says: Loop over all procedure and fill any path you want. like this:
      * @see https://github.com/unnoq/orpc/blob/main/packages/nest/src/utils.ts#L32
      */
-    getLatest: contractFactory.route({ method: "GET", path: "/get-latest" }).output(
-        type({
-            thought: readableThoughtSchema
+    getLatest: contractFactory
+        .route({
+            method: "GET",
+            path: "/get-latest"
         })
-    )
+        .output(
+            type({
+                thought: thoughtSchema.or("null")
+            })
+        )
 }

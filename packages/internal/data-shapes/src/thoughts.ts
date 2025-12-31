@@ -5,6 +5,7 @@
 import { thoughtSchema } from "@altered/data/shapes"
 
 export const internalThoughtSchema = thoughtSchema.merge({
+    brainId: "string",
     kind: '"dataset" | "attribute" | "preference" | null'
 })
 

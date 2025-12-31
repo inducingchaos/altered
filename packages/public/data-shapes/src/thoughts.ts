@@ -24,19 +24,12 @@ export type ALTEREDThought<ID extends string = string> = {
 
 export const thoughtSchema = type({
     id: "string",
-    brainId: "string",
     alias: "string | null",
     content: "string | null",
     createdAt: "Date",
     updatedAt: "Date"
 })
-
-export const readableThoughtSchema = thoughtSchema.or("null")
 export const creatableThoughtSchema = thoughtSchema.omit("id", "createdAt", "updatedAt")
 
-export const readableThoughtsSchema = thoughtSchema.array().or("null")
-
 export type Thought = typeof thoughtSchema.infer
-
-export type ReadableThought = typeof readableThoughtSchema.infer
 export type CreatableThought = typeof creatableThoughtSchema.infer

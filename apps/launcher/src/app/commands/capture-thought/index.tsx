@@ -3,6 +3,8 @@
  */
 
 import { Action, ActionPanel, closeMainWindow, Form, Icon, List, popToRoot, PopToRootType, showToast, Toast } from "@raycast/api"
+import { FormValidation, useForm } from "@raycast/utils"
+import { api } from "~/api"
 import { useAuthentication } from "~/auth"
 import { configureLogger } from "~/observability"
 import { LogOutAction, ReturnToActionPaletteAction, withContext } from "~/shared/components"
@@ -35,35 +37,53 @@ function AuthView() {
     )
 }
 
-function ThoughtForm({ pop, shouldCloseOnSubmit = true }: { pop?: () => void; shouldCloseOnSubmit?: boolean }) {
+function ThoughtForm({ authToken, pop, shouldCloseOnSubmit = true }: { authToken: string; pop?: () => void; shouldCloseOnSubmit?: boolean }) {
+    const { handleSubmit, itemProps } = useForm<{
+        content: string
+    }>({
+        onSubmit: async formValues => {
+            if (shouldCloseOnSubmit) await closeMainWindow({ clearRootSearch: false, popToRootType: PopToRootType.Suspended })
+
+            await showToast({
+                style: Toast.Style.Animated,
+                title: "Creating Thought..."
+            })
+
+            if (pop) pop()
+            else if (actionPaletteContext) actionPaletteContext.resetState()
+
+            const { error } = await api.thoughts.create({ content: formValues.content, alias: null }, { context: { authToken } })
+
+            if (error) {
+                logger.error({ title: "Failed to Create Thought", description: error.message, data: { cause: error.cause } })
+
+                await showToast({
+                    style: Toast.Style.Failure,
+                    title: "Failed to Create Thought",
+                    message: "Please try again later."
+                })
+
+                return
+            }
+
+            await showToast({
+                style: Toast.Style.Success,
+                title: "Thought Created"
+            })
+
+            if (!actionPaletteContext && !pop) popToRoot({ clearSearchBar: true })
+        },
+
+        validation: {
+            content: FormValidation.Required
+        }
+    })
+
     const actionPaletteContext = useActionPalette({ safe: true })
 
     const createActions = () => (
         <ActionPanel>
-            <Action.SubmitForm
-                title="Capture"
-                onSubmit={async () => {
-                    if (shouldCloseOnSubmit) await closeMainWindow({ clearRootSearch: false, popToRootType: PopToRootType.Suspended })
-
-                    await showToast({
-                        style: Toast.Style.Animated,
-                        title: "Creating Thought..."
-                    })
-
-                    if (pop) pop()
-                    else if (actionPaletteContext) actionPaletteContext.resetState()
-
-                    setTimeout(async () => {
-                        await showToast({
-                            style: Toast.Style.Success,
-                            title: "Thought Created"
-                        })
-
-                        if (!actionPaletteContext && !pop) popToRoot({ clearSearchBar: true })
-                    }, 3000)
-                }}
-                icon={Icon.Maximize}
-            />
+            <Action.SubmitForm title="Capture" onSubmit={handleSubmit} icon={Icon.Maximize} />
 
             <ActionPanel.Section title="Navigate">{actionPaletteContext && <ReturnToActionPaletteAction resetNavigationState={actionPaletteContext.resetState} />}</ActionPanel.Section>
 
@@ -75,7 +95,7 @@ function ThoughtForm({ pop, shouldCloseOnSubmit = true }: { pop?: () => void; sh
 
     return (
         <Form actions={createActions()} navigationTitle="Capture Thought">
-            <Form.TextArea id="content" title="Thought" autoFocus info="The content of your thought." />
+            <Form.TextArea title="Thought" autoFocus info="The content of your thought." {...itemProps.content} />
         </Form>
     )
 }
@@ -83,10 +103,10 @@ function ThoughtForm({ pop, shouldCloseOnSubmit = true }: { pop?: () => void; sh
 export function CaptureThought(props: { pop?: () => void; shouldCloseOnSubmit?: boolean }) {
     logger.log()
 
-    const { isAuthed } = useAuthentication()
+    const { isAuthed, token } = useAuthentication()
     if (!isAuthed) return <AuthView />
 
-    return <ThoughtForm {...props} />
+    return <ThoughtForm authToken={token} {...props} />
 }
 
 export const CaptureThoughtCommand = withContext(CaptureThought)
