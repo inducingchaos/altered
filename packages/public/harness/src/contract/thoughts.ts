@@ -55,5 +55,14 @@ export const thoughtsContract = {
             type({
                 thought: thoughtSchema.or("null")
             })
+        ),
+
+    delete: contractFactory
+        .route({ tags: ["internal"] })
+        .input(thoughtSchema.pick("id"))
+        .output(
+            type({
+                thought: thoughtSchema
+            })
         )
 }
