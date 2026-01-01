@@ -4,20 +4,19 @@
 
 import type { CursorDefinition, Thought } from "@altered/data/shapes"
 import { Action, ActionPanel, Alert, Color, confirmAlert, Icon, List, popToRoot, showToast, Toast } from "@raycast/api"
-import { InfiniteData, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { DateTime } from "luxon"
 import { useState } from "react"
 import { api as reactApi } from "~/api/react"
 import { isVersionIncompatibleError as checkIsVersionIncompatibleError, VersionIncompatibleError } from "~/api/utils"
 import { useAuthentication } from "~/auth"
+import { config } from "~/config"
 import { configureLogger } from "~/observability"
 import { LogOutAction, ReturnToActionPaletteAction, withContext } from "~/shared/components"
 import { useActionPalette } from "../action-palette/state"
 import { CaptureThought } from "../capture-thought"
 
 const logger = configureLogger({ defaults: { scope: "commands:view-thoughts" } })
-
-const paginationLimit = 25
 
 function AuthView() {
     const { isLoading, authenticate } = useAuthentication()
@@ -41,57 +40,55 @@ function AuthView() {
 }
 
 function ThoughtsList({ authToken }: { authToken: string }) {
-    const [isInspectorOpen, setIsInspectorOpen] = useState(false)
+    const [isShowingInspector, setIsShowingInspector] = useState(false)
     /**
      * @remarks This serves as single-use-case navigation history state for the `CaptureThought` form. Once we have our own generic history implemented, we can replace this state.
      */
     const [isCreatingThought, setIsCreatingThought] = useState(false)
 
-    /**
-     * @remarks Do we need this, or can we consume the client as context within the query options?
-     */
     const queryClient = useQueryClient()
+    const thoughtsQueryKey = reactApi.thoughts.key()
 
-    const infiniteQueryOptions = reactApi.thoughts.get.infiniteOptions({
+    const getThoughtsQueryOptions = reactApi.thoughts.get.infiniteOptions({
         input: (pageParam: CursorDefinition | null) => ({
             pagination: {
                 type: "cursor",
                 cursors: pageParam ? [pageParam] : null,
-                limit: paginationLimit
+                limit: config.listPaginationLimit
             }
         }),
         context: { authToken },
 
         initialPageParam: null,
         getNextPageParam: lastPage => {
-            const thoughts = lastPage.thoughts ?? []
-            if (thoughts.length < paginationLimit) return undefined
+            if (!lastPage.hasMore) return null
 
-            const lastThought = thoughts[thoughts.length - 1]
-            return { field: "created-at", value: lastThought.createdAt } satisfies CursorDefinition
+            const thoughts = lastPage.thoughts
+            if (!thoughts || !thoughts.length) return null
+
+            const lastThoughtIndex = thoughts.length - 1
+            const lastThought = thoughts[lastThoughtIndex]
+
+            const cursorDef: CursorDefinition = { field: "created-at", value: lastThought.createdAt }
+
+            return cursorDef
         }
     })
 
-    const thoughtsQueryKey = infiniteQueryOptions.queryKey
+    const getThoughtsQueryKey = getThoughtsQueryOptions.queryKey
 
-    //  REMARKS: Are these typings necessary? I believe the query options (and similar) should be implicitly typed.
-
-    type ThoughtsPage = { thoughts: Thought[] | null }
-    type ThoughtsInfiniteData = InfiniteData<ThoughtsPage, CursorDefinition | null>
-
-    const { data, error, isFetching: isFetchingThoughts, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteQuery(infiniteQueryOptions)
+    const { data, error, isFetching: isFetchingThoughts, hasNextPage, fetchNextPage } = useInfiniteQuery(getThoughtsQueryOptions)
 
     const createMutation = useMutation(
         reactApi.thoughts.create.mutationOptions({
             context: { authToken },
 
             onMutate: async thoughtInput => {
-                await queryClient.cancelQueries({ queryKey: thoughtsQueryKey })
+                await queryClient.cancelQueries({ queryKey: getThoughtsQueryKey })
 
-                const previousData = queryClient.getQueryData<ThoughtsInfiniteData>(thoughtsQueryKey)
+                const staleData = queryClient.getQueryData(getThoughtsQueryKey)
 
                 const optimisticThought: Thought = {
-                    //  REMARKS: Is this the best strategy for an optimistic ID?
                     id: `optimistic-${Date.now()}`,
                     alias: thoughtInput.alias,
                     content: thoughtInput.content,
@@ -99,31 +96,46 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                     updatedAt: new Date()
                 }
 
-                queryClient.setQueryData<ThoughtsInfiniteData>(thoughtsQueryKey, old => {
-                    //  REMARKS: Should we instead optimistically update even if there is no previous data?
+                queryClient.setQueryData(getThoughtsQueryKey, staleData => {
+                    const data = staleData ?? { pages: [], pageParams: [] }
 
-                    if (!old) return old
+                    const pageThoughtLimit = config.listPaginationLimit
 
-                    return {
-                        ...old,
+                    const staleThoughts = data.pages.flatMap(page => page.thoughts ?? [])
 
-                        //  REMARKS: Is it right to insert the optimistic thought into the first page, even if it exceeds the pagination limit? Or should we cascade-update all pages?
+                    const stalePageCount = data.pages.length
+                    const staleDataHasMore = data.pages[stalePageCount - 1]?.hasMore ?? false
 
-                        pages: old.pages.map((page, index) => (index === 0 ? { ...page, thoughts: [optimisticThought, ...(page.thoughts ?? [])] } : page))
+                    const updatedThoughts = [optimisticThought, ...staleThoughts]
+
+                    const updatedPageCount = Math.ceil(updatedThoughts.length / pageThoughtLimit)
+
+                    const updatedPages: typeof data.pages = []
+
+                    for (const pageIndex of Array(updatedPageCount).keys()) {
+                        const isLastPage = pageIndex === updatedPageCount - 1
+
+                        const startThoughtIndex = pageIndex * pageThoughtLimit
+                        const endThoughtIndex = startThoughtIndex + pageThoughtLimit
+
+                        const pageThoughts = updatedThoughts.slice(startThoughtIndex, endThoughtIndex)
+
+                        updatedPages.push({
+                            thoughts: pageThoughts,
+                            hasMore: isLastPage ? staleDataHasMore : true
+                        })
                     }
+
+                    return { ...data, pages: updatedPages }
                 })
 
-                return { previousData }
+                return { staleData }
             },
 
-            //  REMARKS: Could we name `_variables` better?
-
-            onError: (error, _variables, context) => {
+            onError: (error, variables, context) => {
                 logger.error({ title: "Failed to Create Thought", data: { error } })
 
-                //  REMARKS: Does this consider concurrent optimistic updates?
-
-                if (context?.previousData) queryClient.setQueryData<ThoughtsInfiniteData>(thoughtsQueryKey, context.previousData)
+                if (context?.staleData) queryClient.setQueryData(getThoughtsQueryKey, context.staleData)
 
                 showToast({
                     style: Toast.Style.Failure,
@@ -132,7 +144,9 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                 })
             },
 
-            onSettled: () => queryClient.invalidateQueries({ queryKey: thoughtsQueryKey })
+            onSettled: () => {
+                if (queryClient.isMutating({ mutationKey: thoughtsQueryKey }) === 1) queryClient.invalidateQueries({ queryKey: getThoughtsQueryKey })
+            }
         })
     )
 
@@ -140,40 +154,51 @@ function ThoughtsList({ authToken }: { authToken: string }) {
         reactApi.thoughts.delete.mutationOptions({
             context: { authToken },
 
-            onMutate: async ({ id }) => {
-                await queryClient.cancelQueries({ queryKey: thoughtsQueryKey })
+            onMutate: async variables => {
+                await queryClient.cancelQueries({ queryKey: getThoughtsQueryKey })
 
-                const previousData = queryClient.getQueryData<ThoughtsInfiniteData>(thoughtsQueryKey)
+                const staleData = queryClient.getQueryData(getThoughtsQueryKey)
 
-                queryClient.setQueryData<ThoughtsInfiniteData>(thoughtsQueryKey, old => {
-                    //  REMARKS: Should we still optimistically update even if there is no previous data?
+                queryClient.setQueryData(getThoughtsQueryKey, staleData => {
+                    const data = staleData ?? { pages: [], pageParams: [] }
 
-                    if (!old) return old
+                    const pageThoughtLimit = config.listPaginationLimit
 
-                    return {
-                        ...old,
+                    const staleThoughts = data.pages.flatMap(page => page.thoughts ?? [])
 
-                        //  REMARKS: Is it right to delete the thought from the first page, even if it exceeds the pagination limit? Or should we cascade-update all pages?
+                    const stalePageCount = data.pages.length
+                    const staleDataHasMore = data.pages[stalePageCount - 1]?.hasMore ?? false
 
-                        pages: old.pages.map(page => ({
-                            ...page,
+                    const updatedThoughts = staleThoughts.filter(thought => thought.id !== variables.id)
 
-                            thoughts: (page.thoughts ?? []).filter(thought => thought.id !== id)
-                        }))
+                    const updatedPageCount = Math.ceil(updatedThoughts.length / pageThoughtLimit) || 1
+
+                    const updatedPages: typeof data.pages = []
+
+                    for (const pageIndex of Array(updatedPageCount).keys()) {
+                        const isLastPage = pageIndex === updatedPageCount - 1
+
+                        const startThoughtIndex = pageIndex * pageThoughtLimit
+                        const endThoughtIndex = startThoughtIndex + pageThoughtLimit
+
+                        const pageThoughts = updatedThoughts.slice(startThoughtIndex, endThoughtIndex)
+
+                        updatedPages.push({
+                            thoughts: pageThoughts,
+                            hasMore: isLastPage ? staleDataHasMore : true
+                        })
                     }
+
+                    return { ...data, pages: updatedPages }
                 })
 
-                return { previousData }
+                return { staleData }
             },
 
-            //  REMARKS: Could we name `_variables` better?
-
-            onError: (error, _variables, context) => {
+            onError: (error, variables, context) => {
                 logger.error({ title: "Failed to Delete Thought", data: { error } })
 
-                //  REMARKS: Does this consider concurrent optimistic updates?
-
-                if (context?.previousData) queryClient.setQueryData<ThoughtsInfiniteData>(thoughtsQueryKey, context.previousData)
+                if (context?.staleData) queryClient.setQueryData(getThoughtsQueryKey, context.staleData)
 
                 showToast({
                     style: Toast.Style.Failure,
@@ -181,19 +206,19 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                     message: "Please try again later."
                 })
             },
-            onSettled: () => queryClient.invalidateQueries({ queryKey: thoughtsQueryKey })
+
+            onSettled: () => {
+                if (queryClient.isMutating({ mutationKey: thoughtsQueryKey }) === 1) queryClient.invalidateQueries({ queryKey: getThoughtsQueryKey })
+            }
         })
     )
 
     const actionPaletteContext = useActionPalette({ safe: true })
 
-    /**
-     * @remarks Should we default to null/undefined or an empty array here?
-     */
-    const thoughts = data?.pages.flatMap(page => page.thoughts ?? []) ?? []
+    const thoughts = data?.pages.flatMap(page => page.thoughts ?? []) ?? null
 
     const isFetchingMutation = createMutation.isPending || deleteMutation.isPending
-    const isFetching = isFetchingThoughts || isFetchingNextPage || isFetchingMutation
+    const isFetching = isFetchingThoughts || isFetchingMutation
 
     if (error) {
         const isVersionIncompatibleError = checkIsVersionIncompatibleError(error)
@@ -215,9 +240,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
     const resolveItemTitle = (thought: Thought) => (thought.alias?.length ? thought.alias : (thought.content ?? "No content."))
     const resolveItemSubtitle = (thought: Thought) => (thought.alias?.length ? (thought.content ?? "No content.") : null)
 
-    const handleCreateThought = async (thoughtInput: { content: string; alias: string | null }) => {
-        createMutation.mutate(thoughtInput)
-    }
+    const handleCreateThought = async (thought: { content: string; alias: string | null }) => createMutation.mutate(thought)
 
     const handleDeleteThought = async (thought: Thought, { showConfirmation = true }: { showConfirmation?: boolean } = {}) => {
         if (showConfirmation) {
@@ -247,14 +270,14 @@ function ThoughtsList({ authToken }: { authToken: string }) {
     }
 
     const pagination = {
-        pageSize: paginationLimit,
+        pageSize: config.listPaginationLimit,
         hasMore: hasNextPage,
         onLoadMore: fetchNextPage
     }
 
     const createActions = (thought?: Thought) => (
         <ActionPanel>
-            <ActionPanel.Section title="View">{thought && <Action title={`${isInspectorOpen ? "Hide" : "Open"} Inspector`} onAction={() => setIsInspectorOpen(prev => !prev)} shortcut={{ modifiers: ["cmd"], key: "i" }} icon={isInspectorOpen ? Icon.EyeDisabled : Icon.Eye} />}</ActionPanel.Section>
+            <ActionPanel.Section title="View">{thought && <Action title={`${isShowingInspector ? "Hide" : "Open"} Inspector`} onAction={() => setIsShowingInspector(prev => !prev)} shortcut={{ modifiers: ["cmd"], key: "i" }} icon={isShowingInspector ? Icon.EyeDisabled : Icon.Eye} />}</ActionPanel.Section>
 
             <ActionPanel.Section title="Modify">
                 <Action title="Create Thought" onAction={() => setIsCreatingThought(true)} shortcut={{ modifiers: ["cmd"], key: "n" }} icon={Icon.PlusCircle} />
@@ -279,17 +302,17 @@ function ThoughtsList({ authToken }: { authToken: string }) {
     if (isCreatingThought) return <CaptureThought pop={() => setIsCreatingThought(false)} shouldCloseOnSubmit={false} onCreateThought={handleCreateThought} />
 
     return (
-        <List isLoading={isFetching} actions={createActions()} pagination={pagination} navigationTitle="View Thoughts" isShowingDetail={isInspectorOpen}>
-            {thoughts.length === 0 && !isFetching && <List.EmptyView title="No thoughts found." description="Create your first thought to get started." icon={Icon.PlusTopRightSquare} />}
+        <List isLoading={isFetching} actions={createActions()} pagination={pagination} navigationTitle="View Thoughts" isShowingDetail={isShowingInspector}>
+            {thoughts && thoughts.length === 0 && <List.EmptyView title="No thoughts found." description="Create your first thought to get started." icon={Icon.PlusTopRightSquare} />}
 
-            {thoughts.map(thought => (
+            {thoughts?.map(thought => (
                 <List.Item
                     key={thought.id}
                     title={resolveItemTitle(thought)}
                     subtitle={resolveItemSubtitle(thought) ?? undefined}
                     actions={createActions(thought)}
                     accessories={
-                        isInspectorOpen
+                        isShowingInspector
                             ? null
                             : [
                                   {

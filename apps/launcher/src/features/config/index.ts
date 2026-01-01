@@ -23,6 +23,8 @@ export const configDef = {
 
     themeIcons: false,
 
+    listPaginationLimit: 25,
+
     developmentBaseUrl: "http://localhost:258",
     productionBaseUrl: "https://altered.app",
 

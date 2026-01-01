@@ -22,23 +22,33 @@ export async function getThoughts({
         brainId: string | null
         db: Database
     }
-}): Promise<Thought[] | null> {
+}): Promise<{
+    thoughts: Thought[] | null
+    hasMore: boolean
+}> {
     try {
-        if (!brainId) return null
+        if (!brainId) return { thoughts: null, hasMore: false }
 
         const limit = pagination.limit ?? 25
+        /**
+         * Fetches an additional item to determine if there are more pages to fetch after this one without a separate query.
+         */
+        const fetchLimit = limit + 1
 
         if (pagination.type === "offset") {
             const offsetThoughts = await db.query.thoughts.findMany({
                 where: { brainId },
                 orderBy: { createdAt: "desc" },
-                limit,
+                limit: fetchLimit,
                 offset: pagination.offset
             })
 
-            if (!offsetThoughts.length) return null
+            if (!offsetThoughts.length) return { thoughts: null, hasMore: false }
 
-            return offsetThoughts
+            const hasMore = offsetThoughts.length > limit
+            const thoughts = hasMore ? offsetThoughts.slice(0, limit) : offsetThoughts
+
+            return { thoughts, hasMore }
         }
 
         if (pagination.type === "cursor") {
@@ -46,12 +56,15 @@ export async function getThoughts({
                 const initialThoughts = await db.query.thoughts.findMany({
                     where: { brainId },
                     orderBy: { createdAt: "desc" },
-                    limit
+                    limit: fetchLimit
                 })
 
-                if (!initialThoughts.length) return null
+                if (!initialThoughts.length) return { thoughts: null, hasMore: false }
 
-                return initialThoughts
+                const hasMore = initialThoughts.length > limit
+                const thoughts = hasMore ? initialThoughts.slice(0, limit) : initialThoughts
+
+                return { thoughts, hasMore }
             }
 
             for (const cursor of pagination.cursors) {
@@ -64,14 +77,17 @@ export async function getThoughts({
                     .from(thoughts)
                     .where(and(eq(thoughts.brainId, brainId), lt(thoughts.createdAt, cursorDate)))
                     .orderBy(desc(thoughts.createdAt))
-                    .limit(limit)
+                    .limit(fetchLimit)
 
                 if (!afterCursorThoughts.length) continue
 
-                return afterCursorThoughts
+                const hasMore = afterCursorThoughts.length > limit
+                const resultThoughts = hasMore ? afterCursorThoughts.slice(0, limit) : afterCursorThoughts
+
+                return { thoughts: resultThoughts, hasMore }
             }
 
-            return null
+            return { thoughts: null, hasMore: false }
         }
 
         throw new Error("Invalid pagination type.")

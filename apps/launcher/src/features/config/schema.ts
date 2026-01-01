@@ -23,6 +23,8 @@ export const configSchema = z
 
         themeIcons: z.boolean(),
 
+        listPaginationLimit: z.number(),
+
         productionBaseUrl: z.url(),
         developmentBaseUrl: z.url(),
 

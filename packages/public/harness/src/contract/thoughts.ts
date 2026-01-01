@@ -16,7 +16,8 @@ export const thoughtsContract = {
         )
         .output(
             type({
-                thoughts: thoughtSchema.array().or("null")
+                thoughts: thoughtSchema.array().or("null"),
+                hasMore: "boolean"
             })
         ),
 
