@@ -8,7 +8,7 @@ import { usePromise } from "@raycast/utils"
 import { DateTime } from "luxon"
 import { useRef, useState } from "react"
 import { api } from "~/api"
-import { isVersionIncompatibleError, VersionIncompatibleError } from "~/api/utils"
+import { isVersionIncompatibleError as checkIsVersionIncompatibleError, VersionIncompatibleError } from "~/api/utils"
 import { useAuthentication } from "~/auth"
 import { configureLogger } from "~/observability"
 import { LogOutAction, ReturnToActionPaletteAction, withContext } from "~/shared/components"
@@ -16,6 +16,27 @@ import { useActionPalette } from "../action-palette/state"
 import { CaptureThought } from "../capture-thought"
 
 const logger = configureLogger({ defaults: { scope: "commands:view-thoughts" } })
+
+/**
+ * An error that is thrown when a fetch completes, but is intentionally discarded to prevent conflicts with optimistic mutations.
+ *
+ * @remarks
+ * - Necessary with `usePromise` to prevent stale revalidation results from overwriting optimistic updates.
+ * - `usePromise` will set `data` to `undefined` when the error is thrown, so we use `fallbackDataRef` as a backup to preserve the last-known data (including optimistic mutations) until the next successful revalidation.
+ * - We don't use an `AbortController` because `usePromise`'s `abortable` option only sets `signal.aborted = true`, and doesn't actually cancel in-flight executions. Our API client doesn't consume abort signals, so aborted fetches still complete and update `data` - wiping out all optimistic updates. Throwing an error after the fetch completes is a workaround that achieves the same result.
+ *
+ * Alternative approaches considered:
+ *
+ * - Storing + tracking optimistic data in separate state and merging with the completed fetch data (more complex).
+ * - Replacing `usePromise` with Tanstack Query which has better built-in optimistic update handling (future improvement).
+ * - Modifying the API client to consume abort signals (requires excessive changes).
+ */
+class StaleRevalidationError extends Error {
+    constructor() {
+        super("Data revalidation cancelled due to pending mutation(s).")
+        this.name = "StaleRevalidationError"
+    }
+}
 
 function AuthView() {
     const { isLoading, authenticate } = useAuthentication()
@@ -38,6 +59,11 @@ function AuthView() {
     )
 }
 
+/**
+ * @todo
+ * - [P3] Consider replacing `usePromise` with a Tanstack Query hook.
+ * - [P3] Fix bug where the list does not paginate at all after a mutation (create, delete, etc.).
+ */
 function ThoughtsList({ authToken }: { authToken: string }) {
     const [isInspectorOpen, setIsInspectorOpen] = useState(false)
     /**
@@ -46,7 +72,35 @@ function ThoughtsList({ authToken }: { authToken: string }) {
     const [isCreatingThought, setIsCreatingThought] = useState(false)
 
     const [pendingMutationCount, setPendingMutationCount] = useState(0)
-    const thoughtsAbortControllerRef = useRef<AbortController | null>(null)
+    /**
+     * A ref mirror of `pendingMutationCount`.
+     *
+     * @remarks We use a ref (not state) to avoid closure capture issues and maintain synchronous access inside async functions.
+     */
+    const pendingMutationCountRef = useRef(0)
+    const isFetchingMutationRef = pendingMutationCountRef.current > 0
+
+    /**
+     * A ref mirror of `usePromise`'s `data`.
+     *
+     * @remarks
+     * Stores a copy of the last-known data for two reasons:
+     *
+     * 1. To display the previous data in the list when `data` is set to `undefined` (e.g., after a `StaleRevalidationError`).
+     * 2. To provide the data to `optimisticUpdate` callbacks when the current data is undefined.
+     *
+     * - We use a ref (not state) to avoid closure capture issues and maintain synchronous access inside async functions.
+     */
+    const fallbackDataRef = useRef<Thought[]>([])
+
+    const updatePendingMutationCount = (updater: (count: number) => number) => {
+        setPendingMutationCount(count => {
+            const newCount = updater(count)
+
+            pendingMutationCountRef.current = newCount
+            return newCount
+        })
+    }
 
     const {
         isLoading: isFetchingThoughts,
@@ -75,41 +129,64 @@ function ThoughtsList({ authToken }: { authToken: string }) {
             const hasMore = thoughts.length === 25
             const cursor = { field: "created-at", value: thoughts[thoughts.length - 1].createdAt }
 
+            if (isFetchingMutationRef) throw new StaleRevalidationError()
+
             return { data: thoughts, hasMore, cursor }
         },
 
         [authToken],
+        {
+            onError: error => {
+                if (error instanceof StaleRevalidationError) return
 
-        { abortable: thoughtsAbortControllerRef }
+                throw error
+            }
+        }
     )
 
     const actionPaletteContext = useActionPalette({ safe: true })
+
+    if (data) fallbackDataRef.current = data
+
+    /**
+     * The data to display in the list.
+     *
+     * @remarks Uses `fallbackDataRef` when `data` is undefined (e.g., after a `StaleRevalidationError`).
+     */
+    const resolvedData = data ?? fallbackDataRef.current
 
     const isFetchingMutation = pendingMutationCount > 0
     const isFetching = isFetchingThoughts || isFetchingMutation
 
     if (error) {
-        if (isVersionIncompatibleError(error)) return <VersionIncompatibleError />
+        const isVersionIncompatibleError = checkIsVersionIncompatibleError(error)
+        const isStaleRevalidationError = error instanceof StaleRevalidationError
+        const isUnknownError = !(isVersionIncompatibleError || isStaleRevalidationError)
 
-        showToast({
-            style: Toast.Style.Failure,
-            title: "Error Getting Thoughts",
-            message: "Please try again later."
-        })
+        if (isVersionIncompatibleError) return <VersionIncompatibleError />
 
-        if (actionPaletteContext) actionPaletteContext.resetState()
-        else popToRoot({ clearSearchBar: true })
+        if (isUnknownError) {
+            showToast({
+                style: Toast.Style.Failure,
+                title: "Error Getting Thoughts",
+                message: "Please try again later."
+            })
 
-        console.error(error)
+            if (actionPaletteContext) actionPaletteContext.resetState()
+            else popToRoot({ clearSearchBar: true })
+
+            console.error(error)
+        }
     }
 
     const resolveItemTitle = (thought: Thought) => (thought.alias?.length ? thought.alias : (thought.content ?? "No content."))
     const resolveItemSubtitle = (thought: Thought) => (thought.alias?.length ? (thought.content ?? "No content.") : null)
 
+    /**
+     * @remarks Uses `pendingMutationCount` to debounce revalidation — only triggers `revalidate()` when all pending mutations have completed. This prevents intermediate revalidations from overwriting optimistic updates when multiple mutations happen in quick succession.
+     */
     const handleCreateThought = async (thoughtInput: { content: string; alias: string | null }) => {
-        thoughtsAbortControllerRef.current?.abort()
-
-        setPendingMutationCount(count => count + 1)
+        updatePendingMutationCount(count => count + 1)
 
         try {
             await mutate(
@@ -127,9 +204,10 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                             updatedAt: new Date()
                         }
 
-                        return [optimisticThought, ...(oldThoughts ?? [])]
-                    },
+                        const currentThoughts = oldThoughts ?? fallbackDataRef.current
 
+                        return [optimisticThought, ...currentThoughts]
+                    },
                     shouldRevalidateAfter: false
                 }
             )
@@ -142,17 +220,20 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                 message: "Please try again later."
             })
         } finally {
-            setPendingMutationCount(count => {
-                const finishedCount = count - 1
+            updatePendingMutationCount(count => {
+                const newCount = count - 1
 
-                const noPendingMutations = finishedCount === 0
+                const noPendingMutations = newCount === 0
                 if (noPendingMutations) revalidate()
 
-                return finishedCount
+                return newCount
             })
         }
     }
 
+    /**
+     * @remarks Uses the same `pendingMutationCount` debouncing pattern as `handleCreateThought`.
+     */
     const handleDeleteThought = async (thought: Thought, { showConfirmation = true }: { showConfirmation?: boolean } = {}) => {
         if (showConfirmation) {
             const thoughtSummary = thought.alias ?? thought.content ?? null
@@ -166,15 +247,18 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                 primaryAction: {
                     title: "Delete",
                     style: Alert.ActionStyle.Destructive
-                }
+                },
+
+                /**
+                 * @remarks Don't use, it doesn't work. Shows a nice checkbox but it shows up unchecked even after checking it. Could have to do with our dynamic confirmation message - but this is definitely a bug. Confirmation preferences should not be stored based on the content of the confirmation message.
+                 */
+                rememberUserChoice: false
             })
 
             if (!isConfirmed) return
         }
 
-        thoughtsAbortControllerRef.current?.abort()
-
-        setPendingMutationCount(count => count + 1)
+        updatePendingMutationCount(count => count + 1)
 
         try {
             await mutate(
@@ -190,8 +274,11 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                     }),
 
                 {
-                    optimisticUpdate: oldThoughts => (oldThoughts ?? []).filter(oldThought => oldThought.id !== thought.id),
+                    optimisticUpdate: oldThoughts => {
+                        const currentThoughts = oldThoughts ?? fallbackDataRef.current
 
+                        return currentThoughts.filter(oldThought => oldThought.id !== thought.id)
+                    },
                     shouldRevalidateAfter: false
                 }
             )
@@ -204,31 +291,29 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                 message: "Please try again later."
             })
         } finally {
-            setPendingMutationCount(count => {
-                const finishedCount = count - 1
+            updatePendingMutationCount(count => {
+                const newCount = count - 1
 
-                const noPendingMutations = finishedCount === 0
+                const noPendingMutations = newCount === 0
                 if (noPendingMutations) revalidate()
 
-                return finishedCount
+                return newCount
             })
         }
     }
 
     const createActions = (thought?: Thought) => (
         <ActionPanel>
-            <ActionPanel.Section title="View">
-                <Action title={`${isInspectorOpen ? "Hide" : "Open"} Inspector`} onAction={() => setIsInspectorOpen(prev => !prev)} shortcut={{ modifiers: ["cmd"], key: "i" }} icon={isInspectorOpen ? Icon.EyeDisabled : Icon.Eye} />
-            </ActionPanel.Section>
+            <ActionPanel.Section title="View">{thought && <Action title={`${isInspectorOpen ? "Hide" : "Open"} Inspector`} onAction={() => setIsInspectorOpen(prev => !prev)} shortcut={{ modifiers: ["cmd"], key: "i" }} icon={isInspectorOpen ? Icon.EyeDisabled : Icon.Eye} />}</ActionPanel.Section>
 
             <ActionPanel.Section title="Modify">
-                <Action title="Create" onAction={() => setIsCreatingThought(true)} shortcut={{ modifiers: ["cmd"], key: "n" }} icon={Icon.PlusSquare} />
+                <Action title="Create Thought" onAction={() => setIsCreatingThought(true)} shortcut={{ modifiers: ["cmd"], key: "n" }} icon={Icon.PlusCircle} />
 
-                <Action title="Edit" onAction={() => {}} shortcut={{ modifiers: ["cmd"], key: "e" }} icon={Icon.Pencil} />
+                {thought && <Action title="Edit Thought" onAction={() => {}} shortcut={{ modifiers: ["cmd"], key: "e" }} icon={Icon.Pencil} />}
 
-                {thought && <Action title="Delete" onAction={() => handleDeleteThought(thought)} shortcut={{ modifiers: ["shift"], key: "delete" }} icon={Icon.Trash} style={Action.Style.Destructive} />}
+                {thought && <Action title="Delete Thought" onAction={() => handleDeleteThought(thought)} shortcut={{ modifiers: ["shift"], key: "delete" }} icon={Icon.Trash} style={Action.Style.Destructive} />}
 
-                {thought && <Action title="Force Delete" onAction={() => handleDeleteThought(thought, { showConfirmation: false })} shortcut={{ modifiers: ["shift", "cmd"], key: "delete" }} icon={Icon.ExclamationMark} style={Action.Style.Destructive} />}
+                {thought && <Action title="Delete Without Confirmation" onAction={() => handleDeleteThought(thought, { showConfirmation: false })} shortcut={{ modifiers: ["shift", "cmd"], key: "delete" }} icon={Icon.Trash} style={Action.Style.Destructive} />}
             </ActionPanel.Section>
 
             <ActionPanel.Section title="Navigate">{actionPaletteContext && <ReturnToActionPaletteAction resetNavigationState={actionPaletteContext.resetState} />}</ActionPanel.Section>
@@ -245,9 +330,9 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 
     return (
         <List isLoading={isFetching} actions={createActions()} pagination={pagination} navigationTitle="View Thoughts" isShowingDetail={isInspectorOpen}>
-            {data?.length === 0 && <List.EmptyView title="No thoughts found." description="Create your first thought to get started." icon={Icon.PlusTopRightSquare} />}
+            {resolvedData?.length === 0 && <List.EmptyView title="No thoughts found." description="Create your first thought to get started." icon={Icon.PlusTopRightSquare} />}
 
-            {data?.map(thought => (
+            {resolvedData?.map(thought => (
                 <List.Item
                     key={thought.id}
                     title={resolveItemTitle(thought)}
@@ -285,7 +370,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 }
 
 /**
- * @todo [P2] Add local caching to the Tanstack Query client for immediate thought retrieval.
+ * @todo [P2] Add local caching for immediate thought retrieval.
  */
 export function ViewThoughts() {
     logger.log()
