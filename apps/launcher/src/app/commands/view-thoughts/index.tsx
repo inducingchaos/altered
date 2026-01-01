@@ -62,7 +62,7 @@ function AuthView() {
 /**
  * @todo
  * - [P3] Consider replacing `usePromise` with a Tanstack Query hook.
- * - [P3] Fix bug where the list does not paginate at all after a mutation (create, delete, etc.).
+ * - [P3] Fix bug where the list does not paginate at all after a mutation (create, delete, etc.). We tried removing all `revalidate` calls and trusting the optimistic data (since `revalidate` is likely scrapping our pagination state) - it worked, but came with the caveat of having inaccurate optimistic values (e.g., the ID and dates) as they are created server-side.
  */
 function ThoughtsList({ authToken }: { authToken: string }) {
     const [isInspectorOpen, setIsInspectorOpen] = useState(false)
