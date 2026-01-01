@@ -4,10 +4,10 @@
 
 import type { CursorDefinition, Thought } from "@altered/data/shapes"
 import { Action, ActionPanel, Alert, Color, confirmAlert, Icon, List, popToRoot, showToast, Toast } from "@raycast/api"
-import { usePromise } from "@raycast/utils"
+import { InfiniteData, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { DateTime } from "luxon"
-import { useRef, useState } from "react"
-import { api } from "~/api"
+import { useState } from "react"
+import { api as reactApi } from "~/api/react"
 import { isVersionIncompatibleError as checkIsVersionIncompatibleError, VersionIncompatibleError } from "~/api/utils"
 import { useAuthentication } from "~/auth"
 import { configureLogger } from "~/observability"
@@ -17,26 +17,7 @@ import { CaptureThought } from "../capture-thought"
 
 const logger = configureLogger({ defaults: { scope: "commands:view-thoughts" } })
 
-/**
- * An error that is thrown when a fetch completes, but is intentionally discarded to prevent conflicts with optimistic mutations.
- *
- * @remarks
- * - Necessary with `usePromise` to prevent stale revalidation results from overwriting optimistic updates.
- * - `usePromise` will set `data` to `undefined` when the error is thrown, so we use `fallbackDataRef` as a backup to preserve the last-known data (including optimistic mutations) until the next successful revalidation.
- * - We don't use an `AbortController` because `usePromise`'s `abortable` option only sets `signal.aborted = true`, and doesn't actually cancel in-flight executions. Our API client doesn't consume abort signals, so aborted fetches still complete and update `data` - wiping out all optimistic updates. Throwing an error after the fetch completes is a workaround that achieves the same result.
- *
- * Alternative approaches considered:
- *
- * - Storing + tracking optimistic data in separate state and merging with the completed fetch data (more complex).
- * - Replacing `usePromise` with Tanstack Query which has better built-in optimistic update handling (future improvement).
- * - Modifying the API client to consume abort signals (requires excessive changes).
- */
-class StaleRevalidationError extends Error {
-    constructor() {
-        super("Data revalidation cancelled due to pending mutation(s).")
-        this.name = "StaleRevalidationError"
-    }
-}
+const paginationLimit = 25
 
 function AuthView() {
     const { isLoading, authenticate } = useAuthentication()
@@ -59,11 +40,6 @@ function AuthView() {
     )
 }
 
-/**
- * @todo
- * - [P3] Consider replacing `usePromise` with a Tanstack Query hook.
- * - [P3] Fix bug where the list does not paginate at all after a mutation (create, delete, etc.). We tried removing all `revalidate` calls and trusting the optimistic data (since `revalidate` is likely scrapping our pagination state) - it worked, but came with the caveat of having inaccurate optimistic values (e.g., the ID and dates) as they are created server-side.
- */
 function ThoughtsList({ authToken }: { authToken: string }) {
     const [isInspectorOpen, setIsInspectorOpen] = useState(false)
     /**
@@ -71,169 +47,178 @@ function ThoughtsList({ authToken }: { authToken: string }) {
      */
     const [isCreatingThought, setIsCreatingThought] = useState(false)
 
-    const [pendingMutationCount, setPendingMutationCount] = useState(0)
     /**
-     * A ref mirror of `pendingMutationCount`.
-     *
-     * @remarks We use a ref (not state) to avoid closure capture issues and maintain synchronous access inside async functions.
+     * @remarks Do we need this, or can we consume the client as context within the query options?
      */
-    const pendingMutationCountRef = useRef(0)
-    const isFetchingMutationRef = pendingMutationCountRef.current > 0
+    const queryClient = useQueryClient()
 
-    /**
-     * A ref mirror of `usePromise`'s `data`.
-     *
-     * @remarks
-     * Stores a copy of the last-known data for two reasons:
-     *
-     * 1. To display the previous data in the list when `data` is set to `undefined` (e.g., after a `StaleRevalidationError`).
-     * 2. To provide the data to `optimisticUpdate` callbacks when the current data is undefined.
-     *
-     * - We use a ref (not state) to avoid closure capture issues and maintain synchronous access inside async functions.
-     */
-    const fallbackDataRef = useRef<Thought[]>([])
-
-    const updatePendingMutationCount = (updater: (count: number) => number) => {
-        setPendingMutationCount(count => {
-            const newCount = updater(count)
-
-            pendingMutationCountRef.current = newCount
-            return newCount
-        })
-    }
-
-    const {
-        isLoading: isFetchingThoughts,
-        data,
-        error,
-        pagination,
-        mutate,
-        revalidate
-    } = usePromise(
-        (authToken: string) => async (pagination: { cursor?: CursorDefinition }) => {
-            const { data: apiData, error: apiError } = await api.thoughts.get(
-                {
-                    pagination: {
-                        type: "cursor",
-                        cursors: pagination.cursor ? [pagination.cursor] : null,
-                        limit: 25
-                    }
-                },
-
-                { context: { authToken } }
-            )
-
-            if (apiError) throw apiError
-
-            const thoughts = apiData.thoughts ?? []
-            const hasMore = thoughts.length === 25
-            const cursor = { field: "created-at", value: thoughts[thoughts.length - 1].createdAt }
-
-            if (isFetchingMutationRef) throw new StaleRevalidationError()
-
-            return { data: thoughts, hasMore, cursor }
-        },
-
-        [authToken],
-        {
-            onError: error => {
-                if (error instanceof StaleRevalidationError) return
-
-                throw error
+    const infiniteQueryOptions = reactApi.thoughts.get.infiniteOptions({
+        input: (pageParam: CursorDefinition | null) => ({
+            pagination: {
+                type: "cursor",
+                cursors: pageParam ? [pageParam] : null,
+                limit: paginationLimit
             }
+        }),
+        context: { authToken },
+
+        initialPageParam: null,
+        getNextPageParam: lastPage => {
+            const thoughts = lastPage.thoughts ?? []
+            if (thoughts.length < paginationLimit) return undefined
+
+            const lastThought = thoughts[thoughts.length - 1]
+            return { field: "created-at", value: lastThought.createdAt } satisfies CursorDefinition
         }
+    })
+
+    const thoughtsQueryKey = infiniteQueryOptions.queryKey
+
+    //  REMARKS: Are these typings necessary? I believe the query options (and similar) should be implicitly typed.
+
+    type ThoughtsPage = { thoughts: Thought[] | null }
+    type ThoughtsInfiniteData = InfiniteData<ThoughtsPage, CursorDefinition | null>
+
+    const { data, error, isFetching: isFetchingThoughts, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteQuery(infiniteQueryOptions)
+
+    const createMutation = useMutation(
+        reactApi.thoughts.create.mutationOptions({
+            context: { authToken },
+
+            onMutate: async thoughtInput => {
+                await queryClient.cancelQueries({ queryKey: thoughtsQueryKey })
+
+                const previousData = queryClient.getQueryData<ThoughtsInfiniteData>(thoughtsQueryKey)
+
+                const optimisticThought: Thought = {
+                    //  REMARKS: Is this the best strategy for an optimistic ID?
+                    id: `optimistic-${Date.now()}`,
+                    alias: thoughtInput.alias,
+                    content: thoughtInput.content,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                }
+
+                queryClient.setQueryData<ThoughtsInfiniteData>(thoughtsQueryKey, old => {
+                    //  REMARKS: Should we instead optimistically update even if there is no previous data?
+
+                    if (!old) return old
+
+                    return {
+                        ...old,
+
+                        //  REMARKS: Is it right to insert the optimistic thought into the first page, even if it exceeds the pagination limit? Or should we cascade-update all pages?
+
+                        pages: old.pages.map((page, index) => (index === 0 ? { ...page, thoughts: [optimisticThought, ...(page.thoughts ?? [])] } : page))
+                    }
+                })
+
+                return { previousData }
+            },
+
+            //  REMARKS: Could we name `_variables` better?
+
+            onError: (error, _variables, context) => {
+                logger.error({ title: "Failed to Create Thought", data: { error } })
+
+                //  REMARKS: Does this consider concurrent optimistic updates?
+
+                if (context?.previousData) queryClient.setQueryData<ThoughtsInfiniteData>(thoughtsQueryKey, context.previousData)
+
+                showToast({
+                    style: Toast.Style.Failure,
+                    title: "Failed to Create Thought",
+                    message: "Please try again later."
+                })
+            },
+
+            onSettled: () => queryClient.invalidateQueries({ queryKey: thoughtsQueryKey })
+        })
+    )
+
+    const deleteMutation = useMutation(
+        reactApi.thoughts.delete.mutationOptions({
+            context: { authToken },
+
+            onMutate: async ({ id }) => {
+                await queryClient.cancelQueries({ queryKey: thoughtsQueryKey })
+
+                const previousData = queryClient.getQueryData<ThoughtsInfiniteData>(thoughtsQueryKey)
+
+                queryClient.setQueryData<ThoughtsInfiniteData>(thoughtsQueryKey, old => {
+                    //  REMARKS: Should we still optimistically update even if there is no previous data?
+
+                    if (!old) return old
+
+                    return {
+                        ...old,
+
+                        //  REMARKS: Is it right to delete the thought from the first page, even if it exceeds the pagination limit? Or should we cascade-update all pages?
+
+                        pages: old.pages.map(page => ({
+                            ...page,
+
+                            thoughts: (page.thoughts ?? []).filter(thought => thought.id !== id)
+                        }))
+                    }
+                })
+
+                return { previousData }
+            },
+
+            //  REMARKS: Could we name `_variables` better?
+
+            onError: (error, _variables, context) => {
+                logger.error({ title: "Failed to Delete Thought", data: { error } })
+
+                //  REMARKS: Does this consider concurrent optimistic updates?
+
+                if (context?.previousData) queryClient.setQueryData<ThoughtsInfiniteData>(thoughtsQueryKey, context.previousData)
+
+                showToast({
+                    style: Toast.Style.Failure,
+                    title: "Failed to Delete Thought",
+                    message: "Please try again later."
+                })
+            },
+            onSettled: () => queryClient.invalidateQueries({ queryKey: thoughtsQueryKey })
+        })
     )
 
     const actionPaletteContext = useActionPalette({ safe: true })
 
-    if (data) fallbackDataRef.current = data
-
     /**
-     * The data to display in the list.
-     *
-     * @remarks Uses `fallbackDataRef` when `data` is undefined (e.g., after a `StaleRevalidationError`).
+     * @remarks Should we default to null/undefined or an empty array here?
      */
-    const resolvedData = data ?? fallbackDataRef.current
+    const thoughts = data?.pages.flatMap(page => page.thoughts ?? []) ?? []
 
-    const isFetchingMutation = pendingMutationCount > 0
-    const isFetching = isFetchingThoughts || isFetchingMutation
+    const isFetchingMutation = createMutation.isPending || deleteMutation.isPending
+    const isFetching = isFetchingThoughts || isFetchingNextPage || isFetchingMutation
 
     if (error) {
         const isVersionIncompatibleError = checkIsVersionIncompatibleError(error)
-        const isStaleRevalidationError = error instanceof StaleRevalidationError
-        const isUnknownError = !(isVersionIncompatibleError || isStaleRevalidationError)
 
         if (isVersionIncompatibleError) return <VersionIncompatibleError />
 
-        if (isUnknownError) {
-            showToast({
-                style: Toast.Style.Failure,
-                title: "Error Getting Thoughts",
-                message: "Please try again later."
-            })
+        showToast({
+            style: Toast.Style.Failure,
+            title: "Error Getting Thoughts",
+            message: "Please try again later."
+        })
 
-            if (actionPaletteContext) actionPaletteContext.resetState()
-            else popToRoot({ clearSearchBar: true })
+        if (actionPaletteContext) actionPaletteContext.resetState()
+        else popToRoot({ clearSearchBar: true })
 
-            console.error(error)
-        }
+        console.error(error)
     }
 
     const resolveItemTitle = (thought: Thought) => (thought.alias?.length ? thought.alias : (thought.content ?? "No content."))
     const resolveItemSubtitle = (thought: Thought) => (thought.alias?.length ? (thought.content ?? "No content.") : null)
 
-    /**
-     * @remarks Uses `pendingMutationCount` to debounce revalidation — only triggers `revalidate()` when all pending mutations have completed. This prevents intermediate revalidations from overwriting optimistic updates when multiple mutations happen in quick succession.
-     */
     const handleCreateThought = async (thoughtInput: { content: string; alias: string | null }) => {
-        updatePendingMutationCount(count => count + 1)
-
-        try {
-            await mutate(
-                api.thoughts.create(thoughtInput, { context: { authToken } }).then(({ error }) => {
-                    if (error) throw error
-                }),
-
-                {
-                    optimisticUpdate: oldThoughts => {
-                        const optimisticThought: Thought = {
-                            id: `optimistic-${Date.now()}`,
-                            alias: thoughtInput.alias,
-                            content: thoughtInput.content,
-                            createdAt: new Date(),
-                            updatedAt: new Date()
-                        }
-
-                        const currentThoughts = oldThoughts ?? fallbackDataRef.current
-
-                        return [optimisticThought, ...currentThoughts]
-                    },
-                    shouldRevalidateAfter: false
-                }
-            )
-        } catch (error) {
-            logger.error({ title: "Failed to Create Thought", data: { error } })
-
-            await showToast({
-                style: Toast.Style.Failure,
-                title: "Failed to Create Thought",
-                message: "Please try again later."
-            })
-        } finally {
-            updatePendingMutationCount(count => {
-                const newCount = count - 1
-
-                const noPendingMutations = newCount === 0
-                if (noPendingMutations) revalidate()
-
-                return newCount
-            })
-        }
+        createMutation.mutate(thoughtInput)
     }
 
-    /**
-     * @remarks Uses the same `pendingMutationCount` debouncing pattern as `handleCreateThought`.
-     */
     const handleDeleteThought = async (thought: Thought, { showConfirmation = true }: { showConfirmation?: boolean } = {}) => {
         if (showConfirmation) {
             const thoughtSummary = thought.alias ?? thought.content ?? null
@@ -258,48 +243,13 @@ function ThoughtsList({ authToken }: { authToken: string }) {
             if (!isConfirmed) return
         }
 
-        updatePendingMutationCount(count => count + 1)
+        deleteMutation.mutate({ id: thought.id })
+    }
 
-        try {
-            await mutate(
-                api.thoughts
-                    .delete(
-                        {
-                            id: thought.id
-                        },
-                        { context: { authToken } }
-                    )
-                    .then(({ error }) => {
-                        if (error) throw error
-                    }),
-
-                {
-                    optimisticUpdate: oldThoughts => {
-                        const currentThoughts = oldThoughts ?? fallbackDataRef.current
-
-                        return currentThoughts.filter(oldThought => oldThought.id !== thought.id)
-                    },
-                    shouldRevalidateAfter: false
-                }
-            )
-        } catch (error) {
-            logger.error({ title: "Failed to Delete Thought", data: { error } })
-
-            await showToast({
-                style: Toast.Style.Failure,
-                title: "Failed to Delete Thought",
-                message: "Please try again later."
-            })
-        } finally {
-            updatePendingMutationCount(count => {
-                const newCount = count - 1
-
-                const noPendingMutations = newCount === 0
-                if (noPendingMutations) revalidate()
-
-                return newCount
-            })
-        }
+    const pagination = {
+        pageSize: paginationLimit,
+        hasMore: hasNextPage,
+        onLoadMore: fetchNextPage
     }
 
     const createActions = (thought?: Thought) => (
@@ -330,9 +280,9 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 
     return (
         <List isLoading={isFetching} actions={createActions()} pagination={pagination} navigationTitle="View Thoughts" isShowingDetail={isInspectorOpen}>
-            {resolvedData?.length === 0 && <List.EmptyView title="No thoughts found." description="Create your first thought to get started." icon={Icon.PlusTopRightSquare} />}
+            {thoughts.length === 0 && !isFetching && <List.EmptyView title="No thoughts found." description="Create your first thought to get started." icon={Icon.PlusTopRightSquare} />}
 
-            {resolvedData?.map(thought => (
+            {thoughts.map(thought => (
                 <List.Item
                     key={thought.id}
                     title={resolveItemTitle(thought)}
