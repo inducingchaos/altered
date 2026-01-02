@@ -3,6 +3,7 @@
  */
 
 import { onError, ORPCError, ValidationError } from "@orpc/server"
+import { AppRouteFactoryContext, ProtectedRouteFactoryContext, PublicRouteFactoryContext } from "../context"
 import { apiFactory } from "../factory"
 import { appContextProvider, checkVersion, dbProvider, logError, requireAuth } from "../middleware"
 
@@ -28,6 +29,10 @@ const logValidationError = (error: unknown) => {
     }
 }
 
-export const publicRouteFactory = apiFactory.use(logError).use(onError(logValidationError)).use(checkVersion).use(dbProvider)
-export const protectedRouteFactory = publicRouteFactory.use(requireAuth)
-export const appRouteFactory = protectedRouteFactory.use(appContextProvider)
+const publicRouteMiddleware = logError.concat(onError(logValidationError)).concat(checkVersion).concat(dbProvider)
+const protectedRouteMiddleware = publicRouteMiddleware.concat(requireAuth)
+const appRouteMiddleware = protectedRouteMiddleware.concat(appContextProvider)
+
+export const publicRouteFactory = apiFactory.use<PublicRouteFactoryContext>(publicRouteMiddleware)
+export const protectedRouteFactory = apiFactory.use<ProtectedRouteFactoryContext>(protectedRouteMiddleware)
+export const appRouteFactory = apiFactory.use<AppRouteFactoryContext>(appRouteMiddleware)
