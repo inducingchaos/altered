@@ -2,7 +2,7 @@
  *
  */
 
-import { creatableThoughtSchema, paginationOptionsSchema, thoughtSchema } from "@altered/data/shapes"
+import { mutableThoughtSchema, paginationOptionsSchema, queryableThoughtSchema, thoughtSchema } from "@altered/data/shapes"
 import { type } from "arktype"
 import { contractFactory } from "./factory"
 
@@ -32,7 +32,16 @@ export const thoughtsContract = {
 
     create: contractFactory
         .route({ tags: ["internal"] })
-        .input(creatableThoughtSchema)
+        .input(mutableThoughtSchema)
+        .output(
+            type({
+                thought: thoughtSchema
+            })
+        ),
+
+    update: contractFactory
+        .route({ tags: ["internal"] })
+        .input(type({ where: queryableThoughtSchema, values: mutableThoughtSchema }))
         .output(
             type({
                 thought: thoughtSchema

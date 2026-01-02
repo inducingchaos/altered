@@ -9,7 +9,7 @@ import { logLevels, logPartsConfigSchema } from "../observability/logger/constan
 export const configSchema = z
     .object({
         cwd: z.string(),
-        environment: z.enum(["development", "production"]),
+        overrideEnvironment: z.enum(["development", "production"]).default("development"),
 
         logLevel: z.enum(logLevels).optional(),
         logSearch: z.string().optional(),
@@ -38,7 +38,7 @@ export const configSchema = z
         return {
             ...config,
 
-            baseUrl: config.environment === "development" ? config.developmentBaseUrl : config.productionBaseUrl,
+            baseUrl: environment.isDevelopment ? (config.overrideEnvironment === "development" ? config.developmentBaseUrl : config.productionBaseUrl) : config.productionBaseUrl,
 
             appIcon: environment.appearance === "dark" ? config.appIcon.split(".").reduce((previous, current, index, original) => (index === original.length - 1 ? `${previous}@dark.${current}` : previous ? `${previous}.${current}` : current), "") : config.appIcon
         }

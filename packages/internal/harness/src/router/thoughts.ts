@@ -2,7 +2,7 @@
  *
  */
 
-import { createThought, deleteThought, getLatestThought, getThoughts } from "@altered-internal/data/access"
+import { createThought, deleteThought, getLatestThought, getThoughts, updateThought } from "@altered-internal/data/access"
 import { internalTestThought } from "@altered-internal/data/shapes"
 import { appRouteFactory, protectedRouteFactory } from "./factory"
 
@@ -44,10 +44,19 @@ export const deleteThoughtProcedure = appRouteFactory.thoughts.delete.handler(as
     })
 }))
 
+export const updateThoughtProcedure = appRouteFactory.thoughts.update.handler(async ({ input: { where, values }, context }) => ({
+    thought: await updateThought({
+        where: { ...where, brainId: context.app.selectedBrainId },
+        values,
+        context
+    })
+}))
+
 export const thoughtsRouter = {
     get: getThoughtsProcedure,
     find: findThoughtProcedure,
     create: createThoughtProcedure,
     getLatest: getLatestThoughtProcedure,
-    delete: deleteThoughtProcedure
+    delete: deleteThoughtProcedure,
+    update: updateThoughtProcedure
 }

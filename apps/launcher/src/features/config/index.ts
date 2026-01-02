@@ -7,7 +7,7 @@ import { ConfigDef, configSchema } from "./schema"
 
 export const configDef = {
     cwd: "/Users/inducingchaos/Workspace/containers/altered/apps/launcher",
-    environment: "development",
+    overrideEnvironment: "development",
 
     logLevel: "debug",
     logSearch: "",

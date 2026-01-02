@@ -70,7 +70,7 @@ function ActionPalette() {
                                 content={createActionImageProp(action)}
                                 actions={
                                     <ActionPanel>
-                                        <Action title={`Open ${action.name}`} onAction={() => renderAction(action.id)} />
+                                        <Action title={`Open ${action.name}`} onAction={() => renderAction(action.id)} icon={Icon.ArrowRightCircle} />
 
                                         <ActionPanel.Section title="Configure">
                                             <ToggleLayoutAction />

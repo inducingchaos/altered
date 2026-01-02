@@ -2,7 +2,7 @@
  *
  */
 
-import type { CursorDefinition, Thought } from "@altered/data/shapes"
+import type { CursorDefinition, MutableThought, QueryableThought, Thought } from "@altered/data/shapes"
 import { Action, ActionPanel, Alert, Color, confirmAlert, Icon, List, popToRoot, showToast, Toast } from "@raycast/api"
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { DateTime } from "luxon"
@@ -15,6 +15,7 @@ import { configureLogger } from "~/observability"
 import { LogOutAction, ReturnToActionPaletteAction, withContext } from "~/shared/components"
 import { useActionPalette } from "../action-palette/state"
 import { CaptureThought } from "../capture-thought"
+import { EditThought } from "../edit-thought"
 
 const logger = configureLogger({ defaults: { scope: "commands:view-thoughts" } })
 
@@ -45,6 +46,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
      * @remarks This serves as single-use-case navigation history state for the `CaptureThought` form. Once we have our own generic history implemented, we can replace this state.
      */
     const [isCreatingThought, setIsCreatingThought] = useState(false)
+    const [editingThoughtId, setEditingThoughtId] = useState<string | null>(null)
 
     const queryClient = useQueryClient()
     const thoughtsQueryKey = reactApi.thoughts.key()
@@ -213,11 +215,62 @@ function ThoughtsList({ authToken }: { authToken: string }) {
         })
     )
 
+    const updateMutation = useMutation(
+        reactApi.thoughts.update.mutationOptions({
+            context: { authToken },
+
+            onMutate: async ({ where: thoughtQuery, values: thoughtValues }) => {
+                await queryClient.cancelQueries({ queryKey: getThoughtsQueryKey })
+
+                const staleData = queryClient.getQueryData(getThoughtsQueryKey)
+
+                queryClient.setQueryData(getThoughtsQueryKey, staleData => {
+                    const data = staleData ?? { pages: [], pageParams: [] }
+
+                    const updatedPages = data.pages.map(page => ({
+                        ...page,
+                        thoughts:
+                            page.thoughts?.map(thought =>
+                                thought.id === thoughtQuery.id
+                                    ? {
+                                          ...thought,
+                                          alias: thoughtValues.alias,
+                                          content: thoughtValues.content,
+                                          updatedAt: new Date()
+                                      }
+                                    : thought
+                            ) ?? []
+                    }))
+
+                    return { ...data, pages: updatedPages }
+                })
+
+                return { staleData }
+            },
+
+            onError: (error, variables, context) => {
+                logger.error({ title: "Failed to Update Thought", data: { error } })
+
+                if (context?.staleData) queryClient.setQueryData(getThoughtsQueryKey, context.staleData)
+
+                showToast({
+                    style: Toast.Style.Failure,
+                    title: "Failed to Update Thought",
+                    message: "Please try again later."
+                })
+            },
+
+            onSettled: () => {
+                if (queryClient.isMutating({ mutationKey: thoughtsQueryKey }) === 1) queryClient.invalidateQueries({ queryKey: getThoughtsQueryKey })
+            }
+        })
+    )
+
     const actionPaletteContext = useActionPalette({ safe: true })
 
     const thoughts = data?.pages.flatMap(page => page.thoughts ?? []) ?? null
 
-    const isFetchingMutation = createMutation.isPending || deleteMutation.isPending
+    const isFetchingMutation = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending
     const isFetching = isFetchingThoughts || isFetchingMutation
 
     if (error) {
@@ -241,6 +294,8 @@ function ThoughtsList({ authToken }: { authToken: string }) {
     const resolveItemSubtitle = (thought: Thought) => (thought.alias?.length ? (thought.content ?? "No content.") : null)
 
     const handleCreateThought = async (thought: { content: string; alias: string | null }) => createMutation.mutate(thought)
+
+    const handleUpdateThought = async ({ where, values }: { where: QueryableThought; values: MutableThought }) => updateMutation.mutate({ where, values })
 
     const handleDeleteThought = async (thought: Thought, { showConfirmation = true }: { showConfirmation?: boolean } = {}) => {
         if (showConfirmation) {
@@ -282,7 +337,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
             <ActionPanel.Section title="Modify">
                 <Action title="Create Thought" onAction={() => setIsCreatingThought(true)} shortcut={{ modifiers: ["cmd"], key: "n" }} icon={Icon.PlusCircle} />
 
-                {thought && <Action title="Edit Thought" onAction={() => {}} shortcut={{ modifiers: ["cmd"], key: "e" }} icon={Icon.Pencil} />}
+                {thought && <Action title="Edit Thought" onAction={() => setEditingThoughtId(thought.id)} shortcut={{ modifiers: ["cmd"], key: "e" }} icon={Icon.Pencil} />}
 
                 {thought && <Action title="Delete Thought" onAction={() => handleDeleteThought(thought)} shortcut={{ modifiers: ["shift"], key: "delete" }} icon={Icon.Trash} style={Action.Style.Destructive} />}
 
@@ -300,6 +355,11 @@ function ThoughtsList({ authToken }: { authToken: string }) {
     const itemDetailNoContentText = { value: "-", color: Color.SecondaryText }
 
     if (isCreatingThought) return <CaptureThought pop={() => setIsCreatingThought(false)} shouldCloseOnSubmit={false} onCreateThought={handleCreateThought} />
+
+    const isEditingThought = editingThoughtId !== null
+    const editingThought = thoughts?.find(thought => thought.id === editingThoughtId) ?? null
+
+    if (isEditingThought && editingThought) return <EditThought thought={editingThought} pop={() => setEditingThoughtId(null)} onUpdateThought={handleUpdateThought} />
 
     return (
         <List isLoading={isFetching} actions={createActions()} pagination={pagination} navigationTitle="View Thoughts" isShowingDetail={isShowingInspector}>
