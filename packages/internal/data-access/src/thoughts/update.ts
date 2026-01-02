@@ -3,7 +3,7 @@
  */
 
 import { Database, thoughts } from "@altered-internal/data/store"
-import type { MutableThought, QueryableThought } from "@altered/data/shapes"
+import type { QueryableThought, UpdatableThought } from "@altered/data/shapes"
 import { ORPCError } from "@orpc/client"
 import { and, eq } from "drizzle-orm"
 
@@ -15,7 +15,7 @@ export async function updateThought({
     where: QueryableThought & {
         brainId: string
     }
-    values: MutableThought
+    values: UpdatableThought
     context: { db: Database }
 }) {
     const [updatedThought] = await context.db

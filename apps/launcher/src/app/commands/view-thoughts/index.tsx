@@ -2,7 +2,7 @@
  *
  */
 
-import type { CursorDefinition, MutableThought, QueryableThought, Thought } from "@altered/data/shapes"
+import type { CreatableThought, CursorDefinition, QueryableThought, Thought, UpdatableThought } from "@altered/data/shapes"
 import { Action, ActionPanel, Alert, Color, confirmAlert, Icon, List, popToRoot, showToast, Toast } from "@raycast/api"
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { DateTime } from "luxon"
@@ -90,8 +90,10 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 
                 const staleData = queryClient.getQueryData(getThoughtsQueryKey)
 
+                if (!thoughtInput.id) throw new Error("Thought ID is missing - unable to perform optimistic update. In order for our optimistic updates to work, the Thought ID must be created on the client and passed to the mutation.")
+
                 const optimisticThought: Thought = {
-                    id: `optimistic-${Date.now()}`,
+                    id: thoughtInput.id,
                     alias: thoughtInput.alias,
                     content: thoughtInput.content,
                     createdAt: new Date(),
@@ -293,9 +295,9 @@ function ThoughtsList({ authToken }: { authToken: string }) {
     const resolveItemTitle = (thought: Thought) => (thought.alias?.length ? thought.alias : (thought.content ?? "No content."))
     const resolveItemSubtitle = (thought: Thought) => (thought.alias?.length ? (thought.content ?? "No content.") : null)
 
-    const handleCreateThought = async (thought: { content: string; alias: string | null }) => createMutation.mutate(thought)
+    const handleCreateThought = async (thought: CreatableThought) => createMutation.mutate(thought)
 
-    const handleUpdateThought = async ({ where, values }: { where: QueryableThought; values: MutableThought }) => updateMutation.mutate({ where, values })
+    const handleUpdateThought = async (props: { where: QueryableThought; values: UpdatableThought }) => updateMutation.mutate(props)
 
     const handleDeleteThought = async (thought: Thought, { showConfirmation = true }: { showConfirmation?: boolean } = {}) => {
         if (showConfirmation) {

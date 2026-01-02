@@ -30,12 +30,17 @@ export const thoughtSchema = type({
     updatedAt: "Date"
 })
 
+export const creatableThoughtSchema = thoughtSchema.omit("createdAt", "updatedAt").merge({ "id?": "string" })
+export const updatableThoughtSchema = thoughtSchema.omit("id", "createdAt", "updatedAt")
+
 /**
  * @todo [P4] We could extrapolate this to accept any property of the Thought (as a union - or even more complex with and/or clauses), but for most cases, an ID is sufficient.
  */
 export const queryableThoughtSchema = thoughtSchema.pick("id")
-export const mutableThoughtSchema = thoughtSchema.omit("id", "createdAt", "updatedAt")
 
 export type Thought = typeof thoughtSchema.infer
+
+export type CreatableThought = typeof creatableThoughtSchema.infer
+export type UpdatableThought = typeof updatableThoughtSchema.infer
+
 export type QueryableThought = typeof queryableThoughtSchema.infer
-export type MutableThought = typeof mutableThoughtSchema.infer

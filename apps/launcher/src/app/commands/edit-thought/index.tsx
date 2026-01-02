@@ -2,13 +2,13 @@
  * @todo [P3] Move to a `custom` or `components` folder, since this is a React Interface (view component), not a command.
  */
 
-import type { MutableThought, QueryableThought, Thought } from "@altered/data/shapes"
+import type { QueryableThought, Thought, UpdatableThought } from "@altered/data/shapes"
 import { Action, ActionPanel, Form, Icon } from "@raycast/api"
 import { useForm } from "@raycast/utils"
 import { LogOutAction, ReturnToActionPaletteAction } from "~/shared/components"
 import { useActionPalette } from "../action-palette/state"
 
-export function EditThought({ thought, pop, onUpdateThought }: { thought: Thought; pop: () => void; onUpdateThought: ({ where, values }: { where: QueryableThought; values: MutableThought }) => Promise<void> }) {
+export function EditThought({ thought, pop, onUpdateThought }: { thought: Thought; pop: () => void; onUpdateThought: ({ where, values }: { where: QueryableThought; values: UpdatableThought }) => Promise<void> }) {
     const actionPaletteContext = useActionPalette({ safe: true })
 
     const { itemProps, handleSubmit } = useForm<{
