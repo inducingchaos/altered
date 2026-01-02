@@ -51,6 +51,10 @@ catalogs:
     react-dom:
       specifier: 19.2.1
       version: 19.2.1
+  typescript:
+    typescript:
+      specifier: 5.9.3
+      version: 5.9.3
 
 importers:
 
@@ -118,7 +122,7 @@ importers:
         specifier: ^3.5.3
         version: 3.6.2
       typescript:
-        specifier: ^5.8.2
+        specifier: catalog:typescript
         version: 5.9.3
 
   apps/web:
@@ -368,7 +372,7 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       typescript:
-        specifier: ^5
+        specifier: catalog:typescript
         version: 5.9.3
 
   packages/internal/auth:
@@ -390,7 +394,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       typescript:
-        specifier: ^5
+        specifier: catalog:typescript
         version: 5.9.3
 
   packages/internal/config:
@@ -403,7 +407,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       typescript:
-        specifier: ^5
+        specifier: catalog:typescript
         version: 5.9.3
 
   packages/internal/data-access:
@@ -428,7 +432,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       typescript:
-        specifier: ^5
+        specifier: catalog:typescript
         version: 5.9.3
 
   packages/internal/data-shapes:
@@ -444,7 +448,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       typescript:
-        specifier: ^5
+        specifier: catalog:typescript
         version: 5.9.3
 
   packages/internal/data-store:
@@ -475,7 +479,7 @@ importers:
         specifier: ^4.20.6
         version: 4.20.6
       typescript:
-        specifier: ^5
+        specifier: catalog:typescript
         version: 5.9.3
 
   packages/internal/harness:
@@ -527,7 +531,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       typescript:
-        specifier: ^5
+        specifier: catalog:typescript
         version: 5.9.3
 
   packages/public/data-shapes:
@@ -546,7 +550,7 @@ importers:
         specifier: catalog:react
         version: 19.2.1
       typescript:
-        specifier: ^5
+        specifier: catalog:typescript
         version: 5.9.3
 
   packages/public/harness:
@@ -568,7 +572,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       typescript:
-        specifier: ^5
+        specifier: catalog:typescript
         version: 5.9.3
 
   packages/public/utils:
@@ -581,7 +585,7 @@ importers:
         specifier: workspace:*
         version: link:../../../tooling/typescript
       typescript:
-        specifier: ^5
+        specifier: catalog:typescript
         version: 5.9.3
 
   tooling/eslint:

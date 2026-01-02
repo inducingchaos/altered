@@ -28,3 +28,5 @@ catalogs:
     "@orpc/server": 1.12.2
     "@orpc/tanstack-query": 1.12.2
     "@orpc/zod": 1.12.2
+  typescript:
+    typescript: 5.9.3
