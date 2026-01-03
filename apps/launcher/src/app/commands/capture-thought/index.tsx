@@ -2,8 +2,10 @@
  *
  */
 
+import { CreatableThought } from "@altered/data/shapes"
 import { Action, ActionPanel, closeMainWindow, Form, Icon, List, popToRoot, PopToRootType, showToast, Toast } from "@raycast/api"
 import { FormValidation, useForm } from "@raycast/utils"
+import { nanoid } from "nanoid"
 import { api } from "~/api"
 import { useAuthentication } from "~/auth"
 import { configureLogger } from "~/observability"
@@ -41,7 +43,7 @@ type ThoughtFormProps = {
     authToken: string
     pop?: () => void
     shouldCloseOnSubmit?: boolean
-    onCreateThought?: (thought: { content: string; alias: string | null }) => Promise<void>
+    onCreateThought?: (thought: CreatableThought) => Promise<void>
 }
 
 function ThoughtForm({ authToken, pop, shouldCloseOnSubmit = true, onCreateThought }: ThoughtFormProps) {
@@ -56,7 +58,7 @@ function ThoughtForm({ authToken, pop, shouldCloseOnSubmit = true, onCreateThoug
             if (pop) pop()
             else if (actionPaletteContext) actionPaletteContext.resetState()
 
-            const thoughtInput = { content: formValues.content, alias: null }
+            const thoughtInput = { id: nanoid(), alias: null, content: formValues.content }
 
             if (onCreateThought) {
                 await onCreateThought(thoughtInput)
@@ -116,7 +118,7 @@ function ThoughtForm({ authToken, pop, shouldCloseOnSubmit = true, onCreateThoug
 type CaptureThoughtProps = {
     pop?: () => void
     shouldCloseOnSubmit?: boolean
-    onCreateThought?: (thought: { content: string; alias: string | null }) => Promise<void>
+    onCreateThought?: (thought: CreatableThought) => Promise<void>
 }
 
 export function CaptureThought(props: CaptureThoughtProps) {

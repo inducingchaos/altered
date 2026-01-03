@@ -137,7 +137,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
             },
 
             onError: (error, variables, context) => {
-                logger.error({ title: "Failed to Create Thought", data: { error } })
+                logger.error({ title: "Failed to Create Thought", description: error.message, data: { error } })
 
                 if (context?.staleData) queryClient.setQueryData(getThoughtsQueryKey, context.staleData)
 
