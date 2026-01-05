@@ -15,6 +15,6 @@
     },
     "devDependencies": {
         "@altered-internal/typescript": "workspace:*",
-        "typescript": "^5"
+        "typescript": "catalog:typescript"
     }
 }

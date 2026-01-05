@@ -21,14 +21,26 @@
             "mode": "view"
         },
         {
+            "name": "capture-thought",
+            "title": "Capture Thought",
+            "description": "Capture a thought to your ALTERED Brain.",
+            "mode": "view"
+        },
+        {
+            "name": "view-thoughts",
+            "title": "View Thoughts",
+            "description": "View and manage the thoughts in your ALTERED Brain.",
+            "mode": "view"
+        },
+        {
             "name": "get-latest-thought",
-            "title": "Get Latest Thought",
+            "title": "[DEV] Get Latest Thought",
             "description": "Get the latest thought from your ALTERED brain.",
             "mode": "no-view"
         },
         {
             "name": "show-latest-thought",
-            "title": "Show Latest Thought",
+            "title": "[DEV] Show Latest Thought",
             "description": "Show the latest thought from your ALTERED brain.",
             "mode": "view"
         }
@@ -44,16 +56,18 @@
         "@raycast/utils": "^1.17.0",
         "@tanstack/react-query": "^5.90.10",
         "better-auth": "catalog:better-auth",
+        "luxon": "^3.7.2",
         "nanoid": "^5.1.6",
         "zustand": "^5.0.9"
     },
     "devDependencies": {
         "@raycast/eslint-config": "^2.0.4",
+        "@types/luxon": "^3.7.1",
         "@types/node": "22.13.10",
         "@types/react": "19.0.10",
         "eslint": "^9.22.0",
         "prettier": "^3.5.3",
-        "typescript": "^5.8.2"
+        "typescript": "catalog:typescript"
     },
     "scripts": {
         "build": "ray build",

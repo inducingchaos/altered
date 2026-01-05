@@ -1,3 +1,4 @@
 {
-    "cSpell.words": ["usealtered"]
+    "cSpell.words": ["usealtered"],
+    "typescript.tsdk": "node_modules/typescript/lib"
 }

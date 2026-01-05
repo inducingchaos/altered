@@ -14,6 +14,6 @@ export type APIAppContext = { app: AppContext }
 export type APIInitialContext = APIRequestContext
 export type APIContext = APIInitialContext & Partial<APIDatabaseContext & APIAuthContext & APIAppContext>
 
-export type PublicRouteContext = APIInitialContext & APIDatabaseContext
-export type ProtectedRouteContext = PublicRouteContext & APIAuthContext
-export type AppRouteContext = ProtectedRouteContext & APIAppContext
+export type PublicRouteFactoryContext = APIDatabaseContext
+export type ProtectedRouteFactoryContext = PublicRouteFactoryContext & APIAuthContext
+export type AppRouteFactoryContext = ProtectedRouteFactoryContext & APIAppContext

@@ -20,7 +20,7 @@ Use these paths when importing.
 ```tsx
 import { config } from "~/config"
 
-const isDevelopment = config.environment === "development"
+const isDevelopment = config.overrideEnvironment === "development"
 ```
 
 ```tsx

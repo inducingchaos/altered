@@ -7,7 +7,7 @@ import { ConfigDef, configSchema } from "./schema"
 
 export const configDef = {
     cwd: "/Users/inducingchaos/Workspace/containers/altered/apps/launcher",
-    environment: "development",
+    overrideEnvironment: "development",
 
     logLevel: "debug",
     logSearch: "",
@@ -20,6 +20,10 @@ export const configDef = {
     appDescription: "Knowledge systems for the obsessed.",
     appIcon: "altered/extension-icon.png",
     appVersion: "0.1.0",
+
+    themeIcons: false,
+
+    listPaginationLimit: 25,
 
     developmentBaseUrl: "http://localhost:258",
     productionBaseUrl: "https://altered.app",

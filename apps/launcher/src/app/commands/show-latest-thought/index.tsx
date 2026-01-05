@@ -6,7 +6,7 @@ import { Action, ActionPanel, Detail } from "@raycast/api"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "~/api/react"
 import { isVersionIncompatibleError, VersionIncompatibleError } from "~/api/utils"
-import { useAuthentication } from "~/auth/hooks"
+import { useAuthentication } from "~/auth"
 import { configureLogger } from "~/observability"
 import { LogOutAction, withContext } from "~/shared/components"
 

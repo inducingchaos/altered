@@ -11,12 +11,20 @@ export function createAuthClient(): { isAuthed: () => Promise<boolean>; authenti
         if (token || token === null) return !!token
 
         const currentToken = await retrieveAccessToken()
-        const isAuthed = !!(currentToken && !currentToken.isExpired)
 
-        if (isAuthed) token = currentToken.token
+        //  TODO [P3] Improve auto-refresh logic. If we check the auth status and an existing token is expired - we should automatically refresh it. If not, we should require manual confirmation before authenticating.
+
+        if (currentToken?.isExpired) {
+            const newToken = await authenticateWithTokens()
+
+            token = newToken
+            return true
+        }
+
+        if (currentToken) token = currentToken.token
         else token = null
 
-        return isAuthed
+        return currentToken ? true : false
     }
 
     const authenticate = async () => {

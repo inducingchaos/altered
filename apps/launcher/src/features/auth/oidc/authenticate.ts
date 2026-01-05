@@ -18,6 +18,10 @@ let refreshPromise: Promise<string> | null = null
 
 /**
  * Checks if our tokens are valid, refreshes them if needed, or initiates the full OAuth flow if there are no existing tokens. Returns the access token.
+ *
+ * @todo [P3] Evaluate if switching entirely to use the Better Auth Generic OAuth plugin would be viable and more robust.
+ *
+ * @todo [P2] We need to revoke stale tokens when we refresh them.
  */
 export async function authenticateWithTokens(): Promise<string> {
     const client = createPKCEClient()
