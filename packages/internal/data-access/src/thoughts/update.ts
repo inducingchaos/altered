@@ -8,11 +8,11 @@ import { ORPCError } from "@orpc/client"
 import { and, eq } from "drizzle-orm"
 
 export async function updateThought({
-    where: query,
-    values: thought,
+    query,
+    values,
     context
 }: {
-    where: QueryableThought & {
+    query: QueryableThought & {
         brainId: string
     }
     values: UpdatableThought
@@ -20,7 +20,7 @@ export async function updateThought({
 }) {
     const [updatedThought] = await context.db
         .update(thoughts)
-        .set(thought)
+        .set(values)
         .where(and(eq(thoughts.id, query.id), eq(thoughts.brainId, query.brainId)))
         .returning()
 

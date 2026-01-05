@@ -44,9 +44,9 @@ export const deleteThoughtProcedure = appRouteFactory.thoughts.delete.handler(as
     })
 }))
 
-export const updateThoughtProcedure = appRouteFactory.thoughts.update.handler(async ({ input: { where, values }, context }) => ({
+export const updateThoughtProcedure = appRouteFactory.thoughts.update.handler(async ({ input: { query, values }, context }) => ({
     thought: await updateThought({
-        where: { ...where, brainId: context.app.selectedBrainId },
+        query: { ...query, brainId: context.app.selectedBrainId },
         values,
         context
     })

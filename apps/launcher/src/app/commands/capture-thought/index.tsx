@@ -43,7 +43,7 @@ type ThoughtFormProps = {
     authToken: string
     pop?: () => void
     shouldCloseOnSubmit?: boolean
-    onCreateThought?: (thought: CreatableThought) => Promise<void>
+    onCreateThought?: (thought: CreatableThought) => void
 }
 
 function ThoughtForm({ authToken, pop, shouldCloseOnSubmit = true, onCreateThought }: ThoughtFormProps) {
@@ -61,7 +61,7 @@ function ThoughtForm({ authToken, pop, shouldCloseOnSubmit = true, onCreateThoug
             const thoughtInput = { id: nanoid(), alias: null, content: formValues.content }
 
             if (onCreateThought) {
-                await onCreateThought(thoughtInput)
+                onCreateThought(thoughtInput)
             } else {
                 await showToast({
                     style: Toast.Style.Animated,
@@ -118,7 +118,7 @@ function ThoughtForm({ authToken, pop, shouldCloseOnSubmit = true, onCreateThoug
 type CaptureThoughtProps = {
     pop?: () => void
     shouldCloseOnSubmit?: boolean
-    onCreateThought?: (thought: CreatableThought) => Promise<void>
+    onCreateThought?: (thought: CreatableThought) => void
 }
 
 export function CaptureThought(props: CaptureThoughtProps) {

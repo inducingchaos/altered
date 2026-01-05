@@ -41,7 +41,7 @@ export const thoughtsContract = {
 
     update: contractFactory
         .route({ tags: ["internal"] })
-        .input(type({ where: queryableThoughtSchema, values: updatableThoughtSchema }))
+        .input(type({ query: queryableThoughtSchema, values: updatableThoughtSchema }))
         .output(
             type({
                 thought: thoughtSchema

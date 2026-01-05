@@ -2,9 +2,9 @@
  *
  */
 
-import type { CreatableThought, CursorDefinition, QueryableThought, Thought, UpdatableThought } from "@altered/data/shapes"
+import type { CreatableThought, Thought } from "@altered/data/shapes"
 import { Action, ActionPanel, Alert, Color, confirmAlert, Icon, List, popToRoot, showToast, Toast } from "@raycast/api"
-import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { DateTime } from "luxon"
 import { useState } from "react"
 import { api as reactApi } from "~/api/react"
@@ -12,10 +12,14 @@ import { isVersionIncompatibleError as checkIsVersionIncompatibleError, VersionI
 import { useAuthentication } from "~/auth"
 import { config } from "~/config"
 import { configureLogger } from "~/observability"
-import { LogOutAction, ReturnToActionPaletteAction, withContext } from "~/shared/components"
+import { ReturnToActionPaletteAction, withContext } from "~/shared/components"
 import { useActionPalette } from "../action-palette/state"
 import { CaptureThought } from "../capture-thought"
 import { EditThought } from "../edit-thought"
+import { HandleDeleteThought, HandleUpdateThought } from "./shared"
+import { ThoughtListActions, ThoughtListActionsProps } from "./thought-list-actions"
+import { useThoughts } from "./use-thoughts"
+import { useThoughtsQueryOptions } from "./use-thoughts-query-options"
 
 const logger = configureLogger({ defaults: { scope: "commands:view-thoughts" } })
 
@@ -40,6 +44,11 @@ function AuthView() {
     )
 }
 
+const resolveItemTitle = (thought: Thought) => (thought.alias?.length ? thought.alias : (thought.content ?? "No content."))
+const resolveItemSubtitle = (thought: Thought) => (thought.alias?.length ? (thought.content ?? "No content.") : null)
+
+const itemDetailNoContentText = { value: "-", color: Color.SecondaryText }
+
 function ThoughtsList({ authToken }: { authToken: string }) {
     const [isShowingInspector, setIsShowingInspector] = useState(false)
     /**
@@ -51,35 +60,8 @@ function ThoughtsList({ authToken }: { authToken: string }) {
     const queryClient = useQueryClient()
     const thoughtsQueryKey = reactApi.thoughts.key()
 
-    const getThoughtsQueryOptions = reactApi.thoughts.get.infiniteOptions({
-        input: (pageParam: CursorDefinition | null) => ({
-            pagination: {
-                type: "cursor",
-                cursors: pageParam ? [pageParam] : null,
-                limit: config.listPaginationLimit
-            }
-        }),
-        context: { authToken },
-
-        initialPageParam: null,
-        getNextPageParam: lastPage => {
-            if (!lastPage.hasMore) return null
-
-            const thoughts = lastPage.thoughts
-            if (!thoughts || !thoughts.length) return null
-
-            const lastThoughtIndex = thoughts.length - 1
-            const lastThought = thoughts[lastThoughtIndex]
-
-            const cursorDef: CursorDefinition = { field: "created-at", value: lastThought.createdAt }
-
-            return cursorDef
-        }
-    })
-
-    const getThoughtsQueryKey = getThoughtsQueryOptions.queryKey
-
-    const { data, error, isFetching: isFetchingThoughts, hasNextPage, fetchNextPage } = useInfiniteQuery(getThoughtsQueryOptions)
+    const { queryKey: getThoughtsQueryKey } = useThoughtsQueryOptions()
+    const { isFetching: isFetchingThoughts, thoughts, error, pagination } = useThoughts()
 
     const createMutation = useMutation(
         reactApi.thoughts.create.mutationOptions({
@@ -221,7 +203,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
         reactApi.thoughts.update.mutationOptions({
             context: { authToken },
 
-            onMutate: async ({ where: thoughtQuery, values: thoughtValues }) => {
+            onMutate: async ({ query: thoughtQuery, values: thoughtValues }) => {
                 await queryClient.cancelQueries({ queryKey: getThoughtsQueryKey })
 
                 const staleData = queryClient.getQueryData(getThoughtsQueryKey)
@@ -270,8 +252,6 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 
     const actionPaletteContext = useActionPalette({ safe: true })
 
-    const thoughts = data?.pages.flatMap(page => page.thoughts ?? []) ?? null
-
     const isFetchingMutation = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending
     const isFetching = isFetchingThoughts || isFetchingMutation
 
@@ -292,14 +272,13 @@ function ThoughtsList({ authToken }: { authToken: string }) {
         console.error(error)
     }
 
-    const resolveItemTitle = (thought: Thought) => (thought.alias?.length ? thought.alias : (thought.content ?? "No content."))
-    const resolveItemSubtitle = (thought: Thought) => (thought.alias?.length ? (thought.content ?? "No content.") : null)
+    const handleCreateThought = (thought: CreatableThought) => createMutation.mutate(thought)
 
-    const handleCreateThought = async (thought: CreatableThought) => createMutation.mutate(thought)
+    const handleUpdateThought: HandleUpdateThought = props => updateMutation.mutate(props)
 
-    const handleUpdateThought = async (props: { where: QueryableThought; values: UpdatableThought }) => updateMutation.mutate(props)
+    const handleDeleteThought: HandleDeleteThought = async (thought, props) => {
+        const { showConfirmation = true } = props ?? {}
 
-    const handleDeleteThought = async (thought: Thought, { showConfirmation = true }: { showConfirmation?: boolean } = {}) => {
         if (showConfirmation) {
             const thoughtSummary = thought.alias ?? thought.content ?? null
             const thoughtDescriptor = thoughtSummary ? `"${thoughtSummary.length > 10 ? thoughtSummary.slice(0, 16) + "..." : thoughtSummary}"` : "this thought"
@@ -324,37 +303,9 @@ function ThoughtsList({ authToken }: { authToken: string }) {
         }
 
         deleteMutation.mutate({ id: thought.id })
+
+        return
     }
-
-    const pagination = {
-        pageSize: config.listPaginationLimit,
-        hasMore: hasNextPage,
-        onLoadMore: fetchNextPage
-    }
-
-    const createActions = (thought?: Thought) => (
-        <ActionPanel>
-            <ActionPanel.Section title="View">{thought && <Action title={`${isShowingInspector ? "Hide" : "Open"} Inspector`} onAction={() => setIsShowingInspector(prev => !prev)} shortcut={{ modifiers: ["cmd"], key: "i" }} icon={isShowingInspector ? Icon.EyeDisabled : Icon.Eye} />}</ActionPanel.Section>
-
-            <ActionPanel.Section title="Modify">
-                <Action title="Create Thought" onAction={() => setIsCreatingThought(true)} shortcut={{ modifiers: ["cmd"], key: "n" }} icon={Icon.PlusCircle} />
-
-                {thought && <Action title="Edit Thought" onAction={() => setEditingThoughtId(thought.id)} shortcut={{ modifiers: ["cmd"], key: "e" }} icon={Icon.Pencil} />}
-
-                {thought && <Action title="Delete Thought" onAction={() => handleDeleteThought(thought)} shortcut={{ modifiers: ["shift"], key: "delete" }} icon={Icon.Trash} style={Action.Style.Destructive} />}
-
-                {thought && <Action title="Delete Without Confirmation" onAction={() => handleDeleteThought(thought, { showConfirmation: false })} shortcut={{ modifiers: ["shift", "cmd"], key: "delete" }} icon={Icon.Trash} style={Action.Style.Destructive} />}
-            </ActionPanel.Section>
-
-            <ActionPanel.Section title="Navigate">{actionPaletteContext && <ReturnToActionPaletteAction resetNavigationState={actionPaletteContext.resetState} />}</ActionPanel.Section>
-
-            <ActionPanel.Section title="Configure">
-                <LogOutAction />
-            </ActionPanel.Section>
-        </ActionPanel>
-    )
-
-    const itemDetailNoContentText = { value: "-", color: Color.SecondaryText }
 
     if (isCreatingThought) return <CaptureThought pop={() => setIsCreatingThought(false)} shouldCloseOnSubmit={false} onCreateThought={handleCreateThought} />
 
@@ -363,16 +314,24 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 
     if (isEditingThought && editingThought) return <EditThought thought={editingThought} pop={() => setEditingThoughtId(null)} onUpdateThought={handleUpdateThought} />
 
+    const actionProps: ThoughtListActionsProps = {
+        isShowingInspector,
+        setIsShowingInspector,
+        setIsCreatingThought,
+        setEditingThoughtId,
+        handleDeleteThought
+    }
+
     return (
-        <List isLoading={isFetching} actions={createActions()} pagination={pagination} navigationTitle="View Thoughts" isShowingDetail={isShowingInspector}>
-            {thoughts && thoughts.length === 0 && <List.EmptyView title="No thoughts found." description="Create your first thought to get started." icon={Icon.PlusTopRightSquare} />}
+        <List isLoading={isFetching} actions={<ThoughtListActions {...actionProps} />} pagination={pagination} navigationTitle="View Thoughts" isShowingDetail={isShowingInspector}>
+            <List.EmptyView title="No thoughts found." description="Create your first thought to get started." icon={Icon.PlusTopRightSquare} />
 
             {thoughts?.map(thought => (
                 <List.Item
                     key={thought.id}
                     title={resolveItemTitle(thought)}
                     subtitle={resolveItemSubtitle(thought) ?? undefined}
-                    actions={createActions(thought)}
+                    actions={<ThoughtListActions {...actionProps} thought={thought} />}
                     accessories={
                         isShowingInspector
                             ? null

@@ -38,9 +38,16 @@ export const configSchema = z
         return {
             ...config,
 
-            baseUrl: environment.isDevelopment ? (config.overrideEnvironment === "development" ? config.developmentBaseUrl : config.productionBaseUrl) : config.productionBaseUrl,
+            environment: environment.isDevelopment ? config.overrideEnvironment : "production",
 
             appIcon: environment.appearance === "dark" ? config.appIcon.split(".").reduce((previous, current, index, original) => (index === original.length - 1 ? `${previous}@dark.${current}` : previous ? `${previous}.${current}` : current), "") : config.appIcon
+        }
+    })
+    .transform(config => {
+        return {
+            ...config,
+
+            baseUrl: config.environment === "development" ? config.developmentBaseUrl : config.productionBaseUrl
         }
     })
     .transform(config => {

@@ -2,25 +2,38 @@
  *
  */
 
-import { createContext, ReactNode, use, useEffect, useState } from "react"
+import { createContext, ReactNode, use, useCallback, useEffect, useMemo, useState } from "react"
 import { authenticateWithTokens, retrieveAccessToken } from "./oidc"
 
-type AnyAuthContextValue = {
-    isAuthed: boolean
-    isLoading: boolean
-    token: string | null
+type AuthContextBaseValue = {
     authenticate: () => Promise<string>
 }
-type AuthedAuthContextValue = AnyAuthContextValue & {
-    isAuthed: true
-    token: string
-}
-type UnauthedAuthContextValue = AnyAuthContextValue & {
+
+type AuthContextLoadingValue = AuthContextBaseValue & {
+    status: "loading"
+
+    isLoading: true
     isAuthed: false
     token: null
 }
 
-type AuthContextValue = AuthedAuthContextValue | UnauthedAuthContextValue
+type AuthContextAuthenticatedValue = AuthContextBaseValue & {
+    status: "authenticated"
+
+    isLoading: false
+    isAuthed: true
+    token: string
+}
+
+type AuthContextUnauthenticatedValue = AuthContextBaseValue & {
+    status: "unauthenticated"
+
+    isLoading: false
+    isAuthed: false
+    token: null
+}
+
+type AuthContextValue = AuthContextLoadingValue | AuthContextAuthenticatedValue | AuthContextUnauthenticatedValue
 
 export const AuthContext = createContext<AuthContextValue | null>(null)
 
@@ -28,50 +41,79 @@ export const AuthContext = createContext<AuthContextValue | null>(null)
  * @todo [P4] We could likely refactor this to use the same auth functions as `createAuthClient` instead of duplicating the logic here.
  */
 export function AuthProvider(props: { children: ReactNode }) {
-    const [token, setToken] = useState<string | null | undefined>()
+    const [isLoading, setIsLoading] = useState(true)
 
-    const isLoading = token === undefined
-    const isAuthed = !!token
+    const [token, setToken] = useState<string | null>(null)
 
-    const getAuthStatus = async () => {
-        if (token || token === null) return !!token
+    /**
+     * @todo [P3] Improve logic. If the current token is expired, we should automatically refresh it. If expired AND not refreshable, we *shouldn't* automatically start the OAuth flow - it should be triggered manually by the implementing view.
+     */
+    const loadToken = useCallback(async (): Promise<void> => {
+        setIsLoading(true)
 
         const currentToken = await retrieveAccessToken()
 
-        //  TODO [P3] Improve auto-refresh logic. If we check the auth status and an existing token is expired - we should automatically refresh it. If not, we should require manual confirmation before authenticating.
-
-        if (currentToken?.isExpired) {
+        if (currentToken && currentToken.isExpired) {
             const newToken = await authenticateWithTokens()
 
             setToken(newToken)
-            return true
-        }
+        } else if (currentToken) {
+            setToken(currentToken.token)
+        } else setToken(null)
 
-        if (currentToken) setToken(currentToken.token)
-        else setToken(null)
+        setIsLoading(false)
+    }, [])
 
-        return currentToken ? true : false
-    }
-
-    const authenticate = async () => {
+    const authenticate = useCallback(async () => {
         const newToken = await authenticateWithTokens()
 
         setToken(newToken)
+
         return newToken
-    }
+    }, [])
 
-    useEffect(() => void getAuthStatus(), [])
+    useEffect(() => void loadToken(), [])
 
-    const isDiscriminatedValue = (value: AnyAuthContextValue): value is AuthContextValue => (value.token === null && value.isAuthed === false) || (value.token !== null && value.isAuthed === true)
+    const baseValue: AuthContextBaseValue = useMemo(
+        () => ({
+            authenticate
+        }),
+        [authenticate]
+    )
 
-    const value = {
-        isLoading,
-        isAuthed,
-        token: token ?? null,
-        authenticate
-    }
+    const value: AuthContextValue = useMemo(() => {
+        if (isLoading)
+            return {
+                ...baseValue,
 
-    if (!isDiscriminatedValue(value)) throw new Error("Invalid `AuthContext` value. This should never happen.")
+                status: "loading",
+
+                isLoading: true,
+                isAuthed: false,
+                token: null
+            }
+
+        if (token)
+            return {
+                ...baseValue,
+
+                status: "authenticated",
+
+                isLoading: false,
+                isAuthed: true,
+                token
+            }
+
+        return {
+            ...baseValue,
+
+            status: "unauthenticated",
+
+            isLoading: false,
+            isAuthed: false,
+            token: null
+        }
+    }, [baseValue, isLoading, token])
 
     return <AuthContext value={value}>{props.children}</AuthContext>
 }
