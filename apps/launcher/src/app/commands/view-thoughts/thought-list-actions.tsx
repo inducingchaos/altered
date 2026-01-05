@@ -27,16 +27,22 @@ export type ThoughtListActionsProps = {
 
     handleUpdateThought?: HandleUpdateThought
     handleDeleteThought?: HandleDeleteThought
+
+    refreshThoughts: () => void
 }
 
-export function ThoughtListActions({ thought, isShowingInspector, setIsShowingInspector, setIsCreatingThought, setEditingThoughtId, handleDeleteThought }: ThoughtListActionsProps) {
+export function ThoughtListActions({ thought, isShowingInspector, setIsShowingInspector, setIsCreatingThought, setEditingThoughtId, handleDeleteThought, refreshThoughts }: ThoughtListActionsProps) {
     const { isAuthed } = useAuthentication()
 
     const actionPaletteContext = useActionPalette({ safe: true })
 
     return (
         <ActionPanel>
-            <ActionPanel.Section title="View">{thought && <Action title={`${isShowingInspector ? "Hide" : "Open"} Inspector`} onAction={() => setIsShowingInspector(prev => !prev)} shortcut={{ modifiers: ["cmd"], key: "i" }} icon={isShowingInspector ? Icon.EyeDisabled : Icon.Eye} />}</ActionPanel.Section>
+            <ActionPanel.Section title="View">
+                {thought && <Action title={`${isShowingInspector ? "Hide" : "Open"} Inspector`} onAction={() => setIsShowingInspector(prev => !prev)} shortcut={{ modifiers: ["cmd"], key: "i" }} icon={isShowingInspector ? Icon.EyeDisabled : Icon.Eye} />}
+
+                <Action title="Refresh Thoughts" onAction={refreshThoughts} shortcut={{ modifiers: ["cmd"], key: "r" }} icon={Icon.RotateClockwise} />
+            </ActionPanel.Section>
 
             <ActionPanel.Section title="Modify">
                 <Action title="Create Thought" onAction={() => setIsCreatingThought(true)} shortcut={{ modifiers: ["cmd"], key: "n" }} icon={Icon.PlusCircle} />

@@ -30,3 +30,6 @@ catalogs:
     "@orpc/zod": 1.12.2
   typescript:
     typescript: 5.9.3
+  tanstack-query:
+    "@tanstack/react-query": 5.90.16
+    "@tanstack/query-persist-client-core": 5.91.15
