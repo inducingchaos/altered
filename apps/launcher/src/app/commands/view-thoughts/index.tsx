@@ -7,6 +7,7 @@ import { Action, ActionPanel, Alert, Color, confirmAlert, Icon, List, popToRoot,
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { DateTime } from "luxon"
 import { useState } from "react"
+import { usePersistQuery } from "~/api"
 import { api as reactApi } from "~/api/react"
 import { isVersionIncompatibleError as checkIsVersionIncompatibleError, VersionIncompatibleError } from "~/api/utils"
 import { useAuthentication } from "~/auth"
@@ -58,10 +59,12 @@ function ThoughtsList({ authToken }: { authToken: string }) {
     const [editingThoughtId, setEditingThoughtId] = useState<string | null>(null)
 
     const queryClient = useQueryClient()
+    const { setPersistentQueryData } = usePersistQuery()
+
     const thoughtsQueryKey = reactApi.thoughts.key()
 
     const { queryKey: getThoughtsQueryKey } = useThoughtsQueryOptions()
-    const { isFetching: isFetchingThoughts, thoughts, error, pagination } = useThoughts()
+    const { isFetching: isFetchingThoughts, thoughts, error, refresh, pagination } = useThoughts()
 
     const createMutation = useMutation(
         reactApi.thoughts.create.mutationOptions({
@@ -82,7 +85,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                     updatedAt: new Date()
                 }
 
-                queryClient.setQueryData(getThoughtsQueryKey, staleData => {
+                setPersistentQueryData(getThoughtsQueryKey, staleData => {
                     const data = staleData ?? { pages: [], pageParams: [] }
 
                     const pageThoughtLimit = config.listPaginationLimit
@@ -121,7 +124,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
             onError: (error, variables, context) => {
                 logger.error({ title: "Failed to Create Thought", description: error.message, data: { error } })
 
-                if (context?.staleData) queryClient.setQueryData(getThoughtsQueryKey, context.staleData)
+                if (context?.staleData) setPersistentQueryData(getThoughtsQueryKey, context.staleData)
 
                 showToast({
                     style: Toast.Style.Failure,
@@ -145,7 +148,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 
                 const staleData = queryClient.getQueryData(getThoughtsQueryKey)
 
-                queryClient.setQueryData(getThoughtsQueryKey, staleData => {
+                setPersistentQueryData(getThoughtsQueryKey, staleData => {
                     const data = staleData ?? { pages: [], pageParams: [] }
 
                     const pageThoughtLimit = config.listPaginationLimit
@@ -184,7 +187,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
             onError: (error, variables, context) => {
                 logger.error({ title: "Failed to Delete Thought", data: { error } })
 
-                if (context?.staleData) queryClient.setQueryData(getThoughtsQueryKey, context.staleData)
+                if (context?.staleData) setPersistentQueryData(getThoughtsQueryKey, context.staleData)
 
                 showToast({
                     style: Toast.Style.Failure,
@@ -208,7 +211,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 
                 const staleData = queryClient.getQueryData(getThoughtsQueryKey)
 
-                queryClient.setQueryData(getThoughtsQueryKey, staleData => {
+                setPersistentQueryData(getThoughtsQueryKey, staleData => {
                     const data = staleData ?? { pages: [], pageParams: [] }
 
                     const updatedPages = data.pages.map(page => ({
@@ -235,7 +238,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
             onError: (error, variables, context) => {
                 logger.error({ title: "Failed to Update Thought", data: { error } })
 
-                if (context?.staleData) queryClient.setQueryData(getThoughtsQueryKey, context.staleData)
+                if (context?.staleData) setPersistentQueryData(getThoughtsQueryKey, context.staleData)
 
                 showToast({
                     style: Toast.Style.Failure,
@@ -319,7 +322,9 @@ function ThoughtsList({ authToken }: { authToken: string }) {
         setIsShowingInspector,
         setIsCreatingThought,
         setEditingThoughtId,
-        handleDeleteThought
+        handleDeleteThought,
+
+        refreshThoughts: refresh
     }
 
     return (
