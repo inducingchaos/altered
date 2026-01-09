@@ -13,23 +13,54 @@ declare global {
     var $client: RouterClient<Router> | undefined
 }
 
-const link = new RPCLink({
+const isServer = typeof window === "undefined"
+
+const networkLink = new RPCLink({
     url: () => {
-        if (typeof window === "undefined") throw new Error("RPCLink is not allowed on the server side.")
+        if (isServer) throw new Error("RPCLink is not allowed on the server side.")
 
         return `${window.location.origin}/rpc`
     },
-
-    /**
-     * @todo [P4] Wire up logging control to config.
-     */
     interceptors: [onError(createOrpcErrorLogger({ enable: true, preset: "client" }))]
 })
 
+function getClient(): RouterClient<Router> {
+    if (isServer) {
+        if (!globalThis.$client) throw new Error("Server client not initialized. Ensure `client.server.ts` is imported first.")
+
+        return globalThis.$client
+    }
+    return createORPCClient(networkLink)
+}
+
 /**
- * Fallback to client-side client if server-side client is not available.
+ * @remarks Workaround for issue: https://github.com/unnoq/orpc/issues/1346
  */
-const client: RouterClient<Router> = globalThis.$client ?? createORPCClient(link)
-const safeClient = createSafeClient(client)
+const clientProxy = new Proxy({} as RouterClient<Router>, {
+    get(_, prop) {
+        const client = getClient()
+
+        return Reflect.get(client, prop, client)
+    },
+
+    has(_, prop) {
+        return Reflect.has(getClient(), prop)
+    },
+
+    ownKeys() {
+        return Reflect.ownKeys(getClient())
+    },
+
+    getOwnPropertyDescriptor(_, prop) {
+        const client = getClient()
+
+        const descriptor = Object.getOwnPropertyDescriptor(client, prop)
+        if (descriptor) return { ...descriptor, configurable: true }
+
+        return undefined
+    }
+})
+
+const safeClient = createSafeClient(clientProxy)
 
 export const api = createTanstackQueryUtils(safeClient)
