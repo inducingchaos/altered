@@ -1,5 +1,5 @@
 /**
- * @todo [P4] Move to a separate package or folder?
+ *
  */
 
 import { urlAlphabet } from "nanoid"

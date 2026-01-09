@@ -4,7 +4,7 @@
 
 import { InternalCreatableThought } from "@altered-internal/data/shapes"
 import { Database, thoughts } from "@altered-internal/data/store"
-import { isNanoid } from "@altered/data/shapes"
+import { isNanoid } from "@altered/utils"
 import { ORPCError } from "@orpc/client"
 
 /**

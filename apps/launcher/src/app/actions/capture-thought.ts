@@ -2,7 +2,7 @@
  *
  */
 
-import { Action } from "@altered/data/shapes"
+import { ALTEREDAction } from "@altered/data/shapes"
 import { Icon } from "@raycast/api"
 import { captureThoughtCustomInterface } from "app/interfaces"
 
@@ -24,4 +24,4 @@ export const captureThoughtAction = {
     trigger: "c",
 
     interfaces: [captureThoughtCustomInterface]
-} satisfies Action
+} satisfies ALTEREDAction

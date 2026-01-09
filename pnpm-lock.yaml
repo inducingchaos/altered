@@ -434,6 +434,9 @@ importers:
       '@altered/data/shapes':
         specifier: workspace:*
         version: link:../../public/data-shapes
+      '@altered/utils':
+        specifier: workspace:*
+        version: link:../../public/utils
       '@orpc/client':
         specifier: catalog:orpc
         version: 1.12.2

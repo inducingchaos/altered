@@ -2,7 +2,7 @@
  *
  */
 
-import { ALTEREDAction, System } from "@altered/data/shapes"
+import { ALTEREDAction, ALTEREDSystem } from "@altered/data/shapes"
 import { filterSystems } from "@altered/utils"
 import { clearSearchBar } from "@raycast/api"
 import * as staticSystems from "app/systems"
@@ -21,8 +21,8 @@ type ActionPaletteContextValue = {
     setSelectedActionId: (id: string | null) => void
     renderedActionId: string | null
 
-    systems: System[]
-    filteredSystems: System[]
+    systems: ALTEREDSystem[]
+    filteredSystems: ALTEREDSystem[]
     selectedAction: ALTEREDAction | null
     renderedAction: ALTEREDAction | null
     isRenderingAction: boolean

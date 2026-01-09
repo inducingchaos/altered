@@ -2,7 +2,7 @@
  *
  */
 
-import { Action } from "@altered/data/shapes"
+import { ALTEREDAction } from "@altered/data/shapes"
 import { Icon } from "@raycast/api"
 import { alteredOnboardingEndInterface, alteredOnboardingStartInterface } from "app/interfaces"
 
@@ -19,4 +19,4 @@ export const alteredOnboardingAction = {
     description: "Learn how to set up and use your ALTERED Brain.",
 
     interfaces: [alteredOnboardingStartInterface, alteredOnboardingEndInterface]
-} satisfies Action
+} satisfies ALTEREDAction

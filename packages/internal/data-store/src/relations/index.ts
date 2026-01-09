@@ -28,6 +28,11 @@ export const relations = defineRelations(tables, r => ({
             to: r.oauthConsents.userId
         }),
 
+        apiKeys: r.many.apiKeys({
+            from: r.users.id,
+            to: r.apiKeys.userId
+        }),
+
         systemPreferences: r.many.systemPreferences({
             from: r.users.id,
             to: r.systemPreferences.userId
