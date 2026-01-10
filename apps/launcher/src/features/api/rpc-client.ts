@@ -16,6 +16,8 @@ const link = new RPCLink<ClientContext>({
         const headers: Record<string, string> = {}
 
         if (authToken) headers.authorization = `Bearer ${authToken}`
+
+        headers["x-client-id"] = "altered-launcher"
         headers["x-client-version"] = config.appVersion
 
         return headers
