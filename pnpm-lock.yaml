@@ -35,9 +35,6 @@ catalogs:
     '@orpc/tanstack-query':
       specifier: 1.12.2
       version: 1.12.2
-    '@orpc/zod':
-      specifier: 1.12.2
-      version: 1.12.2
   react:
     '@types/react':
       specifier: 19.2.1
@@ -146,6 +143,9 @@ importers:
       '@altered-internal/data/access':
         specifier: workspace:*
         version: link:../../packages/internal/data-access
+      '@altered-internal/data/shapes':
+        specifier: workspace:*
+        version: link:../../packages/internal/data-shapes
       '@altered-internal/data/store':
         specifier: workspace:*
         version: link:../../packages/internal/data-store
@@ -179,9 +179,6 @@ importers:
       '@orpc/tanstack-query':
         specifier: catalog:orpc
         version: 1.12.2(@orpc/client@1.12.2)(@tanstack/query-core@5.90.16)
-      '@orpc/zod':
-        specifier: catalog:orpc
-        version: 1.12.2(@orpc/contract@1.12.2)(@orpc/server@1.12.2)(zod@4.1.13)
       '@radix-ui/react-accordion':
         specifier: ^1.2.12
         version: 1.2.12(@types/react-dom@19.2.1(@types/react@19.2.1))(@types/react@19.2.1)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
@@ -450,6 +447,12 @@ importers:
 
   packages/internal/data-shapes:
     dependencies:
+      '@altered-internal/auth':
+        specifier: workspace:*
+        version: link:../auth
+      '@altered-internal/data/store':
+        specifier: workspace:*
+        version: link:../data-store
       '@altered/data/shapes':
         specifier: workspace:*
         version: link:../../public/data-shapes
@@ -533,9 +536,6 @@ importers:
       '@orpc/tanstack-query':
         specifier: catalog:orpc
         version: 1.12.2(@orpc/client@1.12.2)(@tanstack/query-core@5.90.16)
-      '@orpc/zod':
-        specifier: catalog:orpc
-        version: 1.12.2(@orpc/contract@1.12.2)(@orpc/server@1.12.2)(zod@4.1.13)
       arktype:
         specifier: ^2.1.27
         version: 2.1.27
@@ -1443,9 +1443,6 @@ packages:
   '@orpc/interop@1.12.2':
     resolution: {integrity: sha512-whHawJ8XZBzxngqOZKRzkI6HaFZcFSdbaK0//LmqOdSKXBeuveHF+kprCcpr8C6rH2N5i9nKMdnt0RetjPvxCg==}
 
-  '@orpc/json-schema@1.12.2':
-    resolution: {integrity: sha512-b1SFH8d5lSKDPNcgK3fD3OvKKdO4eSjLilWmWUSQxqgfTEBckOIIMTfczDRQEkJIg/IyN++tYSwmjPFEI+dM3w==}
-
   '@orpc/openapi-client@1.12.2':
     resolution: {integrity: sha512-Ci0TT4eSjRAMmBEwF9RBYrVWGEa/OALp6dKjM28FErqEqxQ5hdI5HMnNmFqGl5neIt05qtYEZRqhVv3jagOIcg==}
 
@@ -1499,13 +1496,6 @@ packages:
     peerDependencies:
       '@orpc/client': 1.12.2
       '@tanstack/query-core': '>=5.80.2'
-
-  '@orpc/zod@1.12.2':
-    resolution: {integrity: sha512-U2XQyxsONPeSPY0rJ3JHXZhicS5KD5zJADj6p9h98TywO7qH/8a/u8tc8oB3f0qUiILY7crdGQBVw34MkuT44A==}
-    peerDependencies:
-      '@orpc/contract': 1.12.2
-      '@orpc/server': 1.12.2
-      zod: '>=3.25.0'
 
   '@radix-ui/number@1.1.1':
     resolution: {integrity: sha512-MkKCwxlXTgz6CFoJx3pCwn07GKp36+aZyu/u2Ln2VrA5DcdyCZkASEDBTd8x5whTQQL5CiYf4prXKLcgQdv29g==}
@@ -3125,10 +3115,6 @@ packages:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
 
-  escape-string-regexp@5.0.0:
-    resolution: {integrity: sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw==}
-    engines: {node: '>=12'}
-
   eslint-config-next@16.0.8:
     resolution: {integrity: sha512-8J5cOAboXIV3f8OD6BOyj7Fik6n/as7J4MboiUSExWruf/lCu1OPR3ZVSdnta6WhzebrmAATEmNSBZsLWA6kbg==}
     peerDependencies:
@@ -4645,9 +4631,6 @@ packages:
     resolution: {integrity: sha512-NsmoXalsWVDMGupxZ5R08ka9flZjjiLvHVAWYOKtiKM8ujtZWr9cRffak+uSE48+Ob8ObalXpwyeUiyDD6QFgg==}
     engines: {node: '>=8'}
 
-  wildcard-match@5.1.4:
-    resolution: {integrity: sha512-wldeCaczs8XXq7hj+5d/F38JE2r7EXgb6WQDM84RVwxy81T/sxB5e9+uZLK9Q9oNz1mlvjut+QtvgaOQFPVq/g==}
-
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
@@ -5539,20 +5522,6 @@ snapshots:
 
   '@orpc/interop@1.12.2': {}
 
-  '@orpc/json-schema@1.12.2':
-    dependencies:
-      '@orpc/contract': 1.12.2
-      '@orpc/interop': 1.12.2
-      '@orpc/openapi': 1.12.2
-      '@orpc/server': 1.12.2
-      '@orpc/shared': 1.12.2
-      json-schema-typed: 8.0.2
-    transitivePeerDependencies:
-      - '@opentelemetry/api'
-      - crossws
-      - fastify
-      - ws
-
   '@orpc/openapi-client@1.12.2':
     dependencies:
       '@orpc/client': 1.12.2
@@ -5653,22 +5622,6 @@ snapshots:
       '@tanstack/query-core': 5.90.16
     transitivePeerDependencies:
       - '@opentelemetry/api'
-
-  '@orpc/zod@1.12.2(@orpc/contract@1.12.2)(@orpc/server@1.12.2)(zod@4.1.13)':
-    dependencies:
-      '@orpc/contract': 1.12.2
-      '@orpc/json-schema': 1.12.2
-      '@orpc/openapi': 1.12.2
-      '@orpc/server': 1.12.2
-      '@orpc/shared': 1.12.2
-      escape-string-regexp: 5.0.0
-      wildcard-match: 5.1.4
-      zod: 4.1.13
-    transitivePeerDependencies:
-      - '@opentelemetry/api'
-      - crossws
-      - fastify
-      - ws
 
   '@radix-ui/number@1.1.1': {}
 
@@ -7319,8 +7272,6 @@ snapshots:
   escalade@3.2.0: {}
 
   escape-string-regexp@4.0.0: {}
-
-  escape-string-regexp@5.0.0: {}
 
   eslint-config-next@16.0.8(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3):
     dependencies:
@@ -8987,8 +8938,6 @@ snapshots:
   widest-line@3.1.0:
     dependencies:
       string-width: 4.2.3
-
-  wildcard-match@5.1.4: {}
 
   word-wrap@1.2.5: {}
 
