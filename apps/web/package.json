@@ -12,6 +12,7 @@
     },
     "dependencies": {
         "@altered-internal/auth": "workspace:*",
+        "@altered/utils": "workspace:*",
         "@altered-internal/config": "workspace:*",
         "@altered-internal/data/access": "workspace:*",
         "@altered-internal/data/store": "workspace:*",

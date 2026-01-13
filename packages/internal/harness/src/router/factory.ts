@@ -1,5 +1,5 @@
 /**
- *
+ * @todo [P2] We should add ratelimiting. We need a general strategy for this - should it be per-route, per-client, per-user, or per-API key? Should AI endpoints be ratelimited differently? How to control per-route - should we set in contract, or in the handler?
  */
 
 import { AuthenticatedRouteFactoryContext, EnrichedRouteFactoryContext, RouteFactoryContext } from "@altered-internal/data/shapes"
