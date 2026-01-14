@@ -2,7 +2,7 @@
  *
  */
 
-import { openAIMessageSchema, openrouterModelIdSchema } from "@altered/data/shapes"
+import { openAITextMessageSchema, openrouterModelIdSchema } from "@altered/data/shapes"
 import { eventIterator } from "@orpc/contract"
 import { type } from "arktype"
 import { contractFactory } from "./factory"
@@ -22,22 +22,14 @@ export const aiContract = {
                 })
                 .input(
                     type({
-                        messages: openAIMessageSchema.array(),
+                        messages: openAITextMessageSchema.array(),
                         "model?": openrouterModelIdSchema,
                         "temperature?": "number",
                         "maxTokens?": "number",
                         "stream?": "boolean"
                     })
                 )
-                .output(
-                    eventIterator(
-                        type({
-                            content: "string",
-                            "finishReason?": "string",
-                            "isComplete?": "boolean"
-                        })
-                    )
-                )
+                .output(eventIterator(type("string")))
         }
     }
 }

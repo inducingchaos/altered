@@ -3,7 +3,7 @@
  */
 
 import { application } from "@altered-internal/config"
-import { OpenAIMessage, OpenrouterModelID } from "@altered/data/shapes"
+import { OpenAIMessage, OpenAITextContentPart, OpenAITextMessage, OpenrouterModelID } from "@altered/data/shapes"
 import { arktypeToAiJsonSchema } from "@altered/utils"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 import { generateText, Output } from "ai"
@@ -11,7 +11,7 @@ import { type } from "arktype"
 
 export type GenerateChatTitleOptions = {
     input: {
-        messages: OpenAIMessage[]
+        messages: OpenAITextMessage[]
         temperature?: number
         maxTokens?: number
     }
@@ -50,7 +50,18 @@ export function isChatTitleGenerationRequest(messages: OpenAIMessage[]): boolean
 
     const messagePatterns = [/generate.*(?:a|an|the)?\s*(?:concise|short|brief)?\s*(?:chat|conversation)?\s*title/i, /create.*(?:a|an|the)?\s*(?:chat|conversation)?\s*title/i, /suggest.*(?:a|an|the)?\s*(?:chat|conversation)?\s*title/i, /title.*(?:for|of|this|the)?\s*(?:chat|conversation)/i, /summarize.*(?:as|into)?\s*(?:a|an|the)?\s*title/i]
 
-    return messages.some(message => messagePatterns.some(pattern => pattern.test(message.content)))
+    return messages.some(message =>
+        messagePatterns.some(pattern =>
+            pattern.test(
+                typeof message.content === "string"
+                    ? message.content
+                    : message.content
+                          .filter((content): content is OpenAITextContentPart => content.type === "text")
+                          .map(content => content.text)
+                          .join("\n\n")
+            )
+        )
+    )
 }
 
 /**
@@ -73,7 +84,7 @@ export async function* generateChatTitle({ input, options }: GenerateChatTitleOp
      */
     const systemPrompt = "Generate a concise, descriptive title for the chat conversation. Return only a valid JSON object matching the schema."
 
-    const augmentedMessages: OpenAIMessage[] = [{ role: "system", content: systemPrompt }, ...input.messages]
+    const augmentedMessages: OpenAITextMessage[] = [{ role: "system", content: systemPrompt }, ...input.messages]
 
     const model = openrouter.chat(options.modelId ?? generateChatTitleDefaults.modelId)
     const temperature = input.temperature ?? generateChatTitleDefaults.temperature

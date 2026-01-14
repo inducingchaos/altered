@@ -4,14 +4,14 @@
 
 import { application } from "@altered-internal/config"
 import { Database } from "@altered-internal/data/store"
-import { OpenAIMessage, OpenrouterModelID } from "@altered/data/shapes"
+import { OpenAITextMessage, OpenrouterModelID } from "@altered/data/shapes"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 import { generateText, streamText } from "ai"
 import { buildSystemPrompt } from "./build-system-prompt"
 
 export type GenerateChatCompletionOptions = {
     input: {
-        messages: OpenAIMessage[]
+        messages: OpenAITextMessage[]
         temperature?: number
         maxTokens?: number
         stream?: boolean
@@ -53,7 +53,7 @@ export async function* generateChatCompletion({ input, options, context }: Gener
 
     const systemPrompt = await buildSystemPrompt({ context })
 
-    const augmentedMessages: OpenAIMessage[] = [{ role: "system", content: systemPrompt }, ...input.messages]
+    const augmentedMessages: OpenAITextMessage[] = [{ role: "system", content: systemPrompt }, ...input.messages]
 
     const model = openrouter(options.modelId ?? generateChatCompletionsDefaults.modelId)
     const temperature = input.temperature ?? generateChatCompletionsDefaults.temperature
