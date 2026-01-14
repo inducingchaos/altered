@@ -7,8 +7,8 @@ settings:
 catalogs:
   ai:
     '@openrouter/ai-sdk-provider':
-      specifier: 6.0.0-alpha.1
-      version: 6.0.0-alpha.1
+      specifier: 1.5.4
+      version: 1.5.4
     ai:
       specifier: 6.0.11
       version: 6.0.11
@@ -449,7 +449,7 @@ importers:
         version: link:../../public/utils
       '@openrouter/ai-sdk-provider':
         specifier: catalog:ai
-        version: 6.0.0-alpha.1(zod@4.1.13)
+        version: 1.5.4(ai@6.0.11(zod@4.1.13))(zod@4.1.13)
       '@orpc/client':
         specifier: catalog:orpc
         version: 1.13.4(@opentelemetry/api@1.9.0)
@@ -1462,14 +1462,15 @@ packages:
     resolution: {integrity: sha512-2bQieTGI9XNFe9hKmXQjJmHV5rZw+yn7Rud1+C5uLEo8GaT89KZbiLTJgL35tGILahy/cB6+WAs812wjw7TK6w==}
     engines: {node: '>=18.0.0'}
 
-  '@openrouter/ai-sdk-provider@6.0.0-alpha.1':
-    resolution: {integrity: sha512-N91glWtq6XFl8Kvgft14BiDeCLABHatylAVKHOWMRJHnBl6iKblI4iZgcipnF9Pj8ZRUO752qpPoZVC+L2C6tA==}
+  '@openrouter/ai-sdk-provider@1.5.4':
+    resolution: {integrity: sha512-xrSQPUIH8n9zuyYZR0XK7Ba0h2KsjJcMkxnwaYfmv13pKs3sDkjPzVPPhlhzqBGddHb5cFEwJ9VFuFeDcxCDSw==}
     engines: {node: '>=18'}
     peerDependencies:
-      zod: ^4.3.5
+      ai: ^5.0.0
+      zod: ^3.24.1 || ^v4
 
-  '@openrouter/sdk@0.3.12':
-    resolution: {integrity: sha512-jwWpNyfeBLzHos2TqLIYp574jEkBSb/M46zY4uIJtlfept/3Rni7l6UQAHRqL8gPVdQCmYBaDL6NXR6uJZ0QiA==}
+  '@openrouter/sdk@0.1.27':
+    resolution: {integrity: sha512-RH//L10bSmc81q25zAZudiI4kNkLgxF2E+WU42vghp3N6TEvZ6F0jK7uT3tOxkEn91gzmMw9YVmDENy7SJsajQ==}
 
   '@opentelemetry/api@1.9.0':
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
@@ -5573,14 +5574,13 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@openrouter/ai-sdk-provider@6.0.0-alpha.1(zod@4.1.13)':
+  '@openrouter/ai-sdk-provider@1.5.4(ai@6.0.11(zod@4.1.13))(zod@4.1.13)':
     dependencies:
-      '@ai-sdk/provider': 3.0.1
-      '@ai-sdk/provider-utils': 4.0.3(zod@4.1.13)
-      '@openrouter/sdk': 0.3.12
+      '@openrouter/sdk': 0.1.27
+      ai: 6.0.11(zod@4.1.13)
       zod: 4.1.13
 
-  '@openrouter/sdk@0.3.12':
+  '@openrouter/sdk@0.1.27':
     dependencies:
       zod: 4.1.13
 

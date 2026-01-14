@@ -58,6 +58,8 @@ export function isChatTitleGenerationRequest(messages: OpenAIMessage[]): boolean
  *
  * @returns A generator for unified consumption.
  *
+ * @remarks This is no longer used for OpenAI-compatible endpoints (as we handle title JSON requests just like any other request). We should refactor this for use in our own trusted chat clients.
+ *
  * @todo [P3] Consider consolidating into the `generateChatCompletions` function, or an abstraction layer above it.
  */
 export async function* generateChatTitle({ input, options }: GenerateChatTitleOptions) {

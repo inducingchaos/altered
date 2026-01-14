@@ -55,11 +55,13 @@ export async function* generateChatCompletion({ input, options, context }: Gener
 
     const augmentedMessages: OpenAIMessage[] = [{ role: "system", content: systemPrompt }, ...input.messages]
 
-    const model = openrouter.chat(options.modelId ?? generateChatCompletionsDefaults.modelId)
+    const model = openrouter(options.modelId ?? generateChatCompletionsDefaults.modelId)
     const temperature = input.temperature ?? generateChatCompletionsDefaults.temperature
     const maxOutputTokens = input.maxTokens ?? generateChatCompletionsDefaults.maxTokens
 
     const shouldStream = input.stream !== false
+
+    disableAiSdkWarnings()
 
     if (shouldStream) {
         const { textStream } = streamText({
@@ -80,4 +82,17 @@ export async function* generateChatCompletion({ input, options, context }: Gener
 
         yield text
     }
+}
+
+/**
+ * A helper to disable AI SDK warnings. The AI SDK requires us to do so by setting a global variable.
+ *
+ * @remarks Current use cases:
+ *
+ * - To disable warnings for model providers (like OpenRouter) that are still using the `v2` specification.
+ */
+export function disableAiSdkWarnings(shouldDisable: boolean = false) {
+    if (typeof globalThis === "undefined") throw new Error("`GlobalThis` is undefined, unable to disable AI SDK warnings.")
+
+    globalThis.AI_SDK_LOG_WARNINGS = shouldDisable === false ? false : undefined
 }

@@ -2,8 +2,7 @@
  * @todo [P1] We should/could figure out a way to move this endpoint to the oRPC router.
  */
 
-import { OpenAIMessage, OpenrouterModelID } from "@altered/data/shapes"
-import { ORPCError } from "@orpc/server"
+import { normalizeOpenAIMessagesToText, OpenAIMessage, OpenrouterModelID } from "@altered/data/shapes"
 import { randomUUID } from "crypto"
 import { NextRequest } from "next/server"
 import { api } from "~/lib/infra/rpc"
@@ -45,89 +44,35 @@ export async function POST(request: NextRequest) {
 
         const invalidMessages = !rawInput.messages || !Array.isArray(rawInput.messages)
 
-        if (invalidMessages) return createOpenAIErrorResponse({ message: "Invalid messages format", code: "invalid_messages", status: 400 })
+        if (invalidMessages) return createOpenAIErrorResponse({ message: "Invalid messages format", code: "invalid_messages" })
 
-        //  REMARKS: We strip out keys that don't exist in the body. Is this necessary, or can we just avoid initializing the keys in the first place?
+        const normalizedMessages = normalizeOpenAIMessagesToText(rawInput.messages)
+        const resolvedModelId = resolveModelId(rawInput.model)
 
-        const strippedInput = Object.fromEntries(Object.entries(rawInput).filter(([, value]) => value !== undefined)) as OpenAICompatibleCompletionInput
+        const result = await api.ai.generate.completions.openAICompatible.call({
+            ...rawInput,
 
-        const resolvedModelId = resolveModelId(strippedInput.model)
+            messages: normalizedMessages,
+            model: resolvedModelId
+        })
 
-        const result = await api.ai.generate.completions.openAICompatible.call({ ...strippedInput, model: resolvedModelId })
-
-        if (result.error) {
-            const error = result.error
-
-            //  REMARKS: We could just make `createOpenAIErrorResponse` accept an error response with optional keys and handle internally.
-
-            if (error instanceof ORPCError) return createOpenAIErrorResponse({ ...error })
-
-            return createOpenAIErrorResponse({ message: error.message, code: "internal_error", status: 500 })
-        }
+        if (result.error) return createOpenAIErrorResponse(result.error)
 
         const resultIterator = result.data
-        const shouldStream = strippedInput.stream ?? true
-
-        //  REMARKS: Are these all standard keys and value formats? Can we move any more to this helper, or move to a function to create the options dynamically?
-
-        const responseValues = {
-            id: `chatcmpl-${randomUUID()}`,
-            created: Math.floor(Date.now() / 1000),
-            model: resolvedModelId
-        }
+        const shouldStream = rawInput.stream ?? false
+        const responseMetadata = createOpenAIResponseMetadata(resolvedModelId)
 
         if (!shouldStream) {
-            //  REMARKS: What does this do, is it needed?
+            const completionContent = await accumulateStreamContent(resultIterator)
 
-            let completion = ""
-            for await (const event of resultIterator) completion += event.content
+            const completion = createOpenAICompletion(responseMetadata, completionContent)
 
-            return new Response(
-                JSON.stringify({
-                    ...responseValues,
-
-                    object: "chat.completion",
-                    choices: [
-                        //  REMARKS: Can we convert to a preset that can be extended later?
-
-                        {
-                            index: 0,
-                            message: {
-                                role: "assistant",
-                                content: completion
-                            },
-                            finish_reason: "stop"
-                        }
-                    ],
-                    //  REMARKS: Should this be provided on the streaming version too, and how should we derive it? Should it be a calculation function or something sent from the server?
-
-                    usage: {
-                        prompt_tokens: 0,
-                        completion_tokens: 0,
-                        total_tokens: 0
-                    }
-                }),
-                {
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
-                }
-            )
+            return new Response(JSON.stringify(completion), { headers: { "Content-Type": "application/json" } })
         }
 
-        //  REMARKS: Is this needed to convert to a different format? Can we functionize if so?
+        const textStream = extractTextStream(resultIterator)
 
-        const textStream = (async function* () {
-            for await (const event of resultIterator) {
-                if (event.content && !event.isComplete) {
-                    yield event.content
-                }
-            }
-        })()
-
-        //  REMARKS: Is this new streaming controller needed, or can we leverage the existing layers?
-
-        return createOpenAIStreamResponse(textStream, responseValues)
+        return createOpenAIStreamResponse(textStream, responseMetadata)
     } catch (error) {
         console.error("OpenAI compatible completions API error:", error)
 
@@ -135,26 +80,63 @@ export async function POST(request: NextRequest) {
     }
 }
 
+type OpenAIResponseMetadata = { id: string; created: number; model: string }
+
 /**
- * @todo [P4] Is this the required format? What are all of the options (can we create proper types and utils for this)?
+ * Creates the standardized metadata fields for OpenAI-compatible responses.
  */
-export const createOpenAIErrorResponse = ({ message, code, status }: { message: string; code: string; status: number }) =>
-    new Response(
+function createOpenAIResponseMetadata(model: string): OpenAIResponseMetadata {
+    return {
+        id: `chatcmpl-${randomUUID()}`,
+        created: Math.floor(Date.now() / 1000),
+        model
+    }
+}
+
+/**
+ * Creates a non-streaming, OpenAI-compatible completion object.
+ *
+ * @remarks As part of our abstraction, we set the usage to zero. We can wire up actual usage from the AI SDK if desired.
+ */
+function createOpenAICompletion(metadata: OpenAIResponseMetadata, content: string) {
+    return {
+        ...metadata,
+
+        object: "chat.completion" as const,
+        choices: [
+            {
+                index: 0,
+                message: { role: "assistant" as const, content },
+                finish_reason: "stop" as const
+            }
+        ],
+        usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }
+    }
+}
+
+/**
+ * Creates an OpenAI-compatible error response.
+ *
+ * @todo [P4] Could improve the error types and codes.
+ */
+function createOpenAIErrorResponse({ message, code, status = 500 }: { message: string; code?: string; status?: number }) {
+    return new Response(
         JSON.stringify({
             error: {
                 message,
                 type: status >= 500 ? "internal_server_error" : "invalid_request_error",
-                code
+                code: code ?? (status >= 500 ? "internal_server_error" : "invalid_request_error")
             }
         }),
 
         { status, headers: { "Content-Type": "application/json" } }
     )
+}
 
 /**
- * @remarks Converts an AI SDK text stream to OpenAI-compatible SSE format.
+ * Converts a text stream to OpenAI-compatible SSE format.
  */
-export function createOpenAIStreamResponse(textStream: AsyncIterable<string>, responseValues: { id: string; created: number; model: string }) {
+function createOpenAIStreamResponse(textStream: AsyncIterable<string>, metadata: OpenAIResponseMetadata) {
     const stream = new ReadableStream({
         async start(controller) {
             const encoder = new TextEncoder()
@@ -165,7 +147,7 @@ export function createOpenAIStreamResponse(textStream: AsyncIterable<string>, re
                 for await (const chunk of textStream)
                     controller.enqueue(
                         encode({
-                            ...responseValues,
+                            ...metadata,
 
                             object: "chat.completion.chunk",
                             choices: [{ index: 0, delta: { content: chunk }, finish_reason: null }]
@@ -174,7 +156,7 @@ export function createOpenAIStreamResponse(textStream: AsyncIterable<string>, re
 
                 controller.enqueue(
                     encode({
-                        ...responseValues,
+                        ...metadata,
 
                         object: "chat.completion.chunk",
                         choices: [{ index: 0, delta: {}, finish_reason: "stop" }]
@@ -197,4 +179,42 @@ export function createOpenAIStreamResponse(textStream: AsyncIterable<string>, re
             Connection: "keep-alive"
         }
     })
+}
+
+type IteratorEvent = { content: string; isComplete?: boolean }
+
+/**
+ * Extracts text content from the oRPC iterator format.
+ *
+ * @todo [P4] Evaluate if we really need this. The input is of the type:
+ *
+ * ```typescript
+ * const resultIterator: AsyncIteratorClass<{
+ *     content: string
+ *     finishReason?: string | undefined
+ *     isComplete?: boolean | undefined
+ * }, unknown, void>
+ * ```
+ *
+ * Or at the least, are we able to minify or remove the internal anonymous generator function that wraps the conversion?
+ */
+function extractTextStream(iterator: AsyncIterable<IteratorEvent>): AsyncIterable<string> {
+    return (async function* () {
+        for await (const event of iterator) {
+            if (event.content && !event.isComplete) {
+                yield event.content
+            }
+        }
+    })()
+}
+
+/**
+ * Accumulates content from the iterator into a single string for non-streaming responses.
+ */
+async function accumulateStreamContent(iterator: AsyncIterable<IteratorEvent>): Promise<string> {
+    let content = ""
+
+    for await (const event of iterator) content += event.content
+
+    return content
 }

@@ -29,7 +29,7 @@ export async function buildSystemPrompt({ context }: { context: { brainId: strin
 
     const allThoughts = await context.db.select().from(thoughts).where(eq(thoughts.brainId, context.brainId)).orderBy(asc(thoughts.createdAt))
 
-    const hasThoughts = !allThoughts.length
+    const hasThoughts = allThoughts.length
 
     if (!hasThoughts) parts.push("No thoughts found in this brain yet.")
 

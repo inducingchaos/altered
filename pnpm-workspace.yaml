@@ -35,4 +35,6 @@ catalogs:
     "@tanstack/query-persist-client-core": 5.91.15
   ai:
     ai: 6.0.11
-    "@openrouter/ai-sdk-provider": 6.0.0-alpha.1
+
+    # @see issue: https://github.com/OpenRouterTeam/ai-sdk-provider/issues/331
+    "@openrouter/ai-sdk-provider": 1.5.4
