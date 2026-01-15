@@ -1,9 +1,9 @@
 /**
- *
+ * @todo [P2] We should add ratelimiting. We need a general strategy for this - should it be per-route, per-client, per-user, or per-API key? Should AI endpoints be ratelimited differently? How to control per-route - should we set in contract, or in the handler?
  */
 
+import { AuthenticatedRouteFactoryContext, EnrichedRouteFactoryContext, RouteFactoryContext } from "@altered-internal/data/shapes"
 import { onError, ORPCError, ValidationError } from "@orpc/server"
-import { AppRouteFactoryContext, ProtectedRouteFactoryContext, PublicRouteFactoryContext } from "../context"
 import { apiFactory } from "../factory"
 import { appContextProvider, checkVersion, dbProvider, logError, requireAuth } from "../middleware"
 
@@ -29,10 +29,12 @@ const logValidationError = (error: unknown) => {
     }
 }
 
-const publicRouteMiddleware = logError.concat(onError(logValidationError)).concat(checkVersion).concat(dbProvider)
-const protectedRouteMiddleware = publicRouteMiddleware.concat(requireAuth)
-const appRouteMiddleware = protectedRouteMiddleware.concat(appContextProvider)
+const routeMiddleware = logError.concat(onError(logValidationError)).concat(dbProvider)
+const clientRouteMiddleware = routeMiddleware.concat(checkVersion)
+const authenticatedRouteMiddleware = clientRouteMiddleware.concat(requireAuth)
+const enrichedRouteMiddleware = authenticatedRouteMiddleware.concat(appContextProvider)
 
-export const publicRouteFactory = apiFactory.use<PublicRouteFactoryContext>(publicRouteMiddleware)
-export const protectedRouteFactory = apiFactory.use<ProtectedRouteFactoryContext>(protectedRouteMiddleware)
-export const appRouteFactory = apiFactory.use<AppRouteFactoryContext>(appRouteMiddleware)
+export const routeFactory = apiFactory.use<RouteFactoryContext>(routeMiddleware)
+export const clientRouteFactory = apiFactory.use<RouteFactoryContext>(clientRouteMiddleware)
+export const authenticatedRouteFactory = apiFactory.use<AuthenticatedRouteFactoryContext>(authenticatedRouteMiddleware)
+export const enrichedRouteFactory = apiFactory.use<EnrichedRouteFactoryContext>(enrichedRouteMiddleware)

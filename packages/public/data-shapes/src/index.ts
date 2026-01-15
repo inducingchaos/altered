@@ -1,13 +1,15 @@
 /**
- * @todo [P4] Organize shapes into sensible categories.
+ *
  */
 
-export * from "./actions"
-export * from "./components"
-export * from "./constructs"
-export * from "./interfaces"
-export * from "./operations"
+export * from "./ai"
+export * from "./altered-actions"
+export * from "./altered-components"
+export * from "./altered-constructs"
+export * from "./altered-interfaces"
+export * from "./altered-operations"
+export * from "./altered-systems"
+export * from "./altered-thoughts"
+export * from "./api-keys"
+export * from "./chat"
 export * from "./pagination"
-export * from "./systems"
-export * from "./thoughts"
-export * from "./validators"

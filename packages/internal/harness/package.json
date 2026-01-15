@@ -20,7 +20,6 @@
         "@orpc/openapi": "catalog:orpc",
         "@orpc/server": "catalog:orpc",
         "@orpc/tanstack-query": "catalog:orpc",
-        "@orpc/zod": "catalog:orpc",
         "arktype": "^2.1.27"
     },
     "devDependencies": {

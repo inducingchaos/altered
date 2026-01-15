@@ -23,7 +23,14 @@ const envConfig: ENVConfig = {
             secret: process.env.AUTH_GOOGLE_SECRET
         }
     },
-    providers: {},
+    api: {
+        clientVersion: "0.1.0"
+    },
+    providers: {
+        openrouter: {
+            secret: process.env.PROVIDER_OPENROUTER_SECRET
+        }
+    },
     system: {
         environment: process.env.NODE_ENV,
         port: process.env.PORT,

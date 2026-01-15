@@ -4,6 +4,7 @@
 
 import { AuthContext } from ".."
 import { authBase } from "../base"
+import { getApiKeySession } from "./get-api-key-session"
 import { getOAuth2Session } from "./get-oauth2-session"
 
 /**
@@ -13,6 +14,8 @@ export type AmbiguousSessionResult = { data: AuthContext; error?: never } | { da
 
 /**
  * Supports and handles headers for both cookie and OAuth-based authentication flows.
+ *
+ * @todo [P0] The current solution uses some odd header values to disambiguate the type of authorization token and method. Revise to a more reliable and scalable solution.
  */
 export async function getAmbiguousSession({ headers }: { headers: Headers }): Promise<AmbiguousSessionResult> {
     if (headers.get("cookie")) {
@@ -21,7 +24,11 @@ export async function getAmbiguousSession({ headers }: { headers: Headers }): Pr
         if (session) return { data: session }
     }
 
-    if (headers.get("authorization")) return getOAuth2Session({ headers })
+    if (headers.get("authorization")) {
+        if (headers.get("x-client-id") === "altered-launcher") return getOAuth2Session({ headers })
+
+        return await getApiKeySession({ headers })
+    }
 
     if (!headers.get("cookie") && !headers.get("authorization")) return { error: { code: "BAD_REQUEST", message: "No authentication headers were provided.", cause: { authorization: headers.get("authorization"), cookie: headers.get("cookie") } } }
 

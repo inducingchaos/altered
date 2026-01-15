@@ -28,7 +28,14 @@ export const envSchema = z.object({
             secret: envVarStringSchema
         })
     }),
-    providers: z.object({}),
+    api: z.object({
+        clientVersion: z.string()
+    }),
+    providers: z.object({
+        openrouter: z.object({
+            secret: envVarStringSchema
+        })
+    }),
     system: z.object({
         /**
          * @remarks Omits `test` value, which can be added when we have a use case.

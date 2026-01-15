@@ -9,10 +9,14 @@
     },
     "dependencies": {
         "@altered-internal/auth": "workspace:*",
+        "@altered/utils": "workspace:*",
+        "@altered-internal/config": "workspace:*",
         "@altered-internal/data/shapes": "workspace:*",
-        "@altered/data/shapes": "workspace:*",
         "@altered-internal/data/store": "workspace:*",
-        "@orpc/client": "catalog:orpc"
+        "@altered/data/shapes": "workspace:*",
+        "@openrouter/ai-sdk-provider": "catalog:ai",
+        "@orpc/client": "catalog:orpc",
+        "ai": "catalog:ai"
     },
     "devDependencies": {
         "@altered-internal/typescript": "workspace:*",

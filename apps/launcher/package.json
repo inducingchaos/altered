@@ -33,6 +33,12 @@
             "mode": "view"
         },
         {
+            "name": "connect-to-ai-provider",
+            "title": "Connect to AI Provider",
+            "description": "Get configuration values to use ALTERED AI in other applications.",
+            "mode": "view"
+        },
+        {
             "name": "get-latest-thought",
             "title": "[DEV] Get Latest Thought",
             "description": "Get the latest thought from your ALTERED brain.",

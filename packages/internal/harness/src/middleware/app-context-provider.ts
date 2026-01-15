@@ -3,8 +3,8 @@
  */
 
 import { getSelectedBrainId } from "@altered-internal/data/access"
+import { APIAuthContext, APIDatabaseContext } from "@altered-internal/data/shapes"
 import { ORPCError } from "@orpc/server"
-import { APIAuthContext, APIDatabaseContext } from "../context"
 import { apiFactory } from "../factory"
 
 export const appContextProvider = apiFactory.$context<APIDatabaseContext & APIAuthContext>().middleware(async ({ context, next }) => {

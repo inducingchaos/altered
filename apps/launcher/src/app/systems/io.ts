@@ -3,7 +3,7 @@
  */
 
 import { ALTEREDSystem } from "@altered/data/shapes"
-import { generateLlmsTxtAction } from "app/actions"
+import { connectToAiProviderAction, generateLlmsTxtAction } from "app/actions"
 
 export const ioSystem = {
     id: "system-altered-io",
@@ -16,5 +16,5 @@ export const ioSystem = {
     title: "Import/Export your Thoughts",
     description: "Import or export Thoughts from your ALTERED Brain.",
 
-    actions: [generateLlmsTxtAction]
+    actions: [connectToAiProviderAction, generateLlmsTxtAction]
 } satisfies ALTEREDSystem

@@ -2,7 +2,7 @@
  *
  */
 
-import { ALTEREDAction, System } from "@altered/data/shapes"
+import { ALTEREDAction, ALTEREDSystem } from "@altered/data/shapes"
 import { filterSystems } from "@altered/utils"
 import { clearSearchBar } from "@raycast/api"
 import * as staticSystems from "app/systems"
@@ -21,8 +21,8 @@ type ActionPaletteContextValue = {
     setSelectedActionId: (id: string | null) => void
     renderedActionId: string | null
 
-    systems: System[]
-    filteredSystems: System[]
+    systems: ALTEREDSystem[]
+    filteredSystems: ALTEREDSystem[]
     selectedAction: ALTEREDAction | null
     renderedAction: ALTEREDAction | null
     isRenderingAction: boolean
@@ -51,7 +51,10 @@ export function ActionPaletteProvider({ children }: { children: ReactNode }) {
         searchableKeyPaths: ["name", "title", "description", "actions.name", "actions.title", "actions.description", "actions.trigger"]
     })
 
-    const findAction = (id: string) => systems.flatMap(system => system.actions).find(action => action.id === id) ?? null
+    /**
+     * @todo [P3] Figure out if we should generalize the types at definition (by assigning the type rather than using `satisfies`) to avoid casting.
+     */
+    const findAction = (id: string) => (systems as ALTEREDSystem[]).flatMap(system => system.actions).find(action => action.id === id) ?? null
 
     const selectedAction = selectedActionId ? findAction(selectedActionId) : null
     const renderedAction = renderedActionId ? findAction(renderedActionId) : null

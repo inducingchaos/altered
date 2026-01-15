@@ -2,7 +2,7 @@
  *
  */
 
-import { Action, testInterface } from "@altered/data/shapes"
+import { ALTEREDAction, mockInterface } from "@altered/data/shapes"
 import { Icon } from "@raycast/api"
 
 export const generateLlmsTxtAction = {
@@ -19,5 +19,5 @@ export const generateLlmsTxtAction = {
 
     trigger: "llms",
 
-    interfaces: [testInterface]
-} satisfies Action
+    interfaces: [mockInterface]
+} satisfies ALTEREDAction
