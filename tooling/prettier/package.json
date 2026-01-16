@@ -1,8 +1,0 @@
-{
-    "name": "@altered-internal/prettier",
-    "version": "0.1.0",
-    "private": true,
-    "devDependencies": {
-        "@altered-internal/typescript": "workspace:*"
-    }
-}

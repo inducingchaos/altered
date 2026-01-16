@@ -1,18 +1,28 @@
 {
-    "name": "altered",
-    "version": "0.1.0",
-    "private": true,
-    "scripts": {
-        "build": "turbo build",
-        "dev": "turbo dev",
-        "dev:web": "turbo dev --filter=altered-web",
-        "lint": "turbo lint",
-        "typecheck": "turbo typecheck",
-        "db:push": "turbo db:push",
-        "db:studio": "turbo db:studio"
-    },
-    "devDependencies": {
-        "turbo": "^2.6.0"
-    },
-    "packageManager": "pnpm@10.20.0"
+  "name": "altered",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+
+    "dev": "turbo dev",
+    "dev:web": "turbo dev --filter=altered-web",
+
+    "check:types": "turbo check:types",
+    "check:style": "ultracite check",
+    "check": "pnpm check:types && pnpm check:style",
+
+    "fix:style": "ultracite fix",
+    "fix:style:force": "ultracite fix --unsafe",
+    "fix": "pnpm fix:style",
+
+    "db:push": "turbo db:push",
+    "db:studio": "turbo db:studio"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.11",
+    "turbo": "^2.6.0",
+    "ultracite": "7.0.11"
+  },
+  "packageManager": "pnpm@10.20.0"
 }

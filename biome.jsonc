@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": [
+    "ultracite/biome/core",
+    "ultracite/biome/next",
+    "ultracite/biome/react"
+  ],
+
+  "vcs": {
+    "useIgnoreFile": true
+  },
+
+  "formatter": {
+    "indentWidth": 4
+  },
+
+  "javascript": {
+    "formatter": {
+      "semicolons": "asNeeded"
+    }
+  }
+}

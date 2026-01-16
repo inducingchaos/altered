@@ -1,88 +1,83 @@
 {
-    "$schema": "https://www.raycast.com/schemas/extension.json",
-    "name": "altered-launcher",
-    "title": "ALTERED",
-    "description": "Knowledge systems for the obsessed.",
-    "icon": "altered/extension-icon.png",
-    "author": "inducingchaos",
-    "platforms": [
-        "macOS",
-        "Windows"
-    ],
-    "categories": [
-        "Productivity"
-    ],
-    "license": "MIT",
-    "commands": [
-        {
-            "name": "action-palette",
-            "title": "Action Palette",
-            "description": "Access your ALTERED Systems from one shortcut.",
-            "mode": "view"
-        },
-        {
-            "name": "capture-thought",
-            "title": "Capture Thought",
-            "description": "Capture a thought to your ALTERED Brain.",
-            "mode": "view"
-        },
-        {
-            "name": "view-thoughts",
-            "title": "View Thoughts",
-            "description": "View and manage the thoughts in your ALTERED Brain.",
-            "mode": "view"
-        },
-        {
-            "name": "connect-to-ai-provider",
-            "title": "Connect to AI Provider",
-            "description": "Get configuration values to use ALTERED AI in other applications.",
-            "mode": "view"
-        },
-        {
-            "name": "get-latest-thought",
-            "title": "[DEV] Get Latest Thought",
-            "description": "Get the latest thought from your ALTERED brain.",
-            "mode": "no-view"
-        },
-        {
-            "name": "show-latest-thought",
-            "title": "[DEV] Show Latest Thought",
-            "description": "Show the latest thought from your ALTERED brain.",
-            "mode": "view"
-        }
-    ],
-    "tools": [],
-    "dependencies": {
-        "@altered/data/shapes": "workspace:*",
-        "@altered/harness": "workspace:*",
-        "@altered/utils": "workspace:*",
-        "@orpc/client": "catalog:orpc",
-        "@orpc/tanstack-query": "catalog:orpc",
-        "@raycast/api": "^1.103.6",
-        "@raycast/utils": "^1.17.0",
-        "@tanstack/query-persist-client-core": "catalog:tanstack-query",
-        "@tanstack/react-query": "catalog:tanstack-query",
-        "better-auth": "catalog:better-auth",
-        "luxon": "^3.7.2",
-        "nanoid": "^5.1.6",
-        "zustand": "^5.0.9"
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "altered-launcher",
+  "title": "ALTERED",
+  "description": "Knowledge systems for the obsessed.",
+  "icon": "altered/extension-icon.png",
+  "author": "inducingchaos",
+  "platforms": [
+    "macOS",
+    "Windows"
+  ],
+  "categories": [
+    "Productivity"
+  ],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "action-palette",
+      "title": "Action Palette",
+      "description": "Access your ALTERED Systems from one shortcut.",
+      "mode": "view"
     },
-    "devDependencies": {
-        "@raycast/eslint-config": "^2.0.4",
-        "@types/luxon": "^3.7.1",
-        "@types/node": "22.13.10",
-        "@types/react": "19.0.10",
-        "eslint": "^9.22.0",
-        "prettier": "^3.5.3",
-        "typescript": "catalog:typescript"
+    {
+      "name": "capture-thought",
+      "title": "Capture Thought",
+      "description": "Capture a thought to your ALTERED Brain.",
+      "mode": "view"
     },
-    "scripts": {
-        "build": "ray build",
-        "dev": "ray develop",
-        "fix-lint": "ray lint --fix",
-        "lint": "ray lint",
-        "typecheck": "tsc --noEmit",
-        "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",
-        "publish": "npx @raycast/api@latest publish"
+    {
+      "name": "view-thoughts",
+      "title": "View Thoughts",
+      "description": "View and manage the thoughts in your ALTERED Brain.",
+      "mode": "view"
+    },
+    {
+      "name": "connect-to-ai-provider",
+      "title": "Connect to AI Provider",
+      "description": "Get configuration values to use ALTERED AI in other applications.",
+      "mode": "view"
+    },
+    {
+      "name": "get-latest-thought",
+      "title": "[DEV] Get Latest Thought",
+      "description": "Get the latest thought from your ALTERED brain.",
+      "mode": "no-view"
+    },
+    {
+      "name": "show-latest-thought",
+      "title": "[DEV] Show Latest Thought",
+      "description": "Show the latest thought from your ALTERED brain.",
+      "mode": "view"
     }
+  ],
+  "tools": [],
+  "dependencies": {
+    "@altered/data/shapes": "workspace:*",
+    "@altered/harness": "workspace:*",
+    "@altered/utils": "workspace:*",
+    "@orpc/client": "catalog:orpc",
+    "@orpc/tanstack-query": "catalog:orpc",
+    "@raycast/api": "^1.103.6",
+    "@raycast/utils": "^1.17.0",
+    "@tanstack/query-persist-client-core": "catalog:tanstack-query",
+    "@tanstack/react-query": "catalog:tanstack-query",
+    "better-auth": "catalog:better-auth",
+    "luxon": "^3.7.2",
+    "nanoid": "^5.1.6",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "@types/luxon": "^3.7.1",
+    "@types/node": "22.13.10",
+    "@types/react": "19.0.10",
+    "typescript": "catalog:typescript"
+  },
+  "scripts": {
+    "build": "ray build",
+    "dev": "ray develop",
+    "check:types": "tsc --noEmit",
+    "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",
+    "publish": "npx @raycast/api@latest publish"
+  }
 }
