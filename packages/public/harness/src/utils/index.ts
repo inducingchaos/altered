@@ -9,18 +9,29 @@ import { ORPCError } from "@orpc/contract"
  */
 const isAbortError = (error: unknown): boolean => {
     if (error instanceof Error && error.name === "AbortError") return true
-    if (error instanceof Error && error.cause instanceof Error && error.cause.name === "AbortError") return true
+    if (
+        error instanceof Error &&
+        error.cause instanceof Error &&
+        error.cause.name === "AbortError"
+    )
+        return true
 
     return false
 }
 
-export function createOrpcErrorLogger({ enable, preset }: { enable: boolean; preset: "client" | "server" }) {
+export function createOrpcErrorLogger({
+    enable,
+    preset
+}: {
+    enable: boolean
+    preset: "client" | "server"
+}) {
     if (!enable) return () => {}
 
     return (error: unknown) => {
         if (isAbortError(error)) return
 
-        let errorResult: ORPCError<string, unknown> | undefined = undefined
+        let errorResult: ORPCError<string, unknown> | undefined
 
         const isOrpcError = error instanceof ORPCError
         if (isOrpcError) errorResult = error
@@ -45,10 +56,15 @@ export function createOrpcErrorLogger({ enable, preset }: { enable: boolean; pre
         /**
          * @remarks Certain data types like `Headers` re-throw an error when logged, so we need to guard against them. Serializing the object inline prevents `[Object object]` (console only displays 1 level deep), and `\n` characters by not using indentation.
          */
-        const safeCause = errorResult.cause instanceof Object ? JSON.stringify(errorResult.cause) : String(errorResult.cause)
+        const safeCause =
+            errorResult.cause instanceof Object
+                ? JSON.stringify(errorResult.cause)
+                : String(errorResult.cause)
 
         const includeErrorCause = preset === "server"
-        const logData = includeErrorCause ? { ...errorResult.toJSON(), cause: safeCause } : errorResult.toJSON()
+        const logData = includeErrorCause
+            ? { ...errorResult.toJSON(), cause: safeCause }
+            : errorResult.toJSON()
 
         console.error("[ERROR] ORPCError:", logData)
     }

@@ -2,7 +2,7 @@
  *
  */
 
-import { OAuth } from "@raycast/api"
+import type { OAuth } from "@raycast/api"
 import { config } from "~/config"
 import { configureLogger } from "~/observability"
 
@@ -11,7 +11,10 @@ const logger = configureLogger({ defaults: { scope: "oauth:exchange" } })
 /**
  * Exchanges an OAuth authorization code for an access token and refresh token.
  */
-export async function exchangeCodeForTokens(authRequest: OAuth.AuthorizationRequest, authorizationCode: string): Promise<OAuth.TokenResponse> {
+export async function exchangeCodeForTokens(
+    authRequest: OAuth.AuthorizationRequest,
+    authorizationCode: string
+): Promise<OAuth.TokenResponse> {
     const params = new URLSearchParams()
 
     params.append("client_id", config.oauthClientId)
@@ -31,10 +34,16 @@ export async function exchangeCodeForTokens(authRequest: OAuth.AuthorizationRequ
 
         logger.error({
             title: "Failed to Exchange Code for Tokens",
-            data: { status: response.status, statusText: response.statusText, body: errorText }
+            data: {
+                status: response.status,
+                statusText: response.statusText,
+                body: errorText
+            }
         })
 
-        throw new Error(`Failed to exchange authorization code for tokens: ${response.statusText}`)
+        throw new Error(
+            `Failed to exchange authorization code for tokens: ${response.statusText}`
+        )
     }
 
     const tokenResponse = (await response.json()) as OAuth.TokenResponse

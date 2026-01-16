@@ -4,7 +4,10 @@
 
 import { urlAlphabet } from "nanoid"
 
-export function isNanoid(id: string, options?: { alphabet?: string; length?: number }): boolean {
+export function isNanoid(
+    id: string,
+    options?: { alphabet?: string; length?: number }
+): boolean {
     const { alphabet = urlAlphabet, length = 21 } = options ?? {}
 
     /**

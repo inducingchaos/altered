@@ -2,8 +2,8 @@
  *
  */
 
-import { Router } from "@altered-internal/harness"
 import { createOrpcErrorLogger } from "@altered/harness"
+import type { Router } from "@altered-internal/harness"
 import { createORPCClient, createSafeClient, onError } from "@orpc/client"
 import { RPCLink } from "@orpc/client/fetch"
 import type { RouterClient } from "@orpc/server"
@@ -17,16 +17,22 @@ const isServer = typeof window === "undefined"
 
 const networkLink = new RPCLink({
     url: () => {
-        if (isServer) throw new Error("RPCLink is not allowed on the server side.")
+        if (isServer)
+            throw new Error("RPCLink is not allowed on the server side.")
 
         return `${window.location.origin}/rpc`
     },
-    interceptors: [onError(createOrpcErrorLogger({ enable: true, preset: "client" }))]
+    interceptors: [
+        onError(createOrpcErrorLogger({ enable: true, preset: "client" }))
+    ]
 })
 
 function getClient(): RouterClient<Router> {
     if (isServer) {
-        if (!globalThis.$client) throw new Error("Server client not initialized. Ensure `client.server.ts` is imported first.")
+        if (!globalThis.$client)
+            throw new Error(
+                "Server client not initialized. Ensure `client.server.ts` is imported first."
+            )
 
         return globalThis.$client
     }

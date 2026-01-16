@@ -2,7 +2,13 @@
  *
  */
 
-import { createThought, deleteThought, getLatestThought, getThoughts, updateThought } from "@altered-internal/data/access"
+import {
+    createThought,
+    deleteThought,
+    getLatestThought,
+    getThoughts,
+    updateThought
+} from "@altered-internal/data/access"
 import { internalTestThought } from "@altered-internal/data/shapes"
 import { authenticatedRouteFactory, enrichedRouteFactory } from "./factory"
 
@@ -17,40 +23,56 @@ export const getThoughtsProcedure = enrichedRouteFactory.thoughts.get.handler(
         })
 )
 
-export const findThoughtProcedure = authenticatedRouteFactory.thoughts.find.handler(async () => {
-    console.warn("`findThought` is using a test value.")
+export const findThoughtProcedure =
+    authenticatedRouteFactory.thoughts.find.handler(async () => {
+        console.warn("`findThought` is using a test value.")
 
-    return { thought: internalTestThought }
-})
+        return { thought: internalTestThought }
+    })
 
-export const createThoughtProcedure = enrichedRouteFactory.thoughts.create.handler(async ({ input, context }) => ({
-    thought: await createThought({
-        thought: {
+export const createThoughtProcedure =
+    enrichedRouteFactory.thoughts.create.handler(
+        async ({ input, context }) => ({
+            thought: await createThought({
+                thought: {
+                    brainId: context.app.selectedBrainId,
+                    kind: null,
+                    ...input
+                },
+                db: context.db
+            })
+        })
+    )
+
+export const getLatestThoughtProcedure =
+    enrichedRouteFactory.thoughts.getLatest.handler(async ({ context }) => ({
+        thought: await getLatestThought({
             brainId: context.app.selectedBrainId,
-            kind: null,
-            ...input
-        },
-        db: context.db
-    })
-}))
+            db: context.db
+        })
+    }))
 
-export const getLatestThoughtProcedure = enrichedRouteFactory.thoughts.getLatest.handler(async ({ context }) => ({ thought: await getLatestThought({ brainId: context.app.selectedBrainId, db: context.db }) }))
+export const deleteThoughtProcedure =
+    enrichedRouteFactory.thoughts.delete.handler(
+        async ({ input, context }) => ({
+            thought: await deleteThought({
+                id: input.id,
+                brainId: context.app.selectedBrainId,
+                db: context.db
+            })
+        })
+    )
 
-export const deleteThoughtProcedure = enrichedRouteFactory.thoughts.delete.handler(async ({ input, context }) => ({
-    thought: await deleteThought({
-        id: input.id,
-        brainId: context.app.selectedBrainId,
-        db: context.db
-    })
-}))
-
-export const updateThoughtProcedure = enrichedRouteFactory.thoughts.update.handler(async ({ input: { query, values }, context }) => ({
-    thought: await updateThought({
-        query: { ...query, brainId: context.app.selectedBrainId },
-        values,
-        context
-    })
-}))
+export const updateThoughtProcedure =
+    enrichedRouteFactory.thoughts.update.handler(
+        async ({ input: { query, values }, context }) => ({
+            thought: await updateThought({
+                query: { ...query, brainId: context.app.selectedBrainId },
+                values,
+                context
+            })
+        })
+    )
 
 export const thoughtsRouter = {
     get: getThoughtsProcedure,

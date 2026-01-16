@@ -31,10 +31,18 @@ type ToKebabCaseOptions = {
     /**
      * How separator spacing should be handled.
      */
-    separatorSpacing?: FullSeparatorSpacing | ConventionalSeparatorSpacing | PreserveSeparatorSpacing | OneSeparatorSpacing | NoSeparatorSpacing
+    separatorSpacing?:
+        | FullSeparatorSpacing
+        | ConventionalSeparatorSpacing
+        | PreserveSeparatorSpacing
+        | OneSeparatorSpacing
+        | NoSeparatorSpacing
 }
 
-export function toKebabCase(text: string, { separatorSpacing: mode = "conventional" }: ToKebabCaseOptions = {}): string {
+export function toKebabCase(
+    text: string,
+    { separatorSpacing: mode = "conventional" }: ToKebabCaseOptions = {}
+): string {
     const lowercased = text.toLowerCase()
 
     const replaced = lowercased.replace(/[ -]+/g, run => {

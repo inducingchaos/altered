@@ -2,9 +2,12 @@
  *
  */
 
-import { LoggerConfig } from "../constants"
+import type { LoggerConfig } from "../constants"
 
-export const mergeLoggerConfig = (base?: LoggerConfig, override?: LoggerConfig): LoggerConfig => ({
+export const mergeLoggerConfig = (
+    base?: LoggerConfig,
+    override?: LoggerConfig
+): LoggerConfig => ({
     parts: {
         ...base?.parts,
         ...override?.parts

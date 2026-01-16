@@ -2,8 +2,19 @@
  *
  */
 
-import { ConsoleLogType, consoleLogTypes, LoggerConfig, LogOptions } from "./constants"
-import { buildLog, matchesSearch, mergeLoggerConfig, serializeDataEntries, shouldLogAtLevel } from "./utils"
+import {
+    type ConsoleLogType,
+    consoleLogTypes,
+    type LoggerConfig,
+    type LogOptions
+} from "./constants"
+import {
+    buildLog,
+    matchesSearch,
+    mergeLoggerConfig,
+    serializeDataEntries,
+    shouldLogAtLevel
+} from "./utils"
 
 export function createLogger(loggerConfig?: LoggerConfig) {
     const consoleMethods = Object.fromEntries(
@@ -24,13 +35,37 @@ export function createLogger(loggerConfig?: LoggerConfig) {
                         plugin.handle({ logOptions, logType, loggerConfig })
                     })
 
-                if (loggerConfig?.filter?.level && !shouldLogAtLevel({ logType, logLevel: loggerConfig?.filter.level })) return
+                if (
+                    loggerConfig?.filter?.level &&
+                    !shouldLogAtLevel({
+                        logType,
+                        logLevel: loggerConfig?.filter.level
+                    })
+                )
+                    return
 
-                const log = buildLog({ logOptions, logType, loggerConfig, extras: { stringifyData: false, includeDateInTimestamp: false } })
+                const log = buildLog({
+                    logOptions,
+                    logType,
+                    loggerConfig,
+                    extras: {
+                        stringifyData: false,
+                        includeDateInTimestamp: false
+                    }
+                })
 
-                if (loggerConfig?.filter?.search && !matchesSearch({ text: log, query: loggerConfig?.filter.search })) return
+                if (
+                    loggerConfig?.filter?.search &&
+                    !matchesSearch({
+                        text: log,
+                        query: loggerConfig?.filter.search
+                    })
+                )
+                    return
 
-                const logData = logOptions?.data ? serializeDataEntries({ data: logOptions.data }) : undefined
+                const logData = logOptions?.data
+                    ? serializeDataEntries({ data: logOptions.data })
+                    : undefined
 
                 const args = [log, logData].filter(Boolean)
                 console[logType](...args)
@@ -39,8 +74,12 @@ export function createLogger(loggerConfig?: LoggerConfig) {
     )
 
     return {
-        ...(consoleMethods as Record<ConsoleLogType, (typeof consoleMethods)[ConsoleLogType]>),
+        ...(consoleMethods as Record<
+            ConsoleLogType,
+            (typeof consoleMethods)[ConsoleLogType]
+        >),
 
-        configure: (overrideConfig?: LoggerConfig) => createLogger(mergeLoggerConfig(loggerConfig, overrideConfig))
+        configure: (overrideConfig?: LoggerConfig) =>
+            createLogger(mergeLoggerConfig(loggerConfig, overrideConfig))
     }
 }

@@ -18,5 +18,7 @@ export const brains = pgTable(
             .defaultNow()
             .$onUpdateFn(() => new Date())
     },
-    table => [index("brains_user_id_created_at_idx").on(table.userId, table.createdAt)]
+    table => [
+        index("brains_user_id_created_at_idx").on(table.userId, table.createdAt)
+    ]
 )

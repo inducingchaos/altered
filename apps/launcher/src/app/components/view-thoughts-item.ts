@@ -2,7 +2,7 @@
  *
  */
 
-import { ALTEREDComponent } from "@altered/data/shapes"
+import type { ALTEREDComponent } from "@altered/data/shapes"
 import { Icon } from "@raycast/api"
 import { viewThoughtsMetadataComponent } from "./view-thoughts-metadata"
 

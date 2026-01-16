@@ -25,7 +25,10 @@ export async function getUserInfo(accessToken: string): Promise<OAuthUserInfo> {
     })
 
     if (!response.ok) {
-        logger.error({ title: "Failed to Fetch User Info", data: { response: await response.text() } })
+        logger.error({
+            title: "Failed to Fetch User Info",
+            data: { response: await response.text() }
+        })
 
         throw new Error(`Failed to fetch user info: ${response.statusText}`)
     }

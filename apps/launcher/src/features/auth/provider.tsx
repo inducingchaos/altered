@@ -2,7 +2,15 @@
  *
  */
 
-import { createContext, ReactNode, use, useCallback, useEffect, useMemo, useState } from "react"
+import {
+    createContext,
+    type ReactNode,
+    use,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState
+} from "react"
 import { authenticateWithTokens, retrieveAccessToken } from "./oidc"
 
 type AuthContextBaseValue = {
@@ -33,7 +41,10 @@ type AuthContextUnauthenticatedValue = AuthContextBaseValue & {
     token: null
 }
 
-type AuthContextValue = AuthContextLoadingValue | AuthContextAuthenticatedValue | AuthContextUnauthenticatedValue
+type AuthContextValue =
+    | AuthContextLoadingValue
+    | AuthContextAuthenticatedValue
+    | AuthContextUnauthenticatedValue
 
 export const AuthContext = createContext<AuthContextValue | null>(null)
 
@@ -121,7 +132,10 @@ export function AuthProvider(props: { children: ReactNode }) {
 export function useAuthentication() {
     const context = use(AuthContext)
 
-    if (!context) throw new Error("`useAuthentication` must be used within an `AuthProvider`.")
+    if (!context)
+        throw new Error(
+            "`useAuthentication` must be used within an `AuthProvider`."
+        )
 
     return context
 }

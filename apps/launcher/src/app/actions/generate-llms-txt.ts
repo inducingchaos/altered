@@ -2,13 +2,14 @@
  *
  */
 
-import { ALTEREDAction, mockInterface } from "@altered/data/shapes"
+import { type ALTEREDAction, mockInterface } from "@altered/data/shapes"
 import { Icon } from "@raycast/api"
 
 export const generateLlmsTxtAction = {
     id: "action-generate-llms-txt",
     alias: "Generate LLMs.txt Action",
-    content: "An ALTERED Action for generating a LLMs.txt file from your thoughts.",
+    content:
+        "An ALTERED Action for generating a LLMs.txt file from your thoughts.",
 
     type: "action",
 

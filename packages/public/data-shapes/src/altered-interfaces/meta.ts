@@ -3,14 +3,20 @@
  */
 
 import type { JSX } from "react"
-import { ALTEREDComponent } from "../altered-components"
-import { ConstructState, RenderableConstruct } from "../altered-constructs"
+import type { ALTEREDComponent } from "../altered-components"
+import type { ConstructState, RenderableConstruct } from "../altered-constructs"
 
-export type BaseInterface<ID extends string = string, State extends ConstructState = ConstructState> = RenderableConstruct<ID, State> & {
+export type BaseInterface<
+    ID extends string = string,
+    State extends ConstructState = ConstructState
+> = RenderableConstruct<ID, State> & {
     type: "interface"
 }
 
-export type DefinedInterface<ID extends string = string, State extends ConstructState = ConstructState> = BaseInterface<ID, State> & {
+export type DefinedInterface<
+    ID extends string = string,
+    State extends ConstructState = ConstructState
+> = BaseInterface<ID, State> & {
     custom?: false
 
     components: ALTEREDComponent[]
@@ -18,7 +24,10 @@ export type DefinedInterface<ID extends string = string, State extends Construct
     react?: never
 }
 
-export type CustomInterface<ID extends string = string, State extends ConstructState = ConstructState> = BaseInterface<ID, State> & {
+export type CustomInterface<
+    ID extends string = string,
+    State extends ConstructState = ConstructState
+> = BaseInterface<ID, State> & {
     custom: true
 
     components?: never
@@ -26,6 +35,12 @@ export type CustomInterface<ID extends string = string, State extends ConstructS
     react(props?: unknown): JSX.Element
 }
 
-type Interface<ID extends string = string, State extends ConstructState = ConstructState> = DefinedInterface<ID, State> | CustomInterface<ID, State>
+type Interface<
+    ID extends string = string,
+    State extends ConstructState = ConstructState
+> = DefinedInterface<ID, State> | CustomInterface<ID, State>
 
-export type ALTEREDInterface<ID extends string = string, State extends ConstructState = ConstructState> = Interface<ID, State>
+export type ALTEREDInterface<
+    ID extends string = string,
+    State extends ConstructState = ConstructState
+> = Interface<ID, State>

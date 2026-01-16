@@ -2,8 +2,8 @@
  *
  */
 
-import { Database, thoughts } from "@altered-internal/data/store"
-import { PaginationOptions, Thought } from "@altered/data/shapes"
+import type { PaginationOptions, Thought } from "@altered/data/shapes"
+import { type Database, thoughts } from "@altered-internal/data/store"
 import { ORPCError } from "@orpc/client"
 import { and, desc, eq, lt } from "drizzle-orm"
 import { resolveCursorDefinition } from "./resolve-cursor"
@@ -43,10 +43,13 @@ export async function getThoughts({
                 offset: pagination.offset
             })
 
-            if (!offsetThoughts.length) return { thoughts: null, hasMore: false }
+            if (!offsetThoughts.length)
+                return { thoughts: null, hasMore: false }
 
             const hasMore = offsetThoughts.length > limit
-            const thoughts = hasMore ? offsetThoughts.slice(0, limit) : offsetThoughts
+            const thoughts = hasMore
+                ? offsetThoughts.slice(0, limit)
+                : offsetThoughts
 
             return { thoughts, hasMore }
         }
@@ -59,30 +62,43 @@ export async function getThoughts({
                     limit: fetchLimit
                 })
 
-                if (!initialThoughts.length) return { thoughts: null, hasMore: false }
+                if (!initialThoughts.length)
+                    return { thoughts: null, hasMore: false }
 
                 const hasMore = initialThoughts.length > limit
-                const thoughts = hasMore ? initialThoughts.slice(0, limit) : initialThoughts
+                const thoughts = hasMore
+                    ? initialThoughts.slice(0, limit)
+                    : initialThoughts
 
                 return { thoughts, hasMore }
             }
 
             for (const cursor of pagination.cursors) {
-                const cursorDate = await resolveCursorDefinition(cursor, { strategy: "creation-date", context: { brainId, db } })
+                const cursorDate = await resolveCursorDefinition(cursor, {
+                    strategy: "creation-date",
+                    context: { brainId, db }
+                })
 
                 if (!cursorDate) continue
 
                 const afterCursorThoughts = await db
                     .select()
                     .from(thoughts)
-                    .where(and(eq(thoughts.brainId, brainId), lt(thoughts.createdAt, cursorDate)))
+                    .where(
+                        and(
+                            eq(thoughts.brainId, brainId),
+                            lt(thoughts.createdAt, cursorDate)
+                        )
+                    )
                     .orderBy(desc(thoughts.createdAt))
                     .limit(fetchLimit)
 
                 if (!afterCursorThoughts.length) continue
 
                 const hasMore = afterCursorThoughts.length > limit
-                const resultThoughts = hasMore ? afterCursorThoughts.slice(0, limit) : afterCursorThoughts
+                const resultThoughts = hasMore
+                    ? afterCursorThoughts.slice(0, limit)
+                    : afterCursorThoughts
 
                 return { thoughts: resultThoughts, hasMore }
             }
@@ -92,7 +108,7 @@ export async function getThoughts({
 
         throw new Error("Invalid pagination type.")
     } catch (error) {
-        console.error(`Error retrieving thoughts:`, error)
+        console.error("Error retrieving thoughts:", error)
 
         throw new ORPCError("INTERNAL_SERVER_ERROR", { cause: error })
     }

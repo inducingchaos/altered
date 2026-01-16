@@ -8,7 +8,9 @@ import { Suspense } from "react"
 import { AuthButtonWithoutSession } from "./client"
 
 export async function AuthButtonWithoutSuspense() {
-    const { data: session } = await auth.api.getSession({ headers: await headers() })
+    const { data: session } = await auth.api.getSession({
+        headers: await headers()
+    })
 
     return <AuthButtonWithoutSession isAuthenticated={!!session} />
 }

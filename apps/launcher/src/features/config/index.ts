@@ -3,7 +3,7 @@
  * @todo [P0] Remove the `environment` property as it should auto-change based on the `NODE_ENV` environment variable.
  */
 
-import { ConfigDef, configSchema } from "./schema"
+import { type ConfigDef, configSchema } from "./schema"
 
 export const configDef = {
     cwd: "/Users/inducingchaos/Workspace/containers/altered/apps/launcher",
@@ -29,7 +29,8 @@ export const configDef = {
     productionBaseUrl: "https://altered.app",
 
     oauthProviderId: "altered",
-    oauthProviderDescription: "Connect your ALTERED account to access your thoughts.",
+    oauthProviderDescription:
+        "Connect your ALTERED account to access your thoughts.",
 
     oauthClientId: "altered-launcher",
     oauthClientScope: "openid profile email offline_access"

@@ -4,10 +4,10 @@
 
 import "server-only"
 
-import { application } from "@altered-internal/config"
-import { router } from "@altered-internal/harness"
 import { createOrpcErrorLogger } from "@altered/harness"
 import { extendHeaders } from "@altered/utils"
+import { application } from "@altered-internal/config"
+import { router } from "@altered-internal/harness"
 import { createRouterClient, onError } from "@orpc/server"
 import { headers } from "next/headers"
 
@@ -31,5 +31,7 @@ globalThis.$client = createRouterClient(router, {
      *
      * @remarks We may not need this since our oRPC router already logs errors on the server - we could remove either here or there. Leaving for now.
      */
-    interceptors: [onError(createOrpcErrorLogger({ enable: true, preset: "server" }))]
+    interceptors: [
+        onError(createOrpcErrorLogger({ enable: true, preset: "server" }))
+    ]
 })

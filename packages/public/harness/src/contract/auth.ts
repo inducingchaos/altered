@@ -2,7 +2,11 @@
  *
  */
 
-import { apiKeySchema, getApiKeyInputSchema, validateApiKeyInputSchema } from "@altered/data/shapes"
+import {
+    apiKeySchema,
+    getApiKeyInputSchema,
+    validateApiKeyInputSchema
+} from "@altered/data/shapes"
 import { type } from "arktype"
 import { contractFactory } from "./factory"
 

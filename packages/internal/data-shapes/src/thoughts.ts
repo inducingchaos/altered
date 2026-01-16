@@ -9,13 +9,16 @@ export const internalThoughtSchema = thoughtSchema.merge({
     kind: '"dataset" | "attribute" | "preference" | null'
 })
 
-export const internalCreatableThoughtSchema = internalThoughtSchema.omit("createdAt", "updatedAt").merge({
-    "id?": "string"
-})
+export const internalCreatableThoughtSchema = internalThoughtSchema
+    .omit("createdAt", "updatedAt")
+    .merge({
+        "id?": "string"
+    })
 
 export type InternalThought = typeof internalThoughtSchema.infer
 
-export type InternalCreatableThought = typeof internalCreatableThoughtSchema.infer
+export type InternalCreatableThought =
+    typeof internalCreatableThoughtSchema.infer
 
 export const internalTestThought = {
     id: "test-thought-id",

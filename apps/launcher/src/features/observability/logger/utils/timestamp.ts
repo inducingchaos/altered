@@ -2,7 +2,13 @@
  *
  */
 
-export const formatTimestamp = ({ date, include: includeParts }: { date: Date; include?: { date?: boolean; time?: boolean } }) => {
+export const formatTimestamp = ({
+    date,
+    include: includeParts
+}: {
+    date: Date
+    include?: { date?: boolean; time?: boolean }
+}) => {
     const { date: includeDate, time: includeTime } = {
         date: true,
         time: true,

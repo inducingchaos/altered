@@ -2,7 +2,12 @@
  *
  */
 
-import { ErrorFromErrorMap, InferContractRouterErrorMap, InferContractRouterInputs, InferContractRouterOutputs } from "@orpc/contract"
+import type {
+    ErrorFromErrorMap,
+    InferContractRouterErrorMap,
+    InferContractRouterInputs,
+    InferContractRouterOutputs
+} from "@orpc/contract"
 import { aiContract } from "./ai"
 import { authContract } from "./auth"
 import { experimentalContract } from "./experimental"
@@ -19,6 +24,8 @@ export const contract = {
 
 export type APIInputs = InferContractRouterInputs<typeof contract>
 export type APIOutputs = InferContractRouterOutputs<typeof contract>
-export type APIError = ErrorFromErrorMap<InferContractRouterErrorMap<typeof contract>>
+export type APIError = ErrorFromErrorMap<
+    InferContractRouterErrorMap<typeof contract>
+>
 
 export type APIContract = typeof contract

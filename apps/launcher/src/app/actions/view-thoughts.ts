@@ -2,7 +2,7 @@
  *
  */
 
-import { ALTEREDAction } from "@altered/data/shapes"
+import type { ALTEREDAction } from "@altered/data/shapes"
 import { Icon } from "@raycast/api"
 import { viewThoughtsCustomInterface } from "app/interfaces"
 

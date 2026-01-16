@@ -3,7 +3,7 @@
  */
 
 import { type } from "arktype"
-import { OpenAIMessage, OpenAITextMessage } from "./openai"
+import type { OpenAIMessage, OpenAITextMessage } from "./openai"
 
 export type ChatMessage = OpenAIMessage
 

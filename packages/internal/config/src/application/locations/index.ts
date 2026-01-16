@@ -3,7 +3,11 @@
  */
 
 import { env } from "../env"
-import { ComputedLocationsConfig, LocationsConfig, locationsOutputSchema } from "./schema"
+import {
+    type ComputedLocationsConfig,
+    type LocationsConfig,
+    locationsOutputSchema
+} from "./schema"
 
 const locationsConfig: LocationsConfig = {
     origins: {
@@ -25,12 +29,21 @@ const locationsConfig: LocationsConfig = {
     aliases: {}
 }
 
-const devOrigin = locationsConfig.origins.development ?? `http://localhost:${env.system.port ?? "258"}`
-const previewOrigin = locationsConfig.origins.preview ?? env.system.vercel.branchUrl
-const prodOrigin = locationsConfig.origins.production ?? env.system.vercel.productionUrl ? `https://${env.system.vercel.productionUrl}` : undefined
+const devOrigin =
+    locationsConfig.origins.development ??
+    `http://localhost:${env.system.port ?? "258"}`
+const previewOrigin =
+    locationsConfig.origins.preview ?? env.system.vercel.branchUrl
+const prodOrigin =
+    (locationsConfig.origins.production ?? env.system.vercel.productionUrl)
+        ? `https://${env.system.vercel.productionUrl}`
+        : undefined
 
 const currentOrigin = () => {
-    const environment = env.config.overrides.environment ?? env.system.vercel.environment ?? "development"
+    const environment =
+        env.config.overrides.environment ??
+        env.system.vercel.environment ??
+        "development"
 
     if (environment === "development") return devOrigin
     if (environment === "preview") return previewOrigin

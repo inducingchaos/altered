@@ -3,7 +3,7 @@
  */
 
 import { mockComponent } from "../altered-components"
-import { ALTEREDInterface } from "./meta"
+import type { ALTEREDInterface } from "./meta"
 
 export const mockInterface = {
     id: "interface-mock",

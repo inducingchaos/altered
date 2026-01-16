@@ -5,7 +5,7 @@
 "use client"
 
 import { QueryClientProvider } from "@tanstack/react-query"
-import { ReactNode, useState } from "react"
+import { type ReactNode, useState } from "react"
 import { createQueryClient } from "~/lib/infra/queries"
 import { ThemeProvider } from "./theme"
 
@@ -14,7 +14,12 @@ export function ContextProvider(props: { children: ReactNode }) {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                disableTransitionOnChange
+                enableSystem
+            >
                 {props.children}
             </ThemeProvider>
         </QueryClientProvider>

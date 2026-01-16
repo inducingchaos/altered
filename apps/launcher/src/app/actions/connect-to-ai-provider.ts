@@ -2,7 +2,7 @@
  *
  */
 
-import { ALTEREDAction } from "@altered/data/shapes"
+import type { ALTEREDAction } from "@altered/data/shapes"
 import { Icon } from "@raycast/api"
 import { connectToAiProviderCustomInterface } from "app/interfaces"
 
@@ -16,7 +16,8 @@ export const connectToAiProviderAction = {
     icon: Icon.Key,
     name: "AI Provider",
     title: "Connect to AI Provider",
-    description: "Get configuration values to use ALTERED AI in other applications.",
+    description:
+        "Get configuration values to use ALTERED AI in other applications.",
 
     interfaces: [connectToAiProviderCustomInterface]
 } satisfies ALTEREDAction

@@ -9,7 +9,9 @@ export const experimentalRouter = {
         return { success: input.hello === "world" }
     }),
 
-    protectedTest: authenticatedRouteFactory.experimental.protectedTest.handler(async ({ input }) => {
-        return { success: input.hello === "world" }
-    })
+    protectedTest: authenticatedRouteFactory.experimental.protectedTest.handler(
+        async ({ input }) => {
+            return { success: input.hello === "world" }
+        }
+    )
 }

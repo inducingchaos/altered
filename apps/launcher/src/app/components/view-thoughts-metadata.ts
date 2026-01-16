@@ -2,13 +2,14 @@
  *
  */
 
-import { ALTEREDComponent } from "@altered/data/shapes"
+import type { ALTEREDComponent } from "@altered/data/shapes"
 import { Icon } from "@raycast/api"
 
 export const viewThoughtsMetadataComponent = {
     id: "component-view-thoughts-metadata",
     alias: "View Thoughts Metadata Component",
-    content: "An ALTERED collection item metadata Component for viewing Thoughts.",
+    content:
+        "An ALTERED collection item metadata Component for viewing Thoughts.",
 
     type: "component",
 

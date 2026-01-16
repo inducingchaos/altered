@@ -27,8 +27,13 @@ const clientVersionExceptions: ClientVersionException[] = [
     // }
 ]
 
-function isClientVersionException(clientVersion: string, serverVersion: string) {
-    const exception = clientVersionExceptions.find(exception => exception.clientVersion === clientVersion)
+function isClientVersionException(
+    clientVersion: string,
+    serverVersion: string
+) {
+    const exception = clientVersionExceptions.find(
+        exception => exception.clientVersion === clientVersion
+    )
     if (!exception) return false
 
     return exception.serverVersions.includes(serverVersion)
@@ -39,18 +44,23 @@ function isClientVersionException(clientVersion: string, serverVersion: string) 
  *
  * @remarks If either version is below 1.0.0, we require an exact version match. Otherwise, we only require the major version to match. Accepts exceptions.
  */
-export function checkVersionCompatibility(clientVersion: string, serverVersion: string) {
+export function checkVersionCompatibility(
+    clientVersion: string,
+    serverVersion: string
+) {
     const clientVersionParts = clientVersion.split(".").map(Number)
     const serverVersionParts = serverVersion.split(".").map(Number)
 
-    if (clientVersionParts.length !== 3 || serverVersionParts.length !== 3) return false
+    if (clientVersionParts.length !== 3 || serverVersionParts.length !== 3)
+        return false
 
     if (isClientVersionException(clientVersion, serverVersion)) return true
 
     const [clientMajor] = clientVersionParts
     const [serverMajor] = serverVersionParts
 
-    if (clientMajor === 0 || serverMajor === 0) return clientVersion === serverVersion
+    if (clientMajor === 0 || serverMajor === 0)
+        return clientVersion === serverVersion
 
     return clientMajor === serverMajor
 }

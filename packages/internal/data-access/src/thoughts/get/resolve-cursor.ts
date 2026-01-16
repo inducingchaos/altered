@@ -2,9 +2,9 @@
  *
  */
 
-import { CursorDefinition } from "@altered/data/shapes"
-import { Database, thoughts } from "@altered-internal/data/store"
-import { and, eq, SQL } from "drizzle-orm"
+import type { CursorDefinition } from "@altered/data/shapes"
+import { type Database, thoughts } from "@altered-internal/data/store"
+import { and, eq, type SQL } from "drizzle-orm"
 
 export async function resolveCursorDefinition(
     cursor: CursorDefinition,
@@ -16,11 +16,12 @@ export async function resolveCursorDefinition(
         context: { brainId: string; db: Database }
     }
 ): Promise<Date | null> {
-    if (strategy !== "creation-date") throw new Error("Cursor resolution strategy not implemented.")
+    if (strategy !== "creation-date")
+        throw new Error("Cursor resolution strategy not implemented.")
 
     if (cursor.field === "created-at") return cursor.value
 
-    let query: SQL[] = []
+    const query: SQL[] = []
 
     if (cursor.field === "id") query.push(eq(thoughts.id, cursor.value))
 

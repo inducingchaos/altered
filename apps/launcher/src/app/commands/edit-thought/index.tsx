@@ -7,9 +7,17 @@ import { Action, ActionPanel, Form, Icon } from "@raycast/api"
 import { useForm } from "@raycast/utils"
 import { LogOutAction, ReturnToActionPaletteAction } from "~/shared/components"
 import { useActionPalette } from "../action-palette/state"
-import { HandleUpdateThought } from "../view-thoughts/shared"
+import type { HandleUpdateThought } from "../view-thoughts/shared"
 
-export function EditThought({ thought, pop, onUpdateThought }: { thought: Thought; pop: () => void; onUpdateThought: HandleUpdateThought }) {
+export function EditThought({
+    thought,
+    pop,
+    onUpdateThought
+}: {
+    thought: Thought
+    pop: () => void
+    onUpdateThought: HandleUpdateThought
+}) {
     const actionPaletteContext = useActionPalette({ safe: true })
 
     const { itemProps, handleSubmit } = useForm<{
@@ -33,12 +41,25 @@ export function EditThought({ thought, pop, onUpdateThought }: { thought: Though
 
     const createActions = () => (
         <ActionPanel>
-            <Action.SubmitForm title="Save Changes" onSubmit={handleSubmit} icon={Icon.CheckCircle} />
+            <Action.SubmitForm
+                icon={Icon.CheckCircle}
+                onSubmit={handleSubmit}
+                title="Save Changes"
+            />
 
             <ActionPanel.Section title="Navigate">
-                <Action title="Cancel Edit" onAction={pop} shortcut={{ modifiers: ["cmd"], key: "e" }} icon={Icon.XMarkCircle} />
+                <Action
+                    icon={Icon.XMarkCircle}
+                    onAction={pop}
+                    shortcut={{ modifiers: ["cmd"], key: "e" }}
+                    title="Cancel Edit"
+                />
 
-                {actionPaletteContext && <ReturnToActionPaletteAction resetNavigationState={actionPaletteContext.resetState} />}
+                {actionPaletteContext && (
+                    <ReturnToActionPaletteAction
+                        resetNavigationState={actionPaletteContext.resetState}
+                    />
+                )}
             </ActionPanel.Section>
 
             <ActionPanel.Section title="Configure">
@@ -49,9 +70,18 @@ export function EditThought({ thought, pop, onUpdateThought }: { thought: Though
 
     return (
         <Form actions={createActions()} navigationTitle="Edit Thought">
-            <Form.TextField title="Alias" info="An arbitrary name/title for the Thought." {...itemProps.alias} />
+            <Form.TextField
+                info="An arbitrary name/title for the Thought."
+                title="Alias"
+                {...itemProps.alias}
+            />
 
-            <Form.TextArea title="Content" autoFocus info="The content of your thought." {...itemProps.content} />
+            <Form.TextArea
+                autoFocus
+                info="The content of your thought."
+                title="Content"
+                {...itemProps.content}
+            />
         </Form>
     )
 }

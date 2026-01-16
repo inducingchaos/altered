@@ -2,7 +2,11 @@
  *
  */
 
-import { createOrpcErrorLogger, type APIContract, type ContractRouterClient } from "@altered/harness"
+import {
+    type APIContract,
+    type ContractRouterClient,
+    createOrpcErrorLogger
+} from "@altered/harness"
 import { createORPCClient, createSafeClient, onError } from "@orpc/client"
 import { RPCLink } from "@orpc/client/fetch"
 import { config } from "~/config"
@@ -23,9 +27,12 @@ const link = new RPCLink<ClientContext>({
         return headers
     },
 
-    interceptors: [onError(createOrpcErrorLogger({ enable: true, preset: "client" }))]
+    interceptors: [
+        onError(createOrpcErrorLogger({ enable: true, preset: "client" }))
+    ]
 })
 
-export const client: ContractRouterClient<APIContract, ClientContext> = createORPCClient(link)
+export const client: ContractRouterClient<APIContract, ClientContext> =
+    createORPCClient(link)
 
 export const api = createSafeClient(client)

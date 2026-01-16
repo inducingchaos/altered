@@ -2,8 +2,8 @@
  *
  */
 
-import { Thought } from "@altered/data/shapes"
-import { APIError } from "@altered/harness"
+import type { Thought } from "@altered/data/shapes"
+import type { APIError } from "@altered/harness"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 import { useAuthentication } from "~/auth"
@@ -45,15 +45,22 @@ type UseThoughtsErrorValue = UseThoughtsBaseValue & {
     error: APIError
 }
 
-type UseThoughtsValue = UseThoughtsFetchingValue | UseThoughtsSuccessValue | UseThoughtsErrorValue
+type UseThoughtsValue =
+    | UseThoughtsFetchingValue
+    | UseThoughtsSuccessValue
+    | UseThoughtsErrorValue
 
 export function useThoughts() {
     const { isAuthed, token: authToken } = useAuthentication()
-    if (!isAuthed) throw new Error("`useThoughts` must be used within an authenticated context.")
+    if (!isAuthed)
+        throw new Error(
+            "`useThoughts` must be used within an authenticated context."
+        )
 
     const getThoughtsQueryOptions = useThoughtsQueryOptions({ authToken })
 
-    const { isFetching, data, error, hasNextPage, fetchNextPage, refetch } = useInfiniteQuery(getThoughtsQueryOptions)
+    const { isFetching, data, error, hasNextPage, fetchNextPage, refetch } =
+        useInfiniteQuery(getThoughtsQueryOptions)
 
     const thoughts = data?.pages.flatMap(page => page.thoughts ?? []) ?? null
 
@@ -108,7 +115,16 @@ export function useThoughts() {
                 error: null
             }
 
-        throw new Error("Invalid `ThoughtsContext` value. This should never happen.", { cause: { isFetching: !!isFetching, error: !!error, thoughts: !!thoughts } })
+        throw new Error(
+            "Invalid `ThoughtsContext` value. This should never happen.",
+            {
+                cause: {
+                    isFetching: !!isFetching,
+                    error: !!error,
+                    thoughts: !!thoughts
+                }
+            }
+        )
     }, [baseValue, isFetching, error, thoughts])
 
     return value

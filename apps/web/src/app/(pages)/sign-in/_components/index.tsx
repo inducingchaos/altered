@@ -4,10 +4,14 @@
 
 "use client"
 
-import { useEffect } from "react"
 import { authClient } from "@altered-internal/auth/client"
+import { useEffect } from "react"
 
-export function SignInOnMount({ callbackUrl }: { callbackUrl: string | undefined }) {
+export function SignInOnMount({
+    callbackUrl
+}: {
+    callbackUrl: string | undefined
+}) {
     useEffect(() => {
         authClient.signIn.social({
             provider: "google",

@@ -48,7 +48,9 @@ export const authBase = betterAuth({
                     clientSecret: "placeholder-secret",
 
                     icon: "icon.png",
-                    redirectUrls: ["https://raycast.com/redirect?packageName=Extension"],
+                    redirectUrls: [
+                        "https://raycast.com/redirect?packageName=Extension"
+                    ],
                     disabled: false,
                     skipConsent: true,
                     metadata: { platform: "raycast" }

@@ -2,8 +2,8 @@
  *
  */
 
-import { APIContext } from "@altered-internal/data/shapes"
 import { contract } from "@altered/harness"
+import type { APIContext } from "@altered-internal/data/shapes"
 import { implement } from "@orpc/server"
 
 /**

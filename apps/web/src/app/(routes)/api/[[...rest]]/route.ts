@@ -15,11 +15,15 @@ const handler = new OpenAPIHandler(router, {
         new OpenAPIReferencePlugin({
             docsProvider: "swagger",
             schemaConverters: [new ArkTypeToJsonSchemaConverter()],
-            specGenerateOptions: { filter: ({ contract }) => !contract["~orpc"].route.tags?.includes("internal") }
+            specGenerateOptions: {
+                filter: ({ contract }) =>
+                    !contract["~orpc"].route.tags?.includes("internal")
+            }
         })
     ],
     interceptors: [onError(error => console.error(error))],
-    filter: ({ contract }) => !contract["~orpc"].route.tags?.includes("internal")
+    filter: ({ contract }) =>
+        !contract["~orpc"].route.tags?.includes("internal")
 })
 
 async function handleRequest(request: Request) {

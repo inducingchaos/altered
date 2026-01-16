@@ -50,15 +50,20 @@ export async function authenticateWithTokens(): Promise<string> {
 
                 refreshPromise = (async () => {
                     try {
-                        const refreshedTokens = await refreshTokens(refreshToken)
+                        const refreshedTokens =
+                            await refreshTokens(refreshToken)
                         await client.setTokens(refreshedTokens)
 
                         logger.log({
                             title: "Refreshed and Stored Tokens",
                             data: {
                                 expires_in: refreshedTokens.expires_in,
-                                hasAccessToken: Boolean(refreshedTokens.access_token),
-                                hasRefreshToken: Boolean(refreshedTokens.refresh_token)
+                                hasAccessToken: Boolean(
+                                    refreshedTokens.access_token
+                                ),
+                                hasRefreshToken: Boolean(
+                                    refreshedTokens.refresh_token
+                                )
                             }
                         })
 
@@ -90,9 +95,13 @@ export async function authenticateWithTokens(): Promise<string> {
 
     logger.log({ title: "Starting Authorization Flow..." })
 
-    const { authorizationCode, authRequest } = await requestAuthorizationCode(client)
+    const { authorizationCode, authRequest } =
+        await requestAuthorizationCode(client)
 
-    const tokenResponse = await exchangeCodeForTokens(authRequest, authorizationCode)
+    const tokenResponse = await exchangeCodeForTokens(
+        authRequest,
+        authorizationCode
+    )
     await client.setTokens(tokenResponse)
 
     logger.log({

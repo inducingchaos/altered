@@ -14,7 +14,13 @@ type ButtonState = {
     onClick?: () => Promise<unknown> | void
 }
 
-export function AuthButtonWithoutSession({ isAuthenticated, className }: { isAuthenticated?: boolean; className?: string }) {
+export function AuthButtonWithoutSession({
+    isAuthenticated,
+    className
+}: {
+    isAuthenticated?: boolean
+    className?: string
+}) {
     const router = useRouter()
     const [isWorking, setIsWorking] = useState(false)
 
@@ -42,7 +48,10 @@ export function AuthButtonWithoutSession({ isAuthenticated, className }: { isAut
     }
 
     const isLoading = isWorking || isAuthenticated === undefined
-    const buttonState = buttonStates[isLoading ? "loading" : isAuthenticated ? "signedIn" : "signedOut"]
+    const buttonState =
+        buttonStates[
+            isLoading ? "loading" : isAuthenticated ? "signedIn" : "signedOut"
+        ]
 
     const onClick = async () => {
         if (isLoading) return
@@ -58,8 +67,17 @@ export function AuthButtonWithoutSession({ isAuthenticated, className }: { isAut
 
     return (
         <div className={className}>
-            <button className="h-8 px-4 bg-foreground text-background font-mono text-sm font-medium hover:opacity-75 disabled:opacity-50" disabled={isLoading} onClick={onClick}>
-                <DynamicTextSizer possibleValues={Object.values(buttonStates).map(buttonState => buttonState.buttonText)} currentValue={buttonState.buttonText} />
+            <button
+                className="h-8 bg-foreground px-4 font-medium font-mono text-background text-sm hover:opacity-75 disabled:opacity-50"
+                disabled={isLoading}
+                onClick={onClick}
+            >
+                <DynamicTextSizer
+                    currentValue={buttonState.buttonText}
+                    possibleValues={Object.values(buttonStates).map(
+                        buttonState => buttonState.buttonText
+                    )}
+                />
             </button>
         </div>
     )
