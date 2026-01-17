@@ -1,6 +1,7 @@
+import { auth } from "@altered-internal/auth"
 import Form from "next/form"
-
-import { signOut } from "@/app/(auth)/auth"
+import { redirect } from "next/navigation"
+import { signInUrl } from "@/lib/auth"
 
 export const SignOutForm = () => {
     return (
@@ -8,9 +9,9 @@ export const SignOutForm = () => {
             action={async () => {
                 "use server"
 
-                await signOut({
-                    redirectTo: "/"
-                })
+                await auth.api.signOut()
+
+                redirect(signInUrl)
             }}
             className="w-full"
         >
@@ -18,7 +19,7 @@ export const SignOutForm = () => {
                 className="w-full px-1 py-0.5 text-left text-red-500"
                 type="submit"
             >
-                Sign out
+                {"Sign out"}
             </button>
         </Form>
     )

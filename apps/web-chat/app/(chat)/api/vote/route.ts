@@ -1,4 +1,4 @@
-import { auth } from "@/app/(auth)/auth"
+import { getSession } from "@/lib/auth"
 import { getChatById, getVotesByChatId, voteMessage } from "@/lib/db/queries"
 import { ChatSDKError } from "@/lib/errors"
 
@@ -13,11 +13,9 @@ export async function GET(request: Request) {
         ).toResponse()
     }
 
-    const session = await auth()
+    const user = await getSession()
 
-    if (!session?.user) {
-        return new ChatSDKError("unauthorized:vote").toResponse()
-    }
+    if (!user) return new ChatSDKError("unauthorized:vote").toResponse()
 
     const chat = await getChatById({ id: chatId })
 
@@ -25,7 +23,7 @@ export async function GET(request: Request) {
         return new ChatSDKError("not_found:chat").toResponse()
     }
 
-    if (chat.userId !== session.user.id) {
+    if (chat.userId !== user.id) {
         return new ChatSDKError("forbidden:vote").toResponse()
     }
 
@@ -49,11 +47,9 @@ export async function PATCH(request: Request) {
         ).toResponse()
     }
 
-    const session = await auth()
+    const user = await getSession()
 
-    if (!session?.user) {
-        return new ChatSDKError("unauthorized:vote").toResponse()
-    }
+    if (!user) return new ChatSDKError("unauthorized:vote").toResponse()
 
     const chat = await getChatById({ id: chatId })
 
@@ -61,7 +57,7 @@ export async function PATCH(request: Request) {
         return new ChatSDKError("not_found:vote").toResponse()
     }
 
-    if (chat.userId !== session.user.id) {
+    if (chat.userId !== user.id) {
         return new ChatSDKError("forbidden:vote").toResponse()
     }
 

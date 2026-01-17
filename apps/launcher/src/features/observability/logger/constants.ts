@@ -78,7 +78,7 @@ export type LoggerPluginProps<
 /**
  * @remarks If we need to return any data to the logger from the plugin for additional logging capabilities, we can extend this to include a result type. Since plugins are defined in an array, we cannot carry any generics - so the result *should* be adapted to a universal value used by the logger. Alternatively, we will can add plugin-specific code within the logger to handle the result, and the specific result type will have to be cast based on the plugin identifier.
  */
-export type LoggerPluginHandlerResult = undefined
+export type LoggerPluginHandlerResult = Promise<void> | void
 
 export type LoggerPluginHandler<
     PluginOptions extends LoggerPluginOptions = LoggerPluginOptions,

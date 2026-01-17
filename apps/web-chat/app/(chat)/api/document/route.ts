@@ -1,5 +1,5 @@
-import { auth } from "@/app/(auth)/auth"
 import type { ArtifactKind } from "@/components/artifact"
+import { getSession } from "@/lib/auth"
 import {
     deleteDocumentsByIdAfterTimestamp,
     getDocumentsById,
@@ -18,11 +18,9 @@ export async function GET(request: Request) {
         ).toResponse()
     }
 
-    const session = await auth()
+    const user = await getSession()
 
-    if (!session?.user) {
-        return new ChatSDKError("unauthorized:document").toResponse()
-    }
+    if (!user) return new ChatSDKError("unauthorized:document").toResponse()
 
     const documents = await getDocumentsById({ id })
 
@@ -32,7 +30,7 @@ export async function GET(request: Request) {
         return new ChatSDKError("not_found:document").toResponse()
     }
 
-    if (document.userId !== session.user.id) {
+    if (document.userId !== user.id) {
         return new ChatSDKError("forbidden:document").toResponse()
     }
 
@@ -50,11 +48,9 @@ export async function POST(request: Request) {
         ).toResponse()
     }
 
-    const session = await auth()
+    const user = await getSession()
 
-    if (!session?.user) {
-        return new ChatSDKError("not_found:document").toResponse()
-    }
+    if (!user) return new ChatSDKError("not_found:document").toResponse()
 
     const {
         content,
@@ -68,7 +64,7 @@ export async function POST(request: Request) {
     if (documents.length > 0) {
         const [doc] = documents
 
-        if (doc.userId !== session.user.id) {
+        if (doc.userId !== user.id) {
             return new ChatSDKError("forbidden:document").toResponse()
         }
     }
@@ -78,7 +74,7 @@ export async function POST(request: Request) {
         content,
         title,
         kind,
-        userId: session.user.id
+        userId: user.id
     })
 
     return Response.json(document, { status: 200 })
@@ -103,17 +99,15 @@ export async function DELETE(request: Request) {
         ).toResponse()
     }
 
-    const session = await auth()
+    const user = await getSession()
 
-    if (!session?.user) {
-        return new ChatSDKError("unauthorized:document").toResponse()
-    }
+    if (!user) return new ChatSDKError("unauthorized:document").toResponse()
 
     const documents = await getDocumentsById({ id })
 
     const [document] = documents
 
-    if (document.userId !== session.user.id) {
+    if (document.userId !== user.id) {
         return new ChatSDKError("forbidden:document").toResponse()
     }
 

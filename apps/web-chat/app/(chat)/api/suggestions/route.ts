@@ -1,4 +1,4 @@
-import { auth } from "@/app/(auth)/auth"
+import { getSession } from "@/lib/auth"
 import { getSuggestionsByDocumentId } from "@/lib/db/queries"
 import { ChatSDKError } from "@/lib/errors"
 
@@ -13,11 +13,9 @@ export async function GET(request: Request) {
         ).toResponse()
     }
 
-    const session = await auth()
+    const user = await getSession()
 
-    if (!session?.user) {
-        return new ChatSDKError("unauthorized:suggestions").toResponse()
-    }
+    if (!user) return new ChatSDKError("unauthorized:suggestions").toResponse()
 
     const suggestions = await getSuggestionsByDocumentId({
         documentId
@@ -29,7 +27,7 @@ export async function GET(request: Request) {
         return Response.json([], { status: 200 })
     }
 
-    if (suggestion.userId !== session.user.id) {
+    if (suggestion.userId !== user.id) {
         return new ChatSDKError("forbidden:api").toResponse()
     }
 
