@@ -30,6 +30,8 @@ export const authBase = betterAuth({
         }
     },
 
+    trustedOrigins: ["https://*.altered.app"],
+
     plugins: [
         nextCookies(),
 
@@ -60,5 +62,13 @@ export const authBase = betterAuth({
         oidcProviderPolyfill()
     ],
 
-    advanced: { database: { generateId: () => nanoid() } }
+    advanced: {
+        crossSubDomainCookies: {
+            enabled: true,
+
+            domain: "chat.altered.app"
+        },
+
+        database: { generateId: () => nanoid() }
+    }
 })
