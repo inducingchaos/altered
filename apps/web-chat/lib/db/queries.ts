@@ -1,5 +1,6 @@
 import "server-only"
 
+import { db } from "@altered-internal/data/store"
 import {
     and,
     asc,
@@ -12,26 +13,11 @@ import {
     lt,
     type SQL
 } from "drizzle-orm"
-import { drizzle } from "drizzle-orm/postgres-js"
-import postgres from "postgres"
 import type { ArtifactKind } from "@/components/artifact"
 import type { VisibilityType } from "@/components/visibility-selector"
 import { ChatSDKError } from "../errors"
-import {
-    type Chat,
-    chat,
-    type DBMessage,
-    document,
-    message,
-    type Suggestion,
-    stream,
-    suggestion,
-    vote
-} from "./schema"
-
-// biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!)
-const db = drizzle(client)
+import { chat, document, message, stream, suggestion, vote } from "./schema"
+import type { Chat, DBMessage, Suggestion } from "./types"
 
 export async function saveChat({
     id,
@@ -48,6 +34,7 @@ export async function saveChat({
         return await db.insert(chat).values({
             id,
             createdAt: new Date(),
+            updatedAt: new Date(),
             userId,
             title,
             visibility
@@ -315,7 +302,8 @@ export async function saveDocument({
                 kind,
                 content,
                 userId,
-                createdAt: new Date()
+                createdAt: new Date(),
+                updatedAt: new Date()
             })
             .returning()
     } catch (_error) {
@@ -559,9 +547,7 @@ export async function createStreamId({
     chatId: string
 }) {
     try {
-        await db
-            .insert(stream)
-            .values({ id: streamId, chatId, createdAt: new Date() })
+        await db.insert(stream).values({ id: streamId, chatId })
     } catch (_error) {
         throw new ChatSDKError(
             "bad_request:database",

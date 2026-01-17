@@ -5,7 +5,7 @@ import { textDocumentHandler } from "@/artifacts/text/server"
 import type { ArtifactKind } from "@/components/artifact"
 import type { User } from "../auth"
 import { saveDocument } from "../db/queries"
-import type { Document } from "../db/schema"
+import type { Document } from "../db/types"
 import type { ChatMessage } from "../types"
 
 export type SaveDocumentProps = {

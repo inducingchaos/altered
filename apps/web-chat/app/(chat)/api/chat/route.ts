@@ -16,7 +16,7 @@ import { createDocument } from "@/lib/ai/tools/create-document"
 import { getWeather } from "@/lib/ai/tools/get-weather"
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions"
 import { updateDocument } from "@/lib/ai/tools/update-document"
-import { getSession } from "@/lib/auth"
+import { getSession } from "@/lib/auth/server"
 import { isProductionEnvironment } from "@/lib/constants"
 import {
     createStreamId,
@@ -29,7 +29,7 @@ import {
     updateChatTitleById,
     updateMessage
 } from "@/lib/db/queries"
-import type { DBMessage } from "@/lib/db/schema"
+import type { DBMessage } from "@/lib/db/types"
 import { ChatSDKError } from "@/lib/errors"
 import type { ChatMessage } from "@/lib/types"
 import { convertToUIMessages, generateUUID } from "@/lib/utils"
@@ -124,7 +124,8 @@ export async function POST(request: Request) {
                         role: "user",
                         parts: message.parts,
                         attachments: [],
-                        createdAt: new Date()
+                        createdAt: new Date(),
+                        updatedAt: new Date()
                     }
                 ]
             })
@@ -207,6 +208,7 @@ export async function POST(request: Request) {
                                         role: finishedMsg.role,
                                         parts: finishedMsg.parts,
                                         createdAt: new Date(),
+                                        updatedAt: new Date(),
                                         attachments: [],
                                         chatId: id
                                     }
@@ -221,6 +223,7 @@ export async function POST(request: Request) {
                             role: currentMessage.role,
                             parts: currentMessage.parts,
                             createdAt: new Date(),
+                            updatedAt: new Date(),
                             attachments: [],
                             chatId: id
                         }))

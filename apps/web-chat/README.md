@@ -29,10 +29,10 @@
     - Styling with [Tailwind CSS](https://tailwindcss.com)
     - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
 - Data Persistence
-    - [Neon Serverless Postgres](https://vercel.com/marketplace/neon) for saving chat history and user data
+    - Shared database via `@altered-internal/data/store` for chat history
     - [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
-- [Auth.js](https://authjs.dev)
-    - Simple and secure authentication
+- Authentication
+    - Integrated with main app auth via `@altered-internal/auth` using better-auth
 
 ## Model Providers
 
@@ -64,7 +64,6 @@ You will need to use the environment variables [defined in `.env.example`](.env.
 
 ```bash
 pnpm install
-pnpm db:migrate # Setup database or apply latest database changes
 pnpm dev
 ```
 

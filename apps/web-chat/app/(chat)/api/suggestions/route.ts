@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth"
+import { getSession } from "@/lib/auth/server"
 import { getSuggestionsByDocumentId } from "@/lib/db/queries"
 import { ChatSDKError } from "@/lib/errors"
 

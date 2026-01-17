@@ -2,7 +2,7 @@ import { Output, streamText, tool, type UIMessageStreamWriter } from "ai"
 import { z } from "zod"
 import type { User } from "@/lib/auth"
 import { getDocumentById, saveSuggestions } from "@/lib/db/queries"
-import type { Suggestion } from "@/lib/db/schema"
+import type { Suggestion } from "@/lib/db/types"
 import type { ChatMessage } from "@/lib/types"
 import { generateUUID } from "@/lib/utils"
 import { getArtifactModel } from "../providers"
@@ -81,7 +81,9 @@ export const requestSuggestions = ({
                         description: element.description,
                         id: generateUUID(),
                         documentId,
-                        isResolved: false
+                        isResolved: false,
+                        createdAt: new Date(),
+                        updatedAt: new Date()
                     }
 
                     dataStream.write({
@@ -103,6 +105,7 @@ export const requestSuggestions = ({
                         ...suggestion,
                         userId,
                         createdAt: new Date(),
+                        updatedAt: new Date(),
                         documentCreatedAt: document.createdAt
                     }))
                 })

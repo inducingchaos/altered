@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server"
-import { getSession } from "@/lib/auth"
+import { getSession } from "@/lib/auth/server"
 import { deleteAllChatsByUserId, getChatsByUserId } from "@/lib/db/queries"
 import { ChatSDKError } from "@/lib/errors"
 

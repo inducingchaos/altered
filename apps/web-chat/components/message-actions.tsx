@@ -1,9 +1,10 @@
 import equal from "fast-deep-equal"
+import { nanoid } from "nanoid"
 import { memo } from "react"
 import { toast } from "sonner"
 import { useSWRConfig } from "swr"
 import { useCopyToClipboard } from "usehooks-ts"
-import type { Vote } from "@/lib/db/schema"
+import type { Vote } from "@/lib/db/types"
 import type { ChatMessage } from "@/lib/types"
 import { Action, Actions } from "./elements/actions"
 import { CopyIcon, PencilEditIcon, ThumbDownIcon, ThumbUpIcon } from "./icons"
@@ -106,9 +107,12 @@ export function PureMessageActions({
                                     return [
                                         ...votesWithoutCurrent,
                                         {
+                                            id: nanoid(),
                                             chatId,
                                             messageId: message.id,
-                                            isUpvoted: true
+                                            isUpvoted: true,
+                                            createdAt: new Date(),
+                                            updatedAt: new Date()
                                         }
                                     ]
                                 },
@@ -158,9 +162,12 @@ export function PureMessageActions({
                                     return [
                                         ...votesWithoutCurrent,
                                         {
+                                            id: nanoid(),
                                             chatId,
                                             messageId: message.id,
-                                            isUpvoted: false
+                                            isUpvoted: false,
+                                            createdAt: new Date(),
+                                            updatedAt: new Date()
                                         }
                                     ]
                                 },

@@ -1,7 +1,7 @@
 import { put } from "@vercel/blob"
 import { NextResponse } from "next/server"
 import { z } from "zod"
-import { getSession } from "@/lib/auth"
+import { getSession } from "@/lib/auth/server"
 
 // Use Blob instead of File since File is not available in Node.js environment
 const FileSchema = z.object({
