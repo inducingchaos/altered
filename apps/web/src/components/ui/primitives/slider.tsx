@@ -4,6 +4,7 @@
 
 "use client"
 
+// biome-ignore lint/performance/noNamespaceImport: Recommended pattern - used to categorically group imports from a module.
 import * as SliderPrimitive from "@radix-ui/react-slider"
 import { type ComponentProps, useMemo } from "react"
 
@@ -17,15 +18,13 @@ function Slider({
     max = 100,
     ...props
 }: ComponentProps<typeof SliderPrimitive.Root>) {
-    const _values = useMemo(
-        () =>
-            Array.isArray(value)
-                ? value
-                : Array.isArray(defaultValue)
-                  ? defaultValue
-                  : [min, max],
-        [value, defaultValue, min, max]
-    )
+    const _values = useMemo(() => {
+        if (Array.isArray(value)) return value
+
+        if (Array.isArray(defaultValue)) return defaultValue
+
+        return [min, max]
+    }, [value, defaultValue, min, max])
 
     return (
         <SliderPrimitive.Root
@@ -57,6 +56,7 @@ function Slider({
                 <SliderPrimitive.Thumb
                     className="block size-4 shrink-0 rounded-full border border-primary bg-white shadow-sm ring-ring/50 transition-[color,box-shadow] hover:ring-4 focus-visible:outline-hidden focus-visible:ring-4 disabled:pointer-events-none disabled:opacity-50"
                     data-slot="slider-thumb"
+                    // biome-ignore lint/suspicious/noArrayIndexKey: I don't think the order should ever change, and if it does we may need to handle an edge case anyways.
                     key={index}
                 />
             ))}

@@ -16,7 +16,7 @@ function normalizeParams(params: SignInSearchParams): Record<string, string> {
 }
 
 function buildOAuthCallbackUrl(params: SignInSearchParams): string | undefined {
-    const clientId = params["client_id"]
+    const clientId = params.client_id
     if (typeof clientId !== "string") return undefined
     const serialized = new URLSearchParams(normalizeParams(params)).toString()
     return `/api/auth/oauth2/authorize?${serialized}`

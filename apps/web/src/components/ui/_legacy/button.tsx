@@ -26,6 +26,7 @@ export function Button({
                 onClick={() =>
                     redirectTo ? router.push(redirectTo as Route) : undefined
                 }
+                type="button"
             >
                 {children}
             </button>

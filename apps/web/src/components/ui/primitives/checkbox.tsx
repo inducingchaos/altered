@@ -4,6 +4,7 @@
 
 "use client"
 
+// biome-ignore lint/performance/noNamespaceImport: Recommended pattern - used to categorically group imports from a module.
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
 import { CheckIcon } from "lucide-react"
 import type { ComponentProps } from "react"

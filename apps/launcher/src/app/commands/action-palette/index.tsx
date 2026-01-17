@@ -10,6 +10,23 @@ import { config } from "~/config"
 import { ContextProvider } from "~/shared/components"
 import { ActionPaletteProvider, useActionPalette } from "./state"
 
+function ToggleLayoutAction({
+    layout,
+    setLayout
+}: {
+    layout: "grid" | "list"
+    setLayout: (newState: "grid" | "list") => void
+}) {
+    return (
+        <Action
+            icon={layout === "grid" ? Icon.List : Icon.AppWindowGrid2x2}
+            onAction={() => setLayout(layout === "grid" ? "list" : "grid")}
+            shortcut={{ modifiers: ["opt", "shift"], key: "l" }}
+            title={`Change to ${layout === "grid" ? "List" : "Grid"} Layout`}
+        />
+    )
+}
+
 function ActionPalette() {
     const [collectionLayout, setCollectionLayout] = useState<"grid" | "list">(
         "list"
@@ -47,26 +64,14 @@ function ActionPalette() {
         tooltip: action.name
     })
 
-    const ToggleLayoutAction = () => (
-        <Action
-            icon={
-                collectionLayout === "grid" ? Icon.List : Icon.AppWindowGrid2x2
-            }
-            onAction={() =>
-                setCollectionLayout(
-                    collectionLayout === "grid" ? "list" : "grid"
-                )
-            }
-            shortcut={{ modifiers: ["opt", "shift"], key: "l" }}
-            title={`Change to ${collectionLayout === "grid" ? "List" : "Grid"} Layout`}
-        />
-    )
-
     return (
         <Collection
             actions={
                 <ActionPanel>
-                    <ToggleLayoutAction />
+                    <ToggleLayoutAction
+                        layout={collectionLayout}
+                        setLayout={setCollectionLayout}
+                    />
                 </ActionPanel>
             }
             columns={7}
@@ -119,7 +124,10 @@ function ActionPalette() {
                                         />
 
                                         <ActionPanel.Section title="Configure">
-                                            <ToggleLayoutAction />
+                                            <ToggleLayoutAction
+                                                layout={collectionLayout}
+                                                setLayout={setCollectionLayout}
+                                            />
                                         </ActionPanel.Section>
                                     </ActionPanel>
                                 }

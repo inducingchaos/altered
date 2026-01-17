@@ -40,7 +40,7 @@ export function MutationQueueProvider({ children }: { children: ReactNode }) {
         () => ({
             queue: queue.current
         }),
-        [queue.current]
+        []
     )
 
     const value: MutationQueueContextValue = useMemo(() => {

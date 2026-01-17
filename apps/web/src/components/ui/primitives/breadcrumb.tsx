@@ -54,6 +54,8 @@ function BreadcrumbLink({
 
 function BreadcrumbPage({ className, ...props }: ComponentProps<"span">) {
     return (
+        // biome-ignore lint/a11y/useFocusableInteractive: Third party code, will deal with later.
+        // biome-ignore lint/a11y/useSemanticElements: Third party code, will deal with later.
         <span
             aria-current="page"
             aria-disabled="true"

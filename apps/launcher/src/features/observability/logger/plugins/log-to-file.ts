@@ -2,8 +2,8 @@
  *
  */
 
-import { appendFile, mkdir } from "fs/promises"
-import { dirname, join } from "path"
+import { appendFile, mkdir } from "node:fs/promises"
+import { dirname, join } from "node:path"
 import type { LoggerPlugin, LoggerPluginFactory } from "../constants"
 import { buildLog } from "../utils"
 

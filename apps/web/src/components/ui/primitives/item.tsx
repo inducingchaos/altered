@@ -10,6 +10,7 @@ import { cn } from "~/utils/ui"
 
 function ItemGroup({ className, ...props }: ComponentProps<"div">) {
     return (
+        // biome-ignore lint/a11y/useSemanticElements: Third party code, will deal with later.
         <div
             className={cn("group/item-group flex flex-col", className)}
             data-slot="item-group"

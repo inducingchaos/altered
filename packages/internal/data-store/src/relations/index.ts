@@ -3,6 +3,7 @@
  */
 
 import { defineRelations } from "drizzle-orm"
+// biome-ignore lint/performance/noNamespaceImport: Used for dynamic access to exports.
 import * as tables from "../tables"
 
 export const relations = defineRelations(tables, r => ({

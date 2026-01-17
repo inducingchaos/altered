@@ -4,6 +4,7 @@
 
 "use client"
 
+// biome-ignore lint/performance/noNamespaceImport: Recommended pattern - used to categorically group imports from a module.
 import * as SwitchPrimitive from "@radix-ui/react-switch"
 import type { ComponentProps } from "react"
 import { cn } from "~/utils/ui"

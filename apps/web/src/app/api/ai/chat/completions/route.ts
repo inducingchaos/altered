@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
                 completionContent
             )
 
-            return new Response(JSON.stringify(completion), {
+            return new Response.json(completion, {
                 headers: { "Content-Type": "application/json" }
             })
         }

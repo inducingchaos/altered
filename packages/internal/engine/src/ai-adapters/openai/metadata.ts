@@ -2,7 +2,7 @@
  *
  */
 
-import { randomUUID } from "crypto"
+import { randomUUID } from "node:crypto"
 import type { OpenAIResponseMetadata } from "./types"
 
 /**

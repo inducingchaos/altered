@@ -43,6 +43,8 @@ function getMilliseconds({
             return 1000 * 60 * duration
         case "seconds":
             return 1000 * duration
+        default:
+            throw new Error(`Invalid unit: ${unit}`)
     }
 }
 

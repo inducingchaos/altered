@@ -81,7 +81,7 @@ export function useThoughts() {
 
             pagination
         }),
-        [isFetching, pagination]
+        [isFetching, pagination, refetch]
     )
 
     /**

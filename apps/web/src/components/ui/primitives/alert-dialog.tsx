@@ -4,6 +4,7 @@
 
 "use client"
 
+// biome-ignore lint/performance/noNamespaceImport: Recommended pattern - used to categorically group imports from a module.
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 import type { ComponentProps } from "react"
 import { buttonVariants } from "~/components/ui/primitives/button"

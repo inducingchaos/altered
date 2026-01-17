@@ -4,6 +4,7 @@
 
 "use client"
 
+// biome-ignore lint/performance/noNamespaceImport: Recommended pattern - used to categorically group imports from a module.
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
 import { Slot } from "@radix-ui/react-slot"
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react"

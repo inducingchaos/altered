@@ -60,6 +60,8 @@ export function toKebabCase(
                 return "-"
             case "none":
                 return ""
+            default:
+                throw new Error(`Invalid separator spacing mode: ${mode}`)
         }
     })
 

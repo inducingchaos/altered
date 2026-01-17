@@ -68,28 +68,26 @@ export const oidcProviderPolyfill = () => {
                         })
                     }
 
+                    const createWhereClause = () => {
+                        if (tokenTypeHint === "refresh_token")
+                            return eq(
+                                oauthAccessTokens.refreshToken,
+                                tokenValue
+                            )
+
+                        if (tokenTypeHint === "access_token")
+                            return eq(oauthAccessTokens.accessToken, tokenValue)
+
+                        return or(
+                            eq(oauthAccessTokens.accessToken, tokenValue),
+                            eq(oauthAccessTokens.refreshToken, tokenValue)
+                        )
+                    }
+
                     const tokenRecord = await db
                         .select()
                         .from(oauthAccessTokens)
-                        .where(
-                            tokenTypeHint === "refresh_token"
-                                ? eq(oauthAccessTokens.refreshToken, tokenValue)
-                                : tokenTypeHint === "access_token"
-                                  ? eq(
-                                        oauthAccessTokens.accessToken,
-                                        tokenValue
-                                    )
-                                  : or(
-                                        eq(
-                                            oauthAccessTokens.accessToken,
-                                            tokenValue
-                                        ),
-                                        eq(
-                                            oauthAccessTokens.refreshToken,
-                                            tokenValue
-                                        )
-                                    )
-                        )
+                        .where(createWhereClause())
                         .limit(1)
                         .then(rows => (rows[0] ? rows[0] : null))
 

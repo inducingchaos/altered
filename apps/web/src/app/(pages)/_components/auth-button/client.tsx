@@ -11,7 +11,7 @@ import { DynamicTextSizer } from "~/components/ui/_legacy"
 
 type ButtonState = {
     buttonText: string
-    onClick?: () => Promise<unknown> | void
+    onClick?: () => void
 }
 
 export function AuthButtonWithoutSession({
@@ -48,22 +48,26 @@ export function AuthButtonWithoutSession({
     }
 
     const isLoading = isWorking || isAuthenticated === undefined
-    const buttonState =
-        buttonStates[
-            isLoading ? "loading" : isAuthenticated ? "signedIn" : "signedOut"
-        ]
 
-    const onClick = async () => {
+    const getButtonStateKey = () => {
+        if (isLoading) return "loading"
+        if (isAuthenticated) return "signedIn"
+        return "signedOut"
+    }
+    const buttonState = buttonStates[getButtonStateKey()]
+
+    const onClick = () => {
         if (isLoading) return
 
         setIsWorking(true)
-        await buttonState.onClick?.()
+        buttonState.onClick?.()
     }
 
+    //  TODO [P2] Review this code.
+
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsWorking(false)
-    }, [isAuthenticated])
+    }, [])
 
     return (
         <div className={className}>
@@ -71,6 +75,7 @@ export function AuthButtonWithoutSession({
                 className="h-8 bg-foreground px-4 font-medium font-mono text-background text-sm hover:opacity-75 disabled:opacity-50"
                 disabled={isLoading}
                 onClick={onClick}
+                type="button"
             >
                 <DynamicTextSizer
                     currentValue={buttonState.buttonText}

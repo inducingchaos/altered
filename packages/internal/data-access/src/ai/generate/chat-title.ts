@@ -53,6 +53,14 @@ const chatTitleSchema = type({
 
 export type ChatTitleResult = typeof chatTitleSchema.infer
 
+const chatTitlePatterns = [
+    /generate.*(?:a|an|the)?\s*(?:concise|short|brief)?\s*(?:chat|conversation)?\s*title/i,
+    /create.*(?:a|an|the)?\s*(?:chat|conversation)?\s*title/i,
+    /suggest.*(?:a|an|the)?\s*(?:chat|conversation)?\s*title/i,
+    /title.*(?:for|of|this|the)?\s*(?:chat|conversation)/i,
+    /summarize.*(?:as|into)?\s*(?:a|an|the)?\s*title/i
+]
+
 /**
  * @todo [P3] Allow parsing of other message formats, such as that of the AI SDK.
  */
@@ -61,16 +69,8 @@ export function isChatTitleGenerationRequest(
 ): boolean {
     if (!messages.length) return false
 
-    const messagePatterns = [
-        /generate.*(?:a|an|the)?\s*(?:concise|short|brief)?\s*(?:chat|conversation)?\s*title/i,
-        /create.*(?:a|an|the)?\s*(?:chat|conversation)?\s*title/i,
-        /suggest.*(?:a|an|the)?\s*(?:chat|conversation)?\s*title/i,
-        /title.*(?:for|of|this|the)?\s*(?:chat|conversation)/i,
-        /summarize.*(?:as|into)?\s*(?:a|an|the)?\s*title/i
-    ]
-
     return messages.some(message =>
-        messagePatterns.some(pattern =>
+        chatTitlePatterns.some(pattern =>
             pattern.test(
                 typeof message.content === "string"
                     ? message.content

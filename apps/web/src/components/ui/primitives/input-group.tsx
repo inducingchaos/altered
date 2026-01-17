@@ -13,6 +13,7 @@ import { cn } from "~/utils/ui"
 
 function InputGroup({ className, ...props }: ComponentProps<"div">) {
     return (
+        // biome-ignore lint/a11y/useSemanticElements: Third party code, will deal with later.
         <div
             className={cn(
                 "group/input-group relative flex w-full items-center rounded-md border border-input shadow-xs outline-none transition-[color,box-shadow] dark:bg-input/30",
@@ -66,6 +67,9 @@ function InputGroupAddon({
     ...props
 }: ComponentProps<"div"> & VariantProps<typeof inputGroupAddonVariants>) {
     return (
+        // biome-ignore lint/a11y/useKeyWithClickEvents: Third party code, will deal with later.
+        // biome-ignore lint/a11y/noNoninteractiveElementInteractions: Third party code, will deal with later.
+        // biome-ignore lint/a11y/useSemanticElements: Third party code, will deal with later.
         <div
             className={cn(inputGroupAddonVariants({ align }), className)}
             data-align={align}

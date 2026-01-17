@@ -24,7 +24,7 @@ export function EditThought({
         content: string
         alias: string
     }>({
-        onSubmit: async formValues => {
+        onSubmit: formValues => {
             onUpdateThought({
                 query: { id: thought.id },
                 values: formValues

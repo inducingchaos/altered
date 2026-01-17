@@ -24,7 +24,7 @@ export const getThoughtsProcedure = enrichedRouteFactory.thoughts.get.handler(
 )
 
 export const findThoughtProcedure =
-    authenticatedRouteFactory.thoughts.find.handler(async () => {
+    authenticatedRouteFactory.thoughts.find.handler(() => {
         console.warn("`findThought` is using a test value.")
 
         return { thought: internalTestThought }

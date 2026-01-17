@@ -5,6 +5,7 @@
 import type { ALTEREDAction, ALTEREDSystem } from "@altered/data/shapes"
 import { filterSystems } from "@altered/utils"
 import { clearSearchBar } from "@raycast/api"
+// biome-ignore lint/performance/noNamespaceImport: Used for dynamic access to exports.
 import * as staticSystems from "app/systems"
 import { createContext, type ReactNode, use, useState } from "react"
 

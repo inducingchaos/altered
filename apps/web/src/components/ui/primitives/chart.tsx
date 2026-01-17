@@ -14,6 +14,7 @@ import {
     useId,
     useMemo
 } from "react"
+// biome-ignore lint/performance/noNamespaceImport: Recommended pattern - used to categorically group imports from a module.
 import * as RechartsPrimitive from "recharts"
 import { cn } from "~/utils/ui"
 
@@ -92,6 +93,7 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
 
     return (
         <style
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: Third party code, will deal with later.
             dangerouslySetInnerHTML={{
                 __html: Object.entries(THEMES)
                     .map(

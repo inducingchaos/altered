@@ -5,7 +5,7 @@
 import { getSessionCookie } from "better-auth/cookies"
 import { type NextRequest, NextResponse } from "next/server"
 
-export async function proxy(request: NextRequest) {
+export function proxy(request: NextRequest) {
     const sessionCookie = getSessionCookie(request)
 
     //  REMARK: Not secure. This should only be an optimistic check. Always handle auth checks per page/route.

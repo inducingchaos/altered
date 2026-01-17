@@ -26,7 +26,7 @@ export function createOrpcErrorLogger({
     enable: boolean
     preset: "client" | "server"
 }) {
-    if (!enable) return () => {}
+    if (!enable) return () => undefined
 
     return (error: unknown) => {
         if (isAbortError(error)) return

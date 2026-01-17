@@ -2,6 +2,4 @@
  *
  */
 
-import { ShowLatestThoughtCommand } from "app/commands/show-latest-thought"
-
-export default ShowLatestThoughtCommand
+export { ShowLatestThoughtCommand as default } from "app/commands/show-latest-thought"

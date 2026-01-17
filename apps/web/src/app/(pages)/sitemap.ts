@@ -8,7 +8,7 @@ import type { MetadataRoute } from "next"
 /**
  * @todo [P3] Optimize sitemap once MVP is stable.
  */
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export default function sitemap(): MetadataRoute.Sitemap {
     const origin = application.locations.origins.current
     const now = new Date()
 

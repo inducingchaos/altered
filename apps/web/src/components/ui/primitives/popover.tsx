@@ -4,6 +4,7 @@
 
 "use client"
 
+// biome-ignore lint/performance/noNamespaceImport: Recommended pattern - used to categorically group imports from a module.
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 import type { ComponentProps } from "react"
 import { cn } from "~/utils/ui"

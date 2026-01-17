@@ -38,7 +38,7 @@ export function createAuthClient(): {
     }
 
     const getToken = async () => {
-        if (await isAuthed()) return token!
+        if (token || token === null) return token
 
         const newToken = await authenticateWithTokens()
         token = newToken

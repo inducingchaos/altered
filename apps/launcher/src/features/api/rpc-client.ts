@@ -16,7 +16,7 @@ export type ClientContext = { authToken?: string | null }
 const link = new RPCLink<ClientContext>({
     url: config.rpcEndpoint,
 
-    headers: async ({ context: { authToken } }) => {
+    headers: ({ context: { authToken } }) => {
         const headers: Record<string, string> = {}
 
         if (authToken) headers.authorization = `Bearer ${authToken}`

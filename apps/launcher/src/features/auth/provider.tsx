@@ -83,7 +83,7 @@ export function AuthProvider(props: { children: ReactNode }) {
         return newToken
     }, [])
 
-    useEffect(() => void loadToken(), [])
+    useEffect(() => void loadToken(), [loadToken])
 
     const baseValue: AuthContextBaseValue = useMemo(
         () => ({

@@ -157,7 +157,9 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 
                     const updatedPages: typeof data.pages = []
 
-                    for (const pageIndex of Array(updatedPageCount).keys()) {
+                    for (const pageIndex of new Array(
+                        updatedPageCount
+                    ).keys()) {
                         const isLastPage = pageIndex === updatedPageCount - 1
 
                         const startThoughtIndex = pageIndex * pageThoughtLimit
@@ -181,7 +183,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                 return { staleData }
             },
 
-            onError: (error, variables, context) => {
+            onError: (error, _variables, context) => {
                 logger.error({
                     title: "Failed to Create Thought",
                     description: error.message,
@@ -248,7 +250,9 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 
                     const updatedPages: typeof data.pages = []
 
-                    for (const pageIndex of Array(updatedPageCount).keys()) {
+                    for (const pageIndex of new Array(
+                        updatedPageCount
+                    ).keys()) {
                         const isLastPage = pageIndex === updatedPageCount - 1
 
                         const startThoughtIndex = pageIndex * pageThoughtLimit
@@ -272,7 +276,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                 return { staleData }
             },
 
-            onError: (error, variables, context) => {
+            onError: (error, _variables, context) => {
                 logger.error({
                     title: "Failed to Delete Thought",
                     data: { error }
@@ -342,7 +346,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                 return { staleData }
             },
 
-            onError: (error, variables, context) => {
+            onError: (error, _variables, context) => {
                 logger.error({
                     title: "Failed to Update Thought",
                     data: { error }
@@ -412,7 +416,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
         if (showConfirmation) {
             const thoughtSummary = thought.alias ?? thought.content ?? null
             const thoughtDescriptor = thoughtSummary
-                ? `"${thoughtSummary.length > 10 ? thoughtSummary.slice(0, 16) + "..." : thoughtSummary}"`
+                ? `"${thoughtSummary.length > 10 ? `${thoughtSummary.slice(0, 16)}...` : thoughtSummary}"`
                 : "this thought"
 
             const isConfirmed = await confirmAlert({

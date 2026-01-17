@@ -2,6 +2,4 @@
  *
  */
 
-import { ViewThoughtsCommand } from "app/commands/view-thoughts"
-
-export default ViewThoughtsCommand
+export { ViewThoughtsCommand as default } from "app/commands/view-thoughts"

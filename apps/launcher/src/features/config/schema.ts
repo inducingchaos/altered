@@ -9,6 +9,16 @@ import {
     logPartsConfigSchema
 } from "../observability/logger/constants"
 
+const addDarkModifierToFilePath = (filePath: string) => {
+    const modifier = "@dark"
+    const possibleExtensions = [".png", ".jpg", ".jpeg", ".gif", ".svg"]
+
+    const extension = possibleExtensions.find(ext => filePath.endsWith(ext))
+    if (!extension) return `${filePath}${modifier}`
+
+    return `${filePath.slice(0, -extension.length)}${modifier}${extension}`
+}
+
 export const configSchema = z
     .object({
         cwd: z.string(),
@@ -49,17 +59,7 @@ export const configSchema = z
 
             appIcon:
                 environment.appearance === "dark"
-                    ? config.appIcon
-                          .split(".")
-                          .reduce(
-                              (previous, current, index, original) =>
-                                  index === original.length - 1
-                                      ? `${previous}@dark.${current}`
-                                      : previous
-                                        ? `${previous}.${current}`
-                                        : current,
-                              ""
-                          )
+                    ? addDarkModifierToFilePath(config.appIcon)
                     : config.appIcon
         }
     })

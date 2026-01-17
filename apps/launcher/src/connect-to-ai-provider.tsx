@@ -2,6 +2,4 @@
  *
  */
 
-import { ConnectToAIProviderCommand } from "app/commands/connect-to-ai-provider"
-
-export default ConnectToAIProviderCommand
+export { ConnectToAIProviderCommand as default } from "app/commands/connect-to-ai-provider"

@@ -6,6 +6,7 @@
 
 import { GripVerticalIcon } from "lucide-react"
 import type { ComponentProps } from "react"
+// biome-ignore lint/performance/noNamespaceImport: Recommended pattern - used to categorically group imports from a module.
 import * as ResizablePrimitive from "react-resizable-panels"
 import { cn } from "~/utils/ui"
 

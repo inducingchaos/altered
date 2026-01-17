@@ -138,6 +138,7 @@ function Calendar({
                 ...classNames
             }}
             components={{
+                // biome-ignore lint/correctness/noNestedComponentDefinitions: Third party code, will deal with later.
                 Root: ({ className, rootRef, ...props }) => {
                     return (
                         <div
@@ -148,6 +149,7 @@ function Calendar({
                         />
                     )
                 },
+                // biome-ignore lint/correctness/noNestedComponentDefinitions: Third party code, will deal with later.
                 Chevron: ({ className, orientation, ...props }) => {
                     if (orientation === "left") {
                         return (
@@ -175,6 +177,7 @@ function Calendar({
                     )
                 },
                 DayButton: CalendarDayButton,
+                // biome-ignore lint/correctness/noNestedComponentDefinitions: Third party code, will deal with later.
                 WeekNumber: ({ children, ...props }) => {
                     return (
                         <td {...props}>

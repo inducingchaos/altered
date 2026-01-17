@@ -7,6 +7,9 @@
 import { authClient } from "@altered-internal/auth/client"
 import { useEffect } from "react"
 
+/**
+ * @todo [P3] Could this just be a hook?
+ */
 export function SignInOnMount({
     callbackUrl
 }: {
@@ -19,5 +22,5 @@ export function SignInOnMount({
         })
     }, [callbackUrl])
 
-    return <></>
+    return null
 }
