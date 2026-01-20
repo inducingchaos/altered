@@ -1,11 +1,8 @@
 "use client"
 
-import { authClient } from "@altered-internal/auth/client"
 import { ChevronUp } from "lucide-react"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
-import { useState } from "react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -18,45 +15,13 @@ import {
     SidebarMenuButton,
     SidebarMenuItem
 } from "@/components/ui/sidebar"
-import { signInUrl, type User } from "@/lib/auth"
-import { toast } from "./toast"
+import { useAuth } from "@/lib/auth/client"
+import type { ChatUser } from "@/lib/auth/shared"
 
-export function SidebarUserNav({ user }: { user: User }) {
-    const router = useRouter()
+export function SidebarUserNav({ user }: { user: ChatUser | null }) {
     const { setTheme, resolvedTheme } = useTheme()
-    const [isLoading, setIsLoading] = useState(false)
 
-    const handleSignOut = () => {
-        if (isLoading) {
-            toast({
-                type: "error",
-                description: "Please wait..."
-            })
-
-            return
-        }
-
-        setIsLoading(true)
-
-        authClient.signOut({
-            fetchOptions: {
-                onSuccess: () => {
-                    router.push(signInUrl)
-
-                    router.refresh()
-                },
-                onError: () => {
-                    setIsLoading(false)
-
-                    toast({
-                        type: "error",
-                        description:
-                            "Failed to sign out. Please try again later."
-                    })
-                }
-            }
-        })
-    }
+    const { isLoading, signOut, signIn } = useAuth()
 
     return (
         <SidebarMenu>
@@ -68,14 +33,18 @@ export function SidebarUserNav({ user }: { user: User }) {
                             data-testid="user-nav-button"
                         >
                             <Image
-                                alt={user.email ?? "User Avatar"}
+                                alt={user?.email ?? "Guest User"}
                                 className="rounded-full"
                                 height={24}
-                                src={`https://avatar.vercel.sh/${user.email}`}
+                                src={
+                                    user?.email
+                                        ? `https://avatar.vercel.sh/${user.email}`
+                                        : "https://avatar.vercel.sh/guest"
+                                }
                                 width={24}
                             />
                             <span className="truncate" data-testid="user-email">
-                                {user.email}
+                                {user?.email ?? "Guest"}
                             </span>
                             <ChevronUp className="ml-auto" />
                         </SidebarMenuButton>
@@ -101,14 +70,25 @@ export function SidebarUserNav({ user }: { user: User }) {
                             asChild
                             data-testid="user-nav-item-auth"
                         >
-                            <button
-                                className="w-full cursor-pointer"
-                                disabled={isLoading}
-                                onClick={handleSignOut}
-                                type="button"
-                            >
-                                {isLoading ? "Signing out..." : "Sign out"}
-                            </button>
+                            {user ? (
+                                <button
+                                    className="w-full cursor-pointer"
+                                    disabled={isLoading}
+                                    onClick={signOut}
+                                    type="button"
+                                >
+                                    {isLoading ? "Signing out..." : "Sign out"}
+                                </button>
+                            ) : (
+                                <button
+                                    className="w-full cursor-pointer"
+                                    disabled={isLoading}
+                                    onClick={() => signIn()}
+                                    type="button"
+                                >
+                                    {isLoading ? "Signing in..." : "Sign in"}
+                                </button>
+                            )}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

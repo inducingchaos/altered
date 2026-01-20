@@ -1,6 +1,6 @@
 import { Output, streamText, tool, type UIMessageStreamWriter } from "ai"
 import { z } from "zod"
-import type { User } from "@/lib/auth"
+import type { ChatUser } from "@/lib/auth/shared"
 import { getDocumentById, saveSuggestions } from "@/lib/db/queries"
 import type { Suggestion } from "@/lib/db/types"
 import type { ChatMessage } from "@/lib/types"
@@ -8,7 +8,7 @@ import { generateUUID } from "@/lib/utils"
 import { getArtifactModel } from "../providers"
 
 type RequestSuggestionsProps = {
-    user: User
+    user: ChatUser
     dataStream: UIMessageStreamWriter<ChatMessage>
 }
 

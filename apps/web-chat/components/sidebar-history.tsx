@@ -22,7 +22,7 @@ import {
     SidebarMenu,
     useSidebar
 } from "@/components/ui/sidebar"
-import type { User } from "@/lib/auth"
+import type { ChatUser } from "@/lib/auth/shared"
 import type { Chat } from "@/lib/db/types"
 import { fetcher } from "@/lib/utils"
 import { LoaderIcon } from "./icons"
@@ -97,7 +97,7 @@ export function getChatHistoryPaginationKey(
     return `/api/history?ending_before=${firstChatFromPage.id}&limit=${PAGE_SIZE}`
 }
 
-export function SidebarHistory({ user }: { user: User | null }) {
+export function SidebarHistory({ user }: { user: ChatUser | null }) {
     const { setOpenMobile } = useSidebar()
     const pathname = usePathname()
     const id = pathname?.startsWith("/chat/") ? pathname.split("/")[2] : null

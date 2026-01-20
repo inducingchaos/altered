@@ -3,7 +3,7 @@ import { codeDocumentHandler } from "@/artifacts/code/server"
 import { sheetDocumentHandler } from "@/artifacts/sheet/server"
 import { textDocumentHandler } from "@/artifacts/text/server"
 import type { ArtifactKind } from "@/components/artifact"
-import type { User } from "../auth"
+import type { ChatUser } from "../auth/shared"
 import { saveDocument } from "../db/queries"
 import type { Document } from "../db/types"
 import type { ChatMessage } from "../types"
@@ -20,14 +20,14 @@ export type CreateDocumentCallbackProps = {
     id: string
     title: string
     dataStream: UIMessageStreamWriter<ChatMessage>
-    user: User
+    user: ChatUser
 }
 
 export type UpdateDocumentCallbackProps = {
     document: Document
     description: string
     dataStream: UIMessageStreamWriter<ChatMessage>
-    user: User
+    user: ChatUser
 }
 
 export type DocumentHandler<T = ArtifactKind> = {

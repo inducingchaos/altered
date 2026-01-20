@@ -21,7 +21,7 @@ import {
     SidebarMenu,
     useSidebar
 } from "@/components/ui/sidebar"
-import type { User } from "@/lib/auth"
+import type { ChatUser } from "@/lib/auth/shared"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -34,7 +34,7 @@ import {
 } from "./ui/alert-dialog"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 
-export function AppSidebar({ user }: { user: User | null }) {
+export function AppSidebar({ user }: { user: ChatUser | null }) {
     const router = useRouter()
     const { setOpenMobile } = useSidebar()
     const { mutate } = useSWRConfig()
@@ -128,7 +128,7 @@ export function AppSidebar({ user }: { user: User | null }) {
                     <SidebarHistory user={user} />
                 </SidebarContent>
                 <SidebarFooter>
-                    {user && <SidebarUserNav user={user} />}
+                    <SidebarUserNav user={user} />
                 </SidebarFooter>
             </Sidebar>
 

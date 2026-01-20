@@ -1,12 +1,12 @@
 import { tool, type UIMessageStreamWriter } from "ai"
 import { z } from "zod"
 import { documentHandlersByArtifactKind } from "@/lib/artifacts/server"
-import type { User } from "@/lib/auth"
+import type { ChatUser } from "@/lib/auth/shared"
 import { getDocumentById } from "@/lib/db/queries"
 import type { ChatMessage } from "@/lib/types"
 
 type UpdateDocumentProps = {
-    user: User
+    user: ChatUser
     dataStream: UIMessageStreamWriter<ChatMessage>
 }
 

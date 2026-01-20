@@ -1,11 +1,12 @@
+import type { Route } from "next"
 import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import { Suspense } from "react"
 import { Chat } from "@/components/chat"
 import { DataStreamHandler } from "@/components/data-stream-handler"
 import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models"
-import { signInUrl } from "@/lib/auth"
-import { getSession } from "@/lib/auth/server"
+import { getSession } from "@/lib/auth"
+import { buildSignInUrl } from "@/lib/auth/utils"
 import { getChatById, getMessagesByChatId } from "@/lib/db/queries"
 import { convertToUIMessages } from "@/lib/utils"
 
@@ -27,7 +28,7 @@ async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
 
     const user = await getSession()
 
-    if (!user) redirect(signInUrl)
+    if (!user) redirect(buildSignInUrl({ callbackUrl: `/chat/${id}` }) as Route)
 
     if (chat.visibility === "private" && user.id !== chat.userId) {
         return notFound()

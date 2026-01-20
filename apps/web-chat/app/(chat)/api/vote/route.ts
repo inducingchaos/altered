@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/auth/server"
+import { getSession } from "@/lib/auth"
 import { getChatById, getVotesByChatId, voteMessage } from "@/lib/db/queries"
 import { ChatSDKError } from "@/lib/errors"
 

@@ -4,12 +4,12 @@ import {
     artifactKinds,
     documentHandlersByArtifactKind
 } from "@/lib/artifacts/server"
-import type { User } from "@/lib/auth"
+import type { ChatUser } from "@/lib/auth/shared"
 import type { ChatMessage } from "@/lib/types"
 import { generateUUID } from "@/lib/utils"
 
 type CreateDocumentProps = {
-    user: User
+    user: ChatUser
     dataStream: UIMessageStreamWriter<ChatMessage>
 }
 

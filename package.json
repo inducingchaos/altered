@@ -7,6 +7,8 @@
 
         "dev": "turbo dev",
         "dev:web": "turbo dev --filter=altered-web",
+        "dev:chat": "turbo dev --filter=altered-web --filter=altered-web-chat",
+        "dev:launcher": "turbo dev --filter=altered-web --filter=altered-launcher",
 
         "check:types": "turbo check:types",
         "check:style": "ultracite check",

@@ -1,7 +1,6 @@
 import { auth } from "@altered-internal/auth"
 import Form from "next/form"
 import { redirect } from "next/navigation"
-import { signInUrl } from "@/lib/auth"
 
 export const SignOutForm = () => {
     return (
@@ -11,7 +10,7 @@ export const SignOutForm = () => {
 
                 await auth.api.signOut()
 
-                redirect(signInUrl)
+                redirect("/")
             }}
             className="w-full"
         >

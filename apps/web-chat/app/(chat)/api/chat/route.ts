@@ -16,7 +16,7 @@ import { createDocument } from "@/lib/ai/tools/create-document"
 import { getWeather } from "@/lib/ai/tools/get-weather"
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions"
 import { updateDocument } from "@/lib/ai/tools/update-document"
-import { getSession } from "@/lib/auth/server"
+import { getSession } from "@/lib/auth"
 import { isProductionEnvironment } from "@/lib/constants"
 import {
     createStreamId,
