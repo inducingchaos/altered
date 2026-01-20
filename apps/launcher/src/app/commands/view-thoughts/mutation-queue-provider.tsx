@@ -2,7 +2,7 @@
  *
  */
 
-import { createContext, ReactNode, use, useMemo, useRef } from "react"
+import { createContext, type ReactNode, use, useMemo, useRef } from "react"
 
 type MutationQueueBaseContextValue = {
     /**
@@ -23,9 +23,14 @@ type MutationQueueErrorContextValue = MutationQueueBaseContextValue & {
     status: "error"
 }
 
-type MutationQueueContextValue = MutationQueueLoadingContextValue | MutationQueueSuccessContextValue | MutationQueueErrorContextValue
+type MutationQueueContextValue =
+    | MutationQueueLoadingContextValue
+    | MutationQueueSuccessContextValue
+    | MutationQueueErrorContextValue
 
-const MutationQueueContext = createContext<MutationQueueContextValue | null>(null)
+const MutationQueueContext = createContext<MutationQueueContextValue | null>(
+    null
+)
 
 export function MutationQueueProvider({ children }: { children: ReactNode }) {
     const queue = useRef<string[]>([])
@@ -35,7 +40,7 @@ export function MutationQueueProvider({ children }: { children: ReactNode }) {
         () => ({
             queue: queue.current
         }),
-        [queue.current]
+        []
     )
 
     const value: MutationQueueContextValue = useMemo(() => {
@@ -60,20 +65,31 @@ export function MutationQueueProvider({ children }: { children: ReactNode }) {
                 status: "error"
             }
 
-        throw new Error("Invalid `MutationQueue` value. This should never happen.")
+        throw new Error(
+            "Invalid `MutationQueue` value. This should never happen."
+        )
     }, [baseValue])
 
     return <MutationQueueContext value={value}>{children}</MutationQueueContext>
 }
 
-type SafeResult<IsSafeResult extends boolean, Result> = IsSafeResult extends true ? Result | null : Result
+type SafeResult<
+    IsSafeResult extends boolean,
+    Result
+> = IsSafeResult extends true ? Result | null : Result
 
-export function useMutationQueue<IsSafeResult extends boolean = false, Result = SafeResult<IsSafeResult, MutationQueueContextValue>>(props?: { safe?: IsSafeResult }): Result {
+export function useMutationQueue<
+    IsSafeResult extends boolean = false,
+    Result = SafeResult<IsSafeResult, MutationQueueContextValue>
+>(props?: { safe?: IsSafeResult }): Result {
     const { safe: isSafe = false } = props ?? {}
 
     const context = use(MutationQueueContext)
 
-    if (!context && !isSafe) throw new Error("`useMutationQueue` must be used within a `MutationQueueProvider`.")
+    if (!(context || isSafe))
+        throw new Error(
+            "`useMutationQueue` must be used within a `MutationQueueProvider`."
+        )
 
     return context as Result
 }

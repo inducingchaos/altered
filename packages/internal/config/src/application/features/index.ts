@@ -2,7 +2,7 @@
  *
  */
 
-import { FeaturesConfig, featuresSchema } from "./schema"
+import { type FeaturesConfig, featuresSchema } from "./schema"
 
 const featuresConfig: FeaturesConfig = {
     testFeature: {

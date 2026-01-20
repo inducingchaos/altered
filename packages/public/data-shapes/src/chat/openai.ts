@@ -22,11 +22,15 @@ export const openAIImageContentPartSchema = type({
 
 export type OpenAIImageContentPart = typeof openAIImageContentPartSchema.infer
 
-export const openAIContentPartSchema = openAITextContentPartSchema.or(openAIImageContentPartSchema)
+export const openAIContentPartSchema = openAITextContentPartSchema.or(
+    openAIImageContentPartSchema
+)
 
 export type OpenAIContentPart = typeof openAIContentPartSchema.infer
 
-export const openAIMessageContentSchema = openAIContentPartSchema.array().or("string")
+export const openAIMessageContentSchema = openAIContentPartSchema
+    .array()
+    .or("string")
 
 export type OpenAIMessageContent = typeof openAIMessageContentSchema.infer
 
@@ -35,14 +39,20 @@ const openAIMessageBaseSchema = type({
     "name?": "string"
 })
 
-export const openAITextMessageSchema = openAIMessageBaseSchema.merge({ content: "string" })
+export const openAITextMessageSchema = openAIMessageBaseSchema.merge({
+    content: "string"
+})
 
 export type OpenAITextMessage = typeof openAITextMessageSchema.infer
 
-export const openAIMultimodalMessageSchema = openAIMessageBaseSchema.merge({ content: openAIContentPartSchema.array() })
+export const openAIMultimodalMessageSchema = openAIMessageBaseSchema.merge({
+    content: openAIContentPartSchema.array()
+})
 
 export type OpenAIMultimodalMessage = typeof openAIMultimodalMessageSchema.infer
 
-export const openAIMessageSchema = openAITextMessageSchema.or(openAIMultimodalMessageSchema)
+export const openAIMessageSchema = openAITextMessageSchema.or(
+    openAIMultimodalMessageSchema
+)
 
 export type OpenAIMessage = typeof openAIMessageSchema.infer

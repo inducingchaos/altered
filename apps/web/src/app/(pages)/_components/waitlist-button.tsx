@@ -14,7 +14,7 @@ export function WaitlistButton() {
     if (isWaitlistPage) return null
 
     return (
-        <Button size="compact" redirectTo="/waitlist">
+        <Button redirectTo="/waitlist" size="compact">
             join waitlist
         </Button>
     )

@@ -2,8 +2,8 @@
  *
  */
 
-import { StatefulConstruct } from "../altered-constructs"
-import { ALTEREDInterface } from "../altered-interfaces"
+import type { StatefulConstruct } from "../altered-constructs"
+import type { ALTEREDInterface } from "../altered-interfaces"
 
 /**
  * @todo [P3] Review the ambiguity between the Action name and title.

@@ -18,5 +18,11 @@ export const systemPreferences = pgTable(
             .defaultNow()
             .$onUpdateFn(() => new Date())
     },
-    table => [index("system_preferences_user_id_key_idx").on(table.userId, table.key), unique("system_preferences_user_id_key_unique").on(table.userId, table.key)]
+    table => [
+        index("system_preferences_user_id_key_idx").on(table.userId, table.key),
+        unique("system_preferences_user_id_key_unique").on(
+            table.userId,
+            table.key
+        )
+    ]
 )

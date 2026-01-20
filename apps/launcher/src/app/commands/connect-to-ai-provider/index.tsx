@@ -2,18 +2,40 @@
  *
  */
 
-import { Action, ActionPanel, Clipboard, closeMainWindow, Detail, Icon, Keyboard, popToRoot, PopToRootType, showToast, Toast } from "@raycast/api"
+import {
+    Action,
+    ActionPanel,
+    Clipboard,
+    closeMainWindow,
+    Detail,
+    Icon,
+    type Keyboard,
+    PopToRootType,
+    popToRoot,
+    showToast,
+    Toast
+} from "@raycast/api"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { api } from "~/api/react"
-import { isVersionIncompatibleError as checkIsVersionIncompatibleError, VersionIncompatibleError } from "~/api/utils"
+import {
+    isVersionIncompatibleError as checkIsVersionIncompatibleError,
+    VersionIncompatibleError
+} from "~/api/utils"
 import { useAuthentication } from "~/auth"
 import { config } from "~/config"
 import { configureLogger } from "~/observability"
-import { AuthView, LogOutAction, ReturnToActionPaletteAction, withContext } from "~/shared/components"
+import {
+    AuthView,
+    LogOutAction,
+    ReturnToActionPaletteAction,
+    withContext
+} from "~/shared/components"
 import { useActionPalette } from "../action-palette/state"
 
-const logger = configureLogger({ defaults: { scope: "commands:connect-to-ai-provider" } })
+const logger = configureLogger({
+    defaults: { scope: "commands:connect-to-ai-provider" }
+})
 
 type ProviderConfigValue = {
     name: string
@@ -23,7 +45,13 @@ type ProviderConfigValue = {
     shortcutKey: Keyboard.KeyEquivalent
 }
 
-const createProviderConfigValues = ({ apiKey, displayApiKey }: { apiKey: string | null; displayApiKey: string | null }) =>
+const createProviderConfigValues = ({
+    apiKey,
+    displayApiKey
+}: {
+    apiKey: string | null
+    displayApiKey: string | null
+}) =>
     [
         {
             name: "Base URL",
@@ -58,53 +86,80 @@ const createProviderConfigValues = ({ apiKey, displayApiKey }: { apiKey: string 
         }
     ] satisfies ProviderConfigValue[]
 
-const createMarkdown = ({ configValues }: { configValues: ProviderConfigValue[] }) => {
+const createMarkdown = ({
+    configValues
+}: {
+    configValues: ProviderConfigValue[]
+}) => {
     const parts: string[] = []
 
     parts.push("# Connect to the ALTERED AI Provider")
 
-    parts.push("Use the configuration values below to connect to ALTERED's AI provider for use with Raycast AI and other OpenAI-compatible chat applications.")
+    parts.push(
+        "Use the configuration values below to connect to ALTERED's AI provider for use with Raycast AI and other OpenAI-compatible chat applications."
+    )
 
     parts.push("## Configuration")
 
     for (const { name, value, displayValue, shortcutKey } of configValues) {
         parts.push(`### ${name}`)
 
-        parts.push(`\`\`\`\n${displayValue ?? value ?? "loading..."}${value ? `  (copy with "cmd + ${shortcutKey}")` : ""}\n\`\`\``)
+        parts.push(
+            `\`\`\`\n${displayValue ?? value ?? "loading..."}${value ? `  (copy with "cmd + ${shortcutKey}")` : ""}\n\`\`\``
+        )
     }
 
     parts.push("## Usage")
 
     parts.push("### Personalized Context")
 
-    parts.push("Once configured, the model will automatically include all of your ALTERED Thoughts as context.")
+    parts.push(
+        "Once configured, the model will automatically include all of your ALTERED Thoughts as context."
+    )
 
     parts.push("> *Dataset selection and model switching coming soon*")
 
     parts.push("---")
 
-    parts.push("**Note:** Your API key is personalized and should be kept secure. It provides access to your ALTERED Brain and your account AI usage.")
+    parts.push(
+        "**Note:** Your API key is personalized and should be kept secure. It provides access to your ALTERED Brain and your account AI usage."
+    )
 
     return parts.join("\n\n")
 }
 
-const CopyValuesActionMenu = ({ configValues, isFetching }: { configValues: ProviderConfigValue[]; isFetching: boolean }) => {
+const CopyValuesActionMenu = ({
+    configValues,
+    isFetching
+}: {
+    configValues: ProviderConfigValue[]
+    isFetching: boolean
+}) => {
     return (
-        <ActionPanel.Submenu title="Copy Values" isLoading={isFetching} icon={Icon.Clipboard} shortcut={{ modifiers: ["cmd"], key: "c" }}>
+        <ActionPanel.Submenu
+            icon={Icon.Clipboard}
+            isLoading={isFetching}
+            shortcut={{ modifiers: ["cmd"], key: "c" }}
+            title="Copy Values"
+        >
             {configValues.map(
                 ({ name, value, icon, shortcutKey }) =>
                     !!value && (
                         <Action
-                            key={name}
-                            title={`Copy ${name}`}
                             icon={icon}
+                            key={name}
                             onAction={async () => {
                                 await Clipboard.copy(value)
 
-                                await closeMainWindow({ popToRootType: PopToRootType.Suspended })
-                                await showToast({ title: `${name} Copied to Clipboard` })
+                                await closeMainWindow({
+                                    popToRootType: PopToRootType.Suspended
+                                })
+                                await showToast({
+                                    title: `${name} Copied to Clipboard`
+                                })
                             }}
                             shortcut={{ modifiers: ["cmd"], key: shortcutKey }}
+                            title={`Copy ${name}`}
                         />
                     )
             )}
@@ -112,19 +167,51 @@ const CopyValuesActionMenu = ({ configValues, isFetching }: { configValues: Prov
     )
 }
 
-const RefreshValuesAction = ({ refresh }: { refresh: () => void }) => <Action title="Refresh Values" icon={Icon.RotateClockwise} onAction={refresh} shortcut={{ modifiers: ["cmd"], key: "r" }} />
+const RefreshValuesAction = ({ refresh }: { refresh: () => void }) => (
+    <Action
+        icon={Icon.RotateClockwise}
+        onAction={refresh}
+        shortcut={{ modifiers: ["cmd"], key: "r" }}
+        title="Refresh Values"
+    />
+)
 
-const RevealSensitiveValuesAction = ({ isShowing, setIsShowing }: { isShowing: boolean; setIsShowing: (newValue: boolean) => void }) => <Action title={isShowing ? "Hide Sensitive Values" : "Show Sensitive Values"} icon={isShowing ? Icon.EyeDisabled : Icon.Eye} onAction={() => setIsShowing(!isShowing)} shortcut={{ modifiers: ["cmd"], key: "h" }} />
+const RevealSensitiveValuesAction = ({
+    isShowing,
+    setIsShowing
+}: {
+    isShowing: boolean
+    setIsShowing: (newValue: boolean) => void
+}) => (
+    <Action
+        icon={isShowing ? Icon.EyeDisabled : Icon.Eye}
+        onAction={() => setIsShowing(!isShowing)}
+        shortcut={{ modifiers: ["cmd"], key: "h" }}
+        title={isShowing ? "Hide Sensitive Values" : "Show Sensitive Values"}
+    />
+)
 
 function ConnectToProviderDetail({ authToken }: { authToken: string }) {
     const actionPaletteContext = useActionPalette({ safe: true })
 
-    const [isSensitiveValuesShowing, setIsSensitiveValuesShowing] = useState(false)
+    const [isSensitiveValuesShowing, setIsSensitiveValuesShowing] =
+        useState(false)
 
-    const { isFetching, data, error, refetch: refresh } = useQuery(api.auth.apiKeys.get.queryOptions({ input: { query: { service: "ai-provider" } }, context: { authToken } }))
+    const {
+        isFetching,
+        data,
+        error,
+        refetch: refresh
+    } = useQuery(
+        api.auth.apiKeys.get.queryOptions({
+            input: { query: { service: "ai-provider" } },
+            context: { authToken }
+        })
+    )
 
     if (error) {
-        const isVersionIncompatibleError = checkIsVersionIncompatibleError(error)
+        const isVersionIncompatibleError =
+            checkIsVersionIncompatibleError(error)
 
         if (isVersionIncompatibleError) return <VersionIncompatibleError />
 
@@ -145,7 +232,10 @@ function ConnectToProviderDetail({ authToken }: { authToken: string }) {
     const apiKeyPrefix = "altered_ai_"
     const apiKeyMaskLength = apiKey ? apiKey.length - apiKeyPrefix.length : null
 
-    const maskedApiKey = apiKey && apiKeyMaskLength ? `${apiKeyPrefix}${"*".repeat(apiKeyMaskLength)}` : null
+    const maskedApiKey =
+        apiKey && apiKeyMaskLength
+            ? `${apiKeyPrefix}${"*".repeat(apiKeyMaskLength)}`
+            : null
     const displayApiKey = isSensitiveValuesShowing ? apiKey : maskedApiKey
 
     const configValues = createProviderConfigValues({ apiKey, displayApiKey })
@@ -153,23 +243,39 @@ function ConnectToProviderDetail({ authToken }: { authToken: string }) {
 
     return (
         <Detail
-            isLoading={isFetching}
-            markdown={markdown}
             actions={
                 <ActionPanel>
-                    <CopyValuesActionMenu configValues={configValues} isFetching={isFetching} />
+                    <CopyValuesActionMenu
+                        configValues={configValues}
+                        isFetching={isFetching}
+                    />
 
                     <ActionPanel.Section title="View">
-                        <RevealSensitiveValuesAction isShowing={isSensitiveValuesShowing} setIsShowing={setIsSensitiveValuesShowing} />
+                        <RevealSensitiveValuesAction
+                            isShowing={isSensitiveValuesShowing}
+                            setIsShowing={setIsSensitiveValuesShowing}
+                        />
 
                         <RefreshValuesAction refresh={refresh} />
                     </ActionPanel.Section>
 
-                    <ActionPanel.Section title="Navigate">{actionPaletteContext && <ReturnToActionPaletteAction resetNavigationState={actionPaletteContext.resetState} />}</ActionPanel.Section>
+                    <ActionPanel.Section title="Navigate">
+                        {actionPaletteContext && (
+                            <ReturnToActionPaletteAction
+                                resetNavigationState={
+                                    actionPaletteContext.resetState
+                                }
+                            />
+                        )}
+                    </ActionPanel.Section>
 
-                    <ActionPanel.Section title="Configure">{authToken && <LogOutAction />}</ActionPanel.Section>
+                    <ActionPanel.Section title="Configure">
+                        {authToken && <LogOutAction />}
+                    </ActionPanel.Section>
                 </ActionPanel>
             }
+            isLoading={isFetching}
+            markdown={markdown}
         />
     )
 }
@@ -178,7 +284,13 @@ export function ConnectToAIProvider() {
     logger.log()
 
     const { isAuthed, token } = useAuthentication()
-    if (!isAuthed) return <AuthView title="Authenticate to use the ALTERED AI provider." description="Sign in to access your ALTERED brain." />
+    if (!isAuthed)
+        return (
+            <AuthView
+                description="Sign in to access your ALTERED brain."
+                title="Authenticate to use the ALTERED AI provider."
+            />
+        )
 
     return <ConnectToProviderDetail authToken={token} />
 }

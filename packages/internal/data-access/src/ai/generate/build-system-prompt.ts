@@ -3,8 +3,8 @@
  */
 
 import { localization } from "@altered-internal/config"
-import { InternalThought } from "@altered-internal/data/shapes"
-import { Database, thoughts } from "@altered-internal/data/store"
+import type { InternalThought } from "@altered-internal/data/shapes"
+import { type Database, thoughts } from "@altered-internal/data/store"
 import { format } from "date-fns"
 import { asc, eq } from "drizzle-orm"
 
@@ -16,10 +16,14 @@ import { asc, eq } from "drizzle-orm"
  * - [P3] Improve the prompt itself (we could even make this a dynamic, app-level markdown file with template variables - this would limit our flexibility, but maybe we could add transformers for the variables or end result to our templating language?).
  * - [P2] Preview - increase observability by logging or creating a util.
  */
-export async function buildSystemPrompt({ context }: { context: { brainId: string; db: Database } }): Promise<string> {
+export async function buildSystemPrompt({
+    context
+}: {
+    context: { brainId: string; db: Database }
+}): Promise<string> {
     const parts: string[] = []
 
-    parts.push(`## Agent Description`)
+    parts.push("## Agent Description")
     parts.push(localization.prompts.agentDescription)
 
     parts.push("## Thoughts Instructions")
@@ -27,13 +31,18 @@ export async function buildSystemPrompt({ context }: { context: { brainId: strin
 
     parts.push("## Thoughts")
 
-    const allThoughts = await context.db.select().from(thoughts).where(eq(thoughts.brainId, context.brainId)).orderBy(asc(thoughts.createdAt))
+    const allThoughts = await context.db
+        .select()
+        .from(thoughts)
+        .where(eq(thoughts.brainId, context.brainId))
+        .orderBy(asc(thoughts.createdAt))
 
     const hasThoughts = allThoughts.length
 
     if (!hasThoughts) parts.push("No thoughts found in this brain yet.")
 
-    const isDraftThought = (thought: InternalThought) => !thought.alias && !thought.content
+    const isDraftThought = (thought: InternalThought) =>
+        !(thought.alias || thought.content)
 
     if (hasThoughts) {
         const formattedThoughts = allThoughts
@@ -46,7 +55,8 @@ export async function buildSystemPrompt({ context }: { context: { brainId: strin
 
                 if (thought.alias) thoughtLineParts.push(thought.alias)
 
-                if (thought.alias && thought.content) thoughtLineParts.push(": ")
+                if (thought.alias && thought.content)
+                    thoughtLineParts.push(": ")
                 else thoughtLineParts.push(" ")
 
                 if (thought.content) thoughtLineParts.push(thought.content)

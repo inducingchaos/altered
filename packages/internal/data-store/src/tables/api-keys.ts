@@ -19,5 +19,7 @@ export const apiKeys = pgTable(
             .defaultNow()
             .$onUpdateFn(() => new Date())
     },
-    table => [index("api_keys_user_id_service_idx").on(table.userId, table.service)]
+    table => [
+        index("api_keys_user_id_service_idx").on(table.userId, table.service)
+    ]
 )

@@ -2,11 +2,12 @@
  *
  */
 
-import { ALTEREDAction, ALTEREDSystem } from "@altered/data/shapes"
+import type { ALTEREDAction, ALTEREDSystem } from "@altered/data/shapes"
 import { filterSystems } from "@altered/utils"
 import { clearSearchBar } from "@raycast/api"
+// biome-ignore lint/performance/noNamespaceImport: Used for dynamic access to exports.
 import * as staticSystems from "app/systems"
-import { createContext, ReactNode, use, useState } from "react"
+import { createContext, type ReactNode, use, useState } from "react"
 
 type ActionPaletteContextValue = {
     isLoading: boolean
@@ -32,7 +33,9 @@ type ActionPaletteContextValue = {
     resetState: () => void
 }
 
-const ActionPaletteContext = createContext<ActionPaletteContextValue | null>(null)
+const ActionPaletteContext = createContext<ActionPaletteContextValue | null>(
+    null
+)
 
 export function ActionPaletteProvider({ children }: { children: ReactNode }) {
     /**
@@ -42,36 +45,63 @@ export function ActionPaletteProvider({ children }: { children: ReactNode }) {
     const [searchText, setSearchText] = useState("")
     const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
 
-    const [selectedActionId, setSelectedActionId] = useState<string | null>(null)
-    const [renderedActionId, setRenderedActionId] = useState<string | null>(null)
+    const [selectedActionId, setSelectedActionId] = useState<string | null>(
+        null
+    )
+    const [renderedActionId, setRenderedActionId] = useState<string | null>(
+        null
+    )
 
     const systems = Object.values(staticSystems)
     const filteredSystems = filterSystems(systems, {
         searchText,
-        searchableKeyPaths: ["name", "title", "description", "actions.name", "actions.title", "actions.description", "actions.trigger"]
+        searchableKeyPaths: [
+            "name",
+            "title",
+            "description",
+            "actions.name",
+            "actions.title",
+            "actions.description",
+            "actions.trigger"
+        ]
     })
 
     /**
      * @todo [P3] Figure out if we should generalize the types at definition (by assigning the type rather than using `satisfies`) to avoid casting.
      */
-    const findAction = (id: string) => (systems as ALTEREDSystem[]).flatMap(system => system.actions).find(action => action.id === id) ?? null
+    const findAction = (id: string) =>
+        (systems as ALTEREDSystem[])
+            .flatMap(system => system.actions)
+            .find(action => action.id === id) ?? null
 
-    const selectedAction = selectedActionId ? findAction(selectedActionId) : null
-    const renderedAction = renderedActionId ? findAction(renderedActionId) : null
+    const selectedAction = selectedActionId
+        ? findAction(selectedActionId)
+        : null
+    const renderedAction = renderedActionId
+        ? findAction(renderedActionId)
+        : null
     const isRenderingAction = renderedActionId !== null
 
-    const navigationTitle = selectedActionId && !isRenderingAction ? `Confirm: Press "space" to open "${selectedAction?.name}"` : undefined
+    const navigationTitle =
+        selectedActionId && !isRenderingAction
+            ? `Confirm: Press "space" to open "${selectedAction?.name}"`
+            : undefined
 
     const handleAutoSelect = (searchText: string) => {
         const confirmCharacter = " "
         const containsConfirmCharacter = searchText.endsWith(confirmCharacter)
-        const matchableSearchText = containsConfirmCharacter ? searchText.slice(0, -confirmCharacter.length) : searchText
+        const matchableSearchText = containsConfirmCharacter
+            ? searchText.slice(0, -confirmCharacter.length)
+            : searchText
 
-        const matchedAction = systems.flatMap(system => system.actions as ALTEREDAction[]).find(action => action.trigger === matchableSearchText)
+        const matchedAction = systems
+            .flatMap(system => system.actions as ALTEREDAction[])
+            .find(action => action.trigger === matchableSearchText)
 
         setSelectedActionId(matchedAction ? matchedAction.id : null)
 
-        if (matchedAction && containsConfirmCharacter) renderAction(matchedAction.id)
+        if (matchedAction && containsConfirmCharacter)
+            renderAction(matchedAction.id)
     }
 
     const onSearchTextChange = (searchText: string) => {
@@ -129,10 +159,18 @@ export function ActionPaletteProvider({ children }: { children: ReactNode }) {
     )
 }
 
-export function useActionPalette<Safe extends boolean = false, Result = Safe extends true ? ActionPaletteContextValue | null : ActionPaletteContextValue>(props?: { safe?: Safe }): Result {
+export function useActionPalette<
+    Safe extends boolean = false,
+    Result = Safe extends true
+        ? ActionPaletteContextValue | null
+        : ActionPaletteContextValue
+>(props?: { safe?: Safe }): Result {
     const context = use(ActionPaletteContext)
 
-    if (!context && !props?.safe) throw new Error("`useActionPalette` must be used within an `ActionPaletteProvider`.")
+    if (!(context || props?.safe))
+        throw new Error(
+            "`useActionPalette` must be used within an `ActionPaletteProvider`."
+        )
 
     return context as Result
 }

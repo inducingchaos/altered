@@ -2,8 +2,8 @@
  *
  */
 
-import { ALTEREDAction } from "../altered-actions"
-import { ALTEREDConstruct } from "../altered-constructs"
+import type { ALTEREDAction } from "../altered-actions"
+import type { ALTEREDConstruct } from "../altered-constructs"
 
 type System<ID extends string = string> = ALTEREDConstruct<ID> & {
     type: "system"

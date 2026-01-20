@@ -4,7 +4,7 @@
 
 import { Slot } from "@radix-ui/react-slot"
 import { ChevronRight, MoreHorizontal } from "lucide-react"
-import { ComponentProps } from "react"
+import type { ComponentProps } from "react"
 import { cn } from "~/utils/ui"
 
 function Breadcrumb({ ...props }: ComponentProps<"nav">) {
@@ -12,11 +12,26 @@ function Breadcrumb({ ...props }: ComponentProps<"nav">) {
 }
 
 function BreadcrumbList({ className, ...props }: ComponentProps<"ol">) {
-    return <ol data-slot="breadcrumb-list" className={cn("text-muted-foreground flex flex-wrap items-center gap-1.5 text-sm wrap-break-word sm:gap-2.5", className)} {...props} />
+    return (
+        <ol
+            className={cn(
+                "wrap-break-word flex flex-wrap items-center gap-1.5 text-muted-foreground text-sm sm:gap-2.5",
+                className
+            )}
+            data-slot="breadcrumb-list"
+            {...props}
+        />
+    )
 }
 
 function BreadcrumbItem({ className, ...props }: ComponentProps<"li">) {
-    return <li data-slot="breadcrumb-item" className={cn("inline-flex items-center gap-1.5", className)} {...props} />
+    return (
+        <li
+            className={cn("inline-flex items-center gap-1.5", className)}
+            data-slot="breadcrumb-item"
+            {...props}
+        />
+    )
 }
 
 function BreadcrumbLink({
@@ -28,16 +43,43 @@ function BreadcrumbLink({
 }) {
     const Comp = asChild ? Slot : "a"
 
-    return <Comp data-slot="breadcrumb-link" className={cn("hover:text-foreground transition-colors", className)} {...props} />
+    return (
+        <Comp
+            className={cn("transition-colors hover:text-foreground", className)}
+            data-slot="breadcrumb-link"
+            {...props}
+        />
+    )
 }
 
 function BreadcrumbPage({ className, ...props }: ComponentProps<"span">) {
-    return <span data-slot="breadcrumb-page" role="link" aria-disabled="true" aria-current="page" className={cn("text-foreground font-normal", className)} {...props} />
+    return (
+        // biome-ignore lint/a11y/useFocusableInteractive: Third party code, will deal with later.
+        // biome-ignore lint/a11y/useSemanticElements: Third party code, will deal with later.
+        <span
+            aria-current="page"
+            aria-disabled="true"
+            className={cn("font-normal text-foreground", className)}
+            data-slot="breadcrumb-page"
+            role="link"
+            {...props}
+        />
+    )
 }
 
-function BreadcrumbSeparator({ children, className, ...props }: ComponentProps<"li">) {
+function BreadcrumbSeparator({
+    children,
+    className,
+    ...props
+}: ComponentProps<"li">) {
     return (
-        <li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true" className={cn("[&>svg]:size-3.5", className)} {...props}>
+        <li
+            aria-hidden="true"
+            className={cn("[&>svg]:size-3.5", className)}
+            data-slot="breadcrumb-separator"
+            role="presentation"
+            {...props}
+        >
             {children ?? <ChevronRight />}
         </li>
     )
@@ -45,11 +87,25 @@ function BreadcrumbSeparator({ children, className, ...props }: ComponentProps<"
 
 function BreadcrumbEllipsis({ className, ...props }: ComponentProps<"span">) {
     return (
-        <span data-slot="breadcrumb-ellipsis" role="presentation" aria-hidden="true" className={cn("flex size-9 items-center justify-center", className)} {...props}>
+        <span
+            aria-hidden="true"
+            className={cn("flex size-9 items-center justify-center", className)}
+            data-slot="breadcrumb-ellipsis"
+            role="presentation"
+            {...props}
+        >
             <MoreHorizontal className="size-4" />
             <span className="sr-only">More</span>
         </span>
     )
 }
 
-export { Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator }
+export {
+    Breadcrumb,
+    BreadcrumbEllipsis,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator
+}

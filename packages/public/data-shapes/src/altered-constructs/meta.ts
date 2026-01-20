@@ -2,9 +2,16 @@
  *
  */
 
-import { ALTEREDThought } from "../altered-thoughts"
+import type { ALTEREDThought } from "../altered-thoughts"
 
-export type ConstructType = "thought" | "system" | "action" | "component" | "operation" | "interface" | "state"
+export type ConstructType =
+    | "thought"
+    | "system"
+    | "action"
+    | "component"
+    | "operation"
+    | "interface"
+    | "state"
 
 type Construct<ID extends string = string> = ALTEREDThought<ID> & {
     /**

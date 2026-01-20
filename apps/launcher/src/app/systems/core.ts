@@ -2,8 +2,12 @@
  *
  */
 
-import { ALTEREDSystem } from "@altered/data/shapes"
-import { alteredOnboardingAction, captureThoughtAction, viewThoughtsAction } from "../actions"
+import type { ALTEREDSystem } from "@altered/data/shapes"
+import {
+    alteredOnboardingAction,
+    captureThoughtAction,
+    viewThoughtsAction
+} from "../actions"
 
 export const coreSystem = {
     id: "system-altered-core",

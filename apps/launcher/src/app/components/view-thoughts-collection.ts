@@ -2,7 +2,7 @@
  *
  */
 
-import { ALTEREDComponent } from "@altered/data/shapes"
+import type { ALTEREDComponent } from "@altered/data/shapes"
 import { viewThoughtsGroupComponent } from "./view-thoughts-group"
 
 export const viewThoughtsCollectionComponent = {

@@ -4,10 +4,17 @@
 
 "use client"
 
-import { useEffect } from "react"
 import { authClient } from "@altered-internal/auth/client"
+import { useEffect } from "react"
 
-export function SignInOnMount({ callbackUrl }: { callbackUrl: string | undefined }) {
+/**
+ * @todo [P3] Could this just be a hook?
+ */
+export function SignInOnMount({
+    callbackUrl
+}: {
+    callbackUrl: string | undefined
+}) {
     useEffect(() => {
         authClient.signIn.social({
             provider: "google",
@@ -15,5 +22,5 @@ export function SignInOnMount({ callbackUrl }: { callbackUrl: string | undefined
         })
     }, [callbackUrl])
 
-    return <></>
+    return null
 }

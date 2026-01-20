@@ -2,7 +2,13 @@
  * @todo [P3] Extract to error layer or data shapes.
  */
 
-import { AnySchema, ErrorMap, ErrorMapItem, MergedErrorMap, oc } from "@orpc/contract"
+import {
+    type AnySchema,
+    type ErrorMap,
+    type ErrorMapItem,
+    type MergedErrorMap,
+    oc
+} from "@orpc/contract"
 
 export const apiErrorDefs = {
     VERSION_INCOMPATIBLE: {
@@ -12,9 +18,14 @@ export const apiErrorDefs = {
 } as const
 
 export type APIErrorCode = keyof typeof apiErrorDefs
-export type APIErrorMap = MergedErrorMap<ErrorMap, { [key in APIErrorCode]?: ErrorMapItem<AnySchema> }>
+export type APIErrorMap = MergedErrorMap<
+    ErrorMap,
+    { [key in APIErrorCode]?: ErrorMapItem<AnySchema> }
+>
 
-export const apiErrorCodes = Object.fromEntries(Object.entries(apiErrorDefs).map(([key]) => [key, key])) as Record<APIErrorCode, APIErrorCode>
+export const apiErrorCodes = Object.fromEntries(
+    Object.entries(apiErrorDefs).map(([key]) => [key, key])
+) as Record<APIErrorCode, APIErrorCode>
 
 export const contractFactory = oc.errors({
     UNAUTHORIZED: {

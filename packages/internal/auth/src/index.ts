@@ -16,3 +16,5 @@ export const auth = {
 }
 
 export type AuthContext = typeof auth.$Infer.Session
+
+export { trustedOrigins } from "./base"

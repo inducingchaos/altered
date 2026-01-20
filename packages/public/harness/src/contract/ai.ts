@@ -2,7 +2,10 @@
  *
  */
 
-import { openAITextMessageSchema, openrouterModelIdSchema } from "@altered/data/shapes"
+import {
+    openAITextMessageSchema,
+    openrouterModelIdSchema
+} from "@altered/data/shapes"
 import { eventIterator } from "@orpc/contract"
 import { type } from "arktype"
 import { contractFactory } from "./factory"

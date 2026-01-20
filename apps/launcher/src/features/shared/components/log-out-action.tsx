@@ -7,13 +7,27 @@ import { logOut } from "../../auth/oidc"
 
 export function LogOutAction() {
     const handleLogOut = async () => {
-        await showToast({ style: Toast.Style.Animated, title: "Logging out..." })
+        await showToast({
+            style: Toast.Style.Animated,
+            title: "Logging out..."
+        })
 
         await logOut()
 
-        await showToast({ style: Toast.Style.Success, title: "Successfully logged out" })
+        await showToast({
+            style: Toast.Style.Success,
+            title: "Successfully logged out"
+        })
         await popToRoot({ clearSearchBar: true })
     }
 
-    return <Action title="Log out" style={Action.Style.Destructive} icon={Icon.Logout} onAction={handleLogOut} shortcut={{ modifiers: ["cmd", "shift"], key: "l" }} />
+    return (
+        <Action
+            icon={Icon.Logout}
+            onAction={handleLogOut}
+            shortcut={{ modifiers: ["cmd", "shift"], key: "l" }}
+            style={Action.Style.Destructive}
+            title="Log out"
+        />
+    )
 }

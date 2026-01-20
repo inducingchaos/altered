@@ -2,12 +2,14 @@
  *
  */
 
-import { APIError } from "@altered/harness"
+import type { APIError } from "@altered/harness"
 import { isDefinedError } from "@orpc/client"
 import { popToRoot, showToast, Toast } from "@raycast/api"
 import { useEffect } from "react"
 
-export function isVersionIncompatibleError(error: APIError): error is APIError & { code: "VERSION_INCOMPATIBLE" } {
+export function isVersionIncompatibleError(
+    error: APIError
+): error is APIError & { code: "VERSION_INCOMPATIBLE" } {
     return isDefinedError(error) && error.code === "VERSION_INCOMPATIBLE"
 }
 
@@ -18,7 +20,8 @@ export async function showVersionIncompatibleError() {
     await showToast({
         style: Toast.Style.Failure,
         title: "Version Incompatible",
-        message: "This ALTERED app is out of date. Please update it to the latest version."
+        message:
+            "This ALTERED app is out of date. Please update it to the latest version."
     })
 
     await popToRoot({ clearSearchBar: true })

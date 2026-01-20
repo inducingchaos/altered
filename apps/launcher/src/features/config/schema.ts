@@ -4,12 +4,27 @@
 
 import { environment } from "@raycast/api"
 import { z } from "zod"
-import { logLevels, logPartsConfigSchema } from "../observability/logger/constants"
+import {
+    logLevels,
+    logPartsConfigSchema
+} from "../observability/logger/constants"
+
+const addDarkModifierToFilePath = (filePath: string) => {
+    const modifier = "@dark"
+    const possibleExtensions = [".png", ".jpg", ".jpeg", ".gif", ".svg"]
+
+    const extension = possibleExtensions.find(ext => filePath.endsWith(ext))
+    if (!extension) return `${filePath}${modifier}`
+
+    return `${filePath.slice(0, -extension.length)}${modifier}${extension}`
+}
 
 export const configSchema = z
     .object({
         cwd: z.string(),
-        overrideEnvironment: z.enum(["development", "production"]).default("development"),
+        overrideEnvironment: z
+            .enum(["development", "production"])
+            .default("development"),
 
         logLevel: z.enum(logLevels).optional(),
         logSearch: z.string().optional(),
@@ -38,16 +53,24 @@ export const configSchema = z
         return {
             ...config,
 
-            environment: environment.isDevelopment ? config.overrideEnvironment : "production",
+            environment: environment.isDevelopment
+                ? config.overrideEnvironment
+                : "production",
 
-            appIcon: environment.appearance === "dark" ? config.appIcon.split(".").reduce((previous, current, index, original) => (index === original.length - 1 ? `${previous}@dark.${current}` : previous ? `${previous}.${current}` : current), "") : config.appIcon
+            appIcon:
+                environment.appearance === "dark"
+                    ? addDarkModifierToFilePath(config.appIcon)
+                    : config.appIcon
         }
     })
     .transform(config => {
         return {
             ...config,
 
-            baseUrl: config.environment === "development" ? config.developmentBaseUrl : config.productionBaseUrl
+            baseUrl:
+                config.environment === "development"
+                    ? config.developmentBaseUrl
+                    : config.productionBaseUrl
         }
     })
     .transform(config => {

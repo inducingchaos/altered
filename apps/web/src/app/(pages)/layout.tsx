@@ -2,7 +2,7 @@
  *
  */
 
-import { ReactNode } from "react"
+import type { ReactNode } from "react"
 import "~/app/globals.css"
 import { ContextProvider } from "~/components/headless"
 import { Toaster } from "~/components/ui/primitives/sonner"

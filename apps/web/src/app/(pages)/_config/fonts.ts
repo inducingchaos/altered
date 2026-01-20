@@ -35,4 +35,8 @@ const hoeflerText = localFont({
     ]
 })
 
-export const fontVariables = [GeistSans.variable, GeistMono.variable, hoeflerText.variable].join(" ")
+export const fontVariables = [
+    GeistSans.variable,
+    GeistMono.variable,
+    hoeflerText.variable
+].join(" ")

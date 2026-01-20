@@ -2,17 +2,34 @@
  *
  */
 
-import { CreatableThought } from "@altered/data/shapes"
-import { Action, ActionPanel, closeMainWindow, Form, Icon, List, popToRoot, PopToRootType, showToast, Toast } from "@raycast/api"
+import type { CreatableThought } from "@altered/data/shapes"
+import {
+    Action,
+    ActionPanel,
+    closeMainWindow,
+    Form,
+    Icon,
+    List,
+    PopToRootType,
+    popToRoot,
+    showToast,
+    Toast
+} from "@raycast/api"
 import { FormValidation, useForm } from "@raycast/utils"
 import { nanoid } from "nanoid"
 import { api } from "~/api"
 import { useAuthentication } from "~/auth"
 import { configureLogger } from "~/observability"
-import { LogOutAction, ReturnToActionPaletteAction, withContext } from "~/shared/components"
+import {
+    LogOutAction,
+    ReturnToActionPaletteAction,
+    withContext
+} from "~/shared/components"
 import { useActionPalette } from "../action-palette/state"
 
-const logger = configureLogger({ defaults: { scope: "commands:capture-thought" } })
+const logger = configureLogger({
+    defaults: { scope: "commands:capture-thought" }
+})
 
 /**
  * @todo [P2] Keeping as list for now because it allows us to use `EmptyView`, but we could change this to a detail/form (or similar). Should be generic for use with other commands.
@@ -24,17 +41,31 @@ function AuthView() {
 
     return (
         <List
-            isLoading={isLoading}
             actions={
                 <ActionPanel>
-                    {isLoading ? null : <Action title="Authenticate" onAction={authenticate} />}
+                    {isLoading ? null : (
+                        <Action onAction={authenticate} title="Authenticate" />
+                    )}
 
-                    {actionPaletteContext && <ReturnToActionPaletteAction resetNavigationState={actionPaletteContext.resetState} />}
+                    {actionPaletteContext && (
+                        <ReturnToActionPaletteAction
+                            resetNavigationState={
+                                actionPaletteContext.resetState
+                            }
+                        />
+                    )}
                 </ActionPanel>
             }
+            isLoading={isLoading}
             searchBarPlaceholder=""
         >
-            {isLoading ? null : <List.EmptyView title="Authenticate to capture your thoughts." icon={Icon.Lock} description="Sign in to access your ALTERED Brain." />}
+            {isLoading ? null : (
+                <List.EmptyView
+                    description="Sign in to access your ALTERED Brain."
+                    icon={Icon.Lock}
+                    title="Authenticate to capture your thoughts."
+                />
+            )}
         </List>
     )
 }
@@ -46,19 +77,32 @@ type ThoughtFormProps = {
     onCreateThought?: (thought: CreatableThought) => void
 }
 
-function ThoughtForm({ authToken, pop, shouldCloseOnSubmit = true, onCreateThought }: ThoughtFormProps) {
+function ThoughtForm({
+    authToken,
+    pop,
+    shouldCloseOnSubmit = true,
+    onCreateThought
+}: ThoughtFormProps) {
     const actionPaletteContext = useActionPalette({ safe: true })
 
     const { handleSubmit, itemProps } = useForm<{
         content: string
     }>({
         onSubmit: async formValues => {
-            if (shouldCloseOnSubmit) await closeMainWindow({ clearRootSearch: false, popToRootType: PopToRootType.Suspended })
+            if (shouldCloseOnSubmit)
+                await closeMainWindow({
+                    clearRootSearch: false,
+                    popToRootType: PopToRootType.Suspended
+                })
 
             if (pop) pop()
             else if (actionPaletteContext) actionPaletteContext.resetState()
 
-            const thoughtInput = { id: nanoid(), alias: null, content: formValues.content }
+            const thoughtInput = {
+                id: nanoid(),
+                alias: null,
+                content: formValues.content
+            }
 
             if (onCreateThought) {
                 onCreateThought(thoughtInput)
@@ -68,10 +112,16 @@ function ThoughtForm({ authToken, pop, shouldCloseOnSubmit = true, onCreateThoug
                     title: "Creating Thought..."
                 })
 
-                const { error } = await api.thoughts.create(thoughtInput, { context: { authToken } })
+                const { error } = await api.thoughts.create(thoughtInput, {
+                    context: { authToken }
+                })
 
                 if (error) {
-                    logger.error({ title: "Failed to Create Thought", description: error.message, data: { cause: error.cause } })
+                    logger.error({
+                        title: "Failed to Create Thought",
+                        description: error.message,
+                        data: { cause: error.cause }
+                    })
 
                     await showToast({
                         style: Toast.Style.Failure,
@@ -87,7 +137,8 @@ function ThoughtForm({ authToken, pop, shouldCloseOnSubmit = true, onCreateThoug
                     title: "Thought Created"
                 })
 
-                if (!actionPaletteContext && !pop) popToRoot({ clearSearchBar: true })
+                if (!(actionPaletteContext || pop))
+                    popToRoot({ clearSearchBar: true })
             }
         },
 
@@ -98,9 +149,19 @@ function ThoughtForm({ authToken, pop, shouldCloseOnSubmit = true, onCreateThoug
 
     const createActions = () => (
         <ActionPanel>
-            <Action.SubmitForm title="Capture" onSubmit={handleSubmit} icon={Icon.Maximize} />
+            <Action.SubmitForm
+                icon={Icon.Maximize}
+                onSubmit={handleSubmit}
+                title="Capture"
+            />
 
-            <ActionPanel.Section title="Navigate">{actionPaletteContext && <ReturnToActionPaletteAction resetNavigationState={actionPaletteContext.resetState} />}</ActionPanel.Section>
+            <ActionPanel.Section title="Navigate">
+                {actionPaletteContext && (
+                    <ReturnToActionPaletteAction
+                        resetNavigationState={actionPaletteContext.resetState}
+                    />
+                )}
+            </ActionPanel.Section>
 
             <ActionPanel.Section title="Configure">
                 <LogOutAction />
@@ -110,7 +171,12 @@ function ThoughtForm({ authToken, pop, shouldCloseOnSubmit = true, onCreateThoug
 
     return (
         <Form actions={createActions()} navigationTitle="Capture Thought">
-            <Form.TextArea title="Thought" autoFocus info="The content of your thought." {...itemProps.content} />
+            <Form.TextArea
+                autoFocus
+                info="The content of your thought."
+                title="Thought"
+                {...itemProps.content}
+            />
         </Form>
     )
 }

@@ -2,12 +2,13 @@
  *
  */
 
-import { ALTEREDComponent } from "@altered/data/shapes"
+import type { ALTEREDComponent } from "@altered/data/shapes"
 
 export const alteredOnboardingEndComponent = {
     id: "component-altered-onboarding-end",
     alias: "ALTERED Onboarding End Component",
-    content: "An ALTERED markdown Component for the end of the ALTERED Onboarding Action.",
+    content:
+        "An ALTERED markdown Component for the end of the ALTERED Onboarding Action.",
 
     type: "component",
 

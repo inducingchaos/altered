@@ -2,12 +2,12 @@
  *
  */
 
-import { Thought } from "@altered/data/shapes"
+import type { Thought } from "@altered/data/shapes"
 import { Action, ActionPanel, Icon } from "@raycast/api"
 import { useAuthentication } from "~/auth"
 import { LogOutAction, ReturnToActionPaletteAction } from "~/shared/components"
 import { useActionPalette } from "../action-palette/state"
-import { HandleDeleteThought, HandleUpdateThought } from "./shared"
+import type { HandleDeleteThought, HandleUpdateThought } from "./shared"
 
 /**
  * @remarks Could use improvement (when we finalize `ThoughtList`), good enough for now.
@@ -31,7 +31,15 @@ export type ThoughtListActionsProps = {
     refreshThoughts: () => void
 }
 
-export function ThoughtListActions({ thought, isShowingInspector, setIsShowingInspector, setIsCreatingThought, setEditingThoughtId, handleDeleteThought, refreshThoughts }: ThoughtListActionsProps) {
+export function ThoughtListActions({
+    thought,
+    isShowingInspector,
+    setIsShowingInspector,
+    setIsCreatingThought,
+    setEditingThoughtId,
+    handleDeleteThought,
+    refreshThoughts
+}: ThoughtListActionsProps) {
     const { isAuthed } = useAuthentication()
 
     const actionPaletteContext = useActionPalette({ safe: true })
@@ -39,24 +47,79 @@ export function ThoughtListActions({ thought, isShowingInspector, setIsShowingIn
     return (
         <ActionPanel>
             <ActionPanel.Section title="View">
-                {thought && <Action title={`${isShowingInspector ? "Hide" : "Open"} Inspector`} onAction={() => setIsShowingInspector(prev => !prev)} shortcut={{ modifiers: ["cmd"], key: "i" }} icon={isShowingInspector ? Icon.EyeDisabled : Icon.Eye} />}
+                {thought && (
+                    <Action
+                        icon={isShowingInspector ? Icon.EyeDisabled : Icon.Eye}
+                        onAction={() => setIsShowingInspector(prev => !prev)}
+                        shortcut={{ modifiers: ["cmd"], key: "i" }}
+                        title={`${isShowingInspector ? "Hide" : "Open"} Inspector`}
+                    />
+                )}
 
-                <Action title="Refresh Thoughts" onAction={refreshThoughts} shortcut={{ modifiers: ["cmd"], key: "r" }} icon={Icon.RotateClockwise} />
+                <Action
+                    icon={Icon.RotateClockwise}
+                    onAction={refreshThoughts}
+                    shortcut={{ modifiers: ["cmd"], key: "r" }}
+                    title="Refresh Thoughts"
+                />
             </ActionPanel.Section>
 
             <ActionPanel.Section title="Modify">
-                <Action title="Create Thought" onAction={() => setIsCreatingThought(true)} shortcut={{ modifiers: ["cmd"], key: "n" }} icon={Icon.PlusCircle} />
+                <Action
+                    icon={Icon.PlusCircle}
+                    onAction={() => setIsCreatingThought(true)}
+                    shortcut={{ modifiers: ["cmd"], key: "n" }}
+                    title="Create Thought"
+                />
 
-                {thought && setEditingThoughtId && <Action title="Edit Thought" onAction={() => setEditingThoughtId(thought.id)} shortcut={{ modifiers: ["cmd"], key: "e" }} icon={Icon.Pencil} />}
+                {thought && setEditingThoughtId && (
+                    <Action
+                        icon={Icon.Pencil}
+                        onAction={() => setEditingThoughtId(thought.id)}
+                        shortcut={{ modifiers: ["cmd"], key: "e" }}
+                        title="Edit Thought"
+                    />
+                )}
 
-                {thought && handleDeleteThought && <Action title="Delete Thought" onAction={() => handleDeleteThought(thought)} shortcut={{ modifiers: ["shift"], key: "delete" }} icon={Icon.Trash} style={Action.Style.Destructive} />}
+                {thought && handleDeleteThought && (
+                    <Action
+                        icon={Icon.Trash}
+                        onAction={() => handleDeleteThought(thought)}
+                        shortcut={{ modifiers: ["shift"], key: "delete" }}
+                        style={Action.Style.Destructive}
+                        title="Delete Thought"
+                    />
+                )}
 
-                {thought && handleDeleteThought && <Action title="Delete Without Confirmation" onAction={() => handleDeleteThought(thought, { showConfirmation: false })} shortcut={{ modifiers: ["shift", "cmd"], key: "delete" }} icon={Icon.Trash} style={Action.Style.Destructive} />}
+                {thought && handleDeleteThought && (
+                    <Action
+                        icon={Icon.Trash}
+                        onAction={() =>
+                            handleDeleteThought(thought, {
+                                showConfirmation: false
+                            })
+                        }
+                        shortcut={{
+                            modifiers: ["shift", "cmd"],
+                            key: "delete"
+                        }}
+                        style={Action.Style.Destructive}
+                        title="Delete Without Confirmation"
+                    />
+                )}
             </ActionPanel.Section>
 
-            <ActionPanel.Section title="Navigate">{actionPaletteContext && <ReturnToActionPaletteAction resetNavigationState={actionPaletteContext.resetState} />}</ActionPanel.Section>
+            <ActionPanel.Section title="Navigate">
+                {actionPaletteContext && (
+                    <ReturnToActionPaletteAction
+                        resetNavigationState={actionPaletteContext.resetState}
+                    />
+                )}
+            </ActionPanel.Section>
 
-            <ActionPanel.Section title="Configure">{isAuthed && <LogOutAction />}</ActionPanel.Section>
+            <ActionPanel.Section title="Configure">
+                {isAuthed && <LogOutAction />}
+            </ActionPanel.Section>
         </ActionPanel>
     )
 }

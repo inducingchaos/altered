@@ -2,7 +2,7 @@
  *
  */
 
-import { ALTEREDConstruct } from "../altered-constructs"
+import type { ALTEREDConstruct } from "../altered-constructs"
 
 /**
  * Visual styles that indicate the type of an Operation.
@@ -62,7 +62,11 @@ export type OperationEnumInput = OperationInputBase & {
     defaultValue?: string
 }
 
-export type OperationInput = OperationTextInput | OperationNumberInput | OperationBooleanInput | OperationEnumInput
+export type OperationInput =
+    | OperationTextInput
+    | OperationNumberInput
+    | OperationBooleanInput
+    | OperationEnumInput
 
 /**
  * @todo [P2] Decide if this is the best way to group Operations when we start to implement them.
@@ -99,17 +103,18 @@ type BaseOperationDefinition = {
     placement?: OperationPlacement
 }
 
-export type PredefinedOperationDefinition<ID extends string> = BaseOperationDefinition & {
-    /**
-     * Type discriminator for predefined Operations.
-     */
-    _predefined?: true
+export type PredefinedOperationDefinition<ID extends string> =
+    BaseOperationDefinition & {
+        /**
+         * Type discriminator for predefined Operations.
+         */
+        _predefined?: true
 
-    id: ID
+        id: ID
 
-    name?: string
-    description?: string
-}
+        name?: string
+        description?: string
+    }
 
 export type CustomOperationDefinition = BaseOperationDefinition & {
     /**
@@ -123,8 +128,12 @@ export type CustomOperationDefinition = BaseOperationDefinition & {
     description: string
 }
 
-export type OperationDefinition<ID extends string> = PredefinedOperationDefinition<ID> | CustomOperationDefinition
+export type OperationDefinition<ID extends string> =
+    | PredefinedOperationDefinition<ID>
+    | CustomOperationDefinition
 
-type Operation<ID extends string = string> = OperationGroup<ID> | OperationDefinition<ID>
+type Operation<ID extends string = string> =
+    | OperationGroup<ID>
+    | OperationDefinition<ID>
 
 export type ALTEREDOperation<ID extends string = string> = Operation<ID>

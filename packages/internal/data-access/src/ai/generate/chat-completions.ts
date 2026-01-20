@@ -2,9 +2,9 @@
  *
  */
 
+import type { OpenAITextMessage, OpenrouterModelID } from "@altered/data/shapes"
 import { application } from "@altered-internal/config"
-import { Database } from "@altered-internal/data/store"
-import { OpenAITextMessage, OpenrouterModelID } from "@altered/data/shapes"
+import type { Database } from "@altered-internal/data/store"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 import { generateText, streamText } from "ai"
 import { buildSystemPrompt } from "./build-system-prompt"
@@ -30,7 +30,11 @@ export type GenerateChatCompletionOptions = {
     }
 }
 
-export type GenerateChatCompletionDefaults = Omit<GenerateChatCompletionOptions["input"], "messages"> & GenerateChatCompletionOptions["options"]
+export type GenerateChatCompletionDefaults = Omit<
+    GenerateChatCompletionOptions["input"],
+    "messages"
+> &
+    GenerateChatCompletionOptions["options"]
 
 /**
  * @todo [P2] Research, adjust, move.
@@ -48,16 +52,29 @@ export const generateChatCompletionsDefaults = {
  *
  * @remarks Always returns a generator for unified consumption.
  */
-export async function* generateChatCompletion({ input, options, context }: GenerateChatCompletionOptions) {
-    const openrouter = createOpenRouter({ apiKey: application.env.providers.openrouter.secret })
+export async function* generateChatCompletion({
+    input,
+    options,
+    context
+}: GenerateChatCompletionOptions) {
+    const openrouter = createOpenRouter({
+        apiKey: application.env.providers.openrouter.secret
+    })
 
     const systemPrompt = await buildSystemPrompt({ context })
 
-    const augmentedMessages: OpenAITextMessage[] = [{ role: "system", content: systemPrompt }, ...input.messages]
+    const augmentedMessages: OpenAITextMessage[] = [
+        { role: "system", content: systemPrompt },
+        ...input.messages
+    ]
 
-    const model = openrouter(options.modelId ?? generateChatCompletionsDefaults.modelId)
-    const temperature = input.temperature ?? generateChatCompletionsDefaults.temperature
-    const maxOutputTokens = input.maxTokens ?? generateChatCompletionsDefaults.maxTokens
+    const model = openrouter(
+        options.modelId ?? generateChatCompletionsDefaults.modelId
+    )
+    const temperature =
+        input.temperature ?? generateChatCompletionsDefaults.temperature
+    const maxOutputTokens =
+        input.maxTokens ?? generateChatCompletionsDefaults.maxTokens
 
     const shouldStream = input.stream !== false
 
@@ -91,8 +108,11 @@ export async function* generateChatCompletion({ input, options, context }: Gener
  *
  * - To disable warnings for model providers (like OpenRouter) that are still using the `v2` specification.
  */
-export function disableAiSdkWarnings(shouldDisable: boolean = false) {
-    if (typeof globalThis === "undefined") throw new Error("`GlobalThis` is undefined, unable to disable AI SDK warnings.")
+export function disableAiSdkWarnings(shouldDisable = false) {
+    if (typeof globalThis === "undefined")
+        throw new Error(
+            "`GlobalThis` is undefined, unable to disable AI SDK warnings."
+        )
 
     globalThis.AI_SDK_LOG_WARNINGS = shouldDisable === false ? false : undefined
 }

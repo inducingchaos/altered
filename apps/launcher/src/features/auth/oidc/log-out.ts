@@ -14,7 +14,9 @@ export async function logOut() {
 
     if (tokenSet?.accessToken || tokenSet?.refreshToken) {
         try {
-            const tokenTypeHint = tokenSet.accessToken ? "access_token" : "refresh_token"
+            const tokenTypeHint = tokenSet.accessToken
+                ? "access_token"
+                : "refresh_token"
             const token = tokenSet.accessToken ?? tokenSet.refreshToken
 
             await revokeTokens(token, tokenTypeHint)

@@ -14,7 +14,9 @@ const createdAtCursorDefinitionSchema = type({
     value: "Date"
 })
 
-const cursorDefinitionSchema = idCursorDefinitionSchema.or(createdAtCursorDefinitionSchema)
+const cursorDefinitionSchema = idCursorDefinitionSchema.or(
+    createdAtCursorDefinitionSchema
+)
 
 export type CursorField = (typeof cursorDefinitionSchema.infer)["field"]
 export type CursorDefinition = typeof cursorDefinitionSchema.infer
@@ -35,6 +37,8 @@ const cursorPaginationOptionsSchema = type({
 
 export type CursorPaginationOptions = typeof cursorPaginationOptionsSchema.infer
 
-export const paginationOptionsSchema = offsetPaginationOptionsSchema.or(cursorPaginationOptionsSchema)
+export const paginationOptionsSchema = offsetPaginationOptionsSchema.or(
+    cursorPaginationOptionsSchema
+)
 
 export type PaginationOptions = typeof paginationOptionsSchema.infer

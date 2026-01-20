@@ -2,7 +2,7 @@
  *
  */
 
-import { db, oauthAccessTokens, eq, or } from "@altered-internal/data/store"
+import { db, eq, oauthAccessTokens, or } from "@altered-internal/data/store"
 import type { BetterAuthPlugin } from "better-auth"
 import { APIError } from "better-auth"
 import { createAuthEndpoint } from "better-auth/plugins"
@@ -20,14 +20,18 @@ export const oidcProviderPolyfill = () => {
                 {
                     method: "POST",
                     metadata: {
-                        allowedMediaTypes: ["application/x-www-form-urlencoded", "application/json"]
+                        allowedMediaTypes: [
+                            "application/x-www-form-urlencoded",
+                            "application/json"
+                        ]
                     }
                 },
 
                 async ctx => {
                     let body = ctx.body
 
-                    if (body instanceof FormData) body = Object.fromEntries(body.entries())
+                    if (body instanceof FormData)
+                        body = Object.fromEntries(body.entries())
 
                     if (!body || typeof body !== "object") {
                         throw new APIError("BAD_REQUEST", {
@@ -43,8 +47,12 @@ export const oidcProviderPolyfill = () => {
                     }
 
                     const tokenValue = Array.isArray(token) ? token[0] : token
-                    const clientIdValue = Array.isArray(client_id) ? client_id[0] : client_id
-                    const tokenTypeHint = Array.isArray(token_type_hint) ? token_type_hint[0] : token_type_hint
+                    const clientIdValue = Array.isArray(client_id)
+                        ? client_id[0]
+                        : client_id
+                    const tokenTypeHint = Array.isArray(token_type_hint)
+                        ? token_type_hint[0]
+                        : token_type_hint
 
                     if (!tokenValue) {
                         throw new APIError("BAD_REQUEST", {
@@ -60,16 +68,36 @@ export const oidcProviderPolyfill = () => {
                         })
                     }
 
+                    const createWhereClause = () => {
+                        if (tokenTypeHint === "refresh_token")
+                            return eq(
+                                oauthAccessTokens.refreshToken,
+                                tokenValue
+                            )
+
+                        if (tokenTypeHint === "access_token")
+                            return eq(oauthAccessTokens.accessToken, tokenValue)
+
+                        return or(
+                            eq(oauthAccessTokens.accessToken, tokenValue),
+                            eq(oauthAccessTokens.refreshToken, tokenValue)
+                        )
+                    }
+
                     const tokenRecord = await db
                         .select()
                         .from(oauthAccessTokens)
-                        .where(tokenTypeHint === "refresh_token" ? eq(oauthAccessTokens.refreshToken, tokenValue) : tokenTypeHint === "access_token" ? eq(oauthAccessTokens.accessToken, tokenValue) : or(eq(oauthAccessTokens.accessToken, tokenValue), eq(oauthAccessTokens.refreshToken, tokenValue)))
+                        .where(createWhereClause())
                         .limit(1)
                         .then(rows => (rows[0] ? rows[0] : null))
 
-                    if (tokenRecord && tokenRecord.clientId !== clientIdValue) return ctx.json({}, { status: 200 })
+                    if (tokenRecord && tokenRecord.clientId !== clientIdValue)
+                        return ctx.json({}, { status: 200 })
 
-                    if (tokenRecord) await db.delete(oauthAccessTokens).where(eq(oauthAccessTokens.id, tokenRecord.id))
+                    if (tokenRecord)
+                        await db
+                            .delete(oauthAccessTokens)
+                            .where(eq(oauthAccessTokens.id, tokenRecord.id))
 
                     return ctx.json({}, { status: 200 })
                 }

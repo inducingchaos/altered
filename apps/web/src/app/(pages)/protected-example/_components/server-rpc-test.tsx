@@ -11,5 +11,7 @@ export async function ServerRPCTest() {
     const { thought } = data
     if (!thought) return <div>No thought found</div>
 
-    return <div className="text-center">{`Latest thought (server): ${thought.content}`}</div>
+    return (
+        <div className="text-center">{`Latest thought (server): ${thought.content}`}</div>
+    )
 }

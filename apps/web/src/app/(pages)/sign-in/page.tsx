@@ -3,15 +3,22 @@
  * @todo [P3] Add typed routes?
  */
 
-import { Route } from "next"
+import { auth } from "@altered-internal/auth"
+import type { Route } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { Container, P, Section } from "~/components/ui/_legacy"
-import { auth } from "@altered-internal/auth"
 import { SignInOnMount } from "./_components"
-import { resolveCallbackUrl, SignInSearchParams } from "./_utils/resolve-callback"
+import {
+    resolveCallbackUrl,
+    type SignInSearchParams
+} from "./_utils/resolve-callback"
 
-export default async function SignInPage({ searchParams }: { searchParams: Promise<SignInSearchParams> }) {
+export default async function SignInPage({
+    searchParams
+}: {
+    searchParams: Promise<SignInSearchParams>
+}) {
     const params = await searchParams
     const callbackUrl = resolveCallbackUrl(params)
 

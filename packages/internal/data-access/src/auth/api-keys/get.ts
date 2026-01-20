@@ -2,8 +2,8 @@
  *
  */
 
-import { apiKeys, Database } from "@altered-internal/data/store"
-import { APIKey, GetApiKeyInput } from "@altered/data/shapes"
+import type { APIKey, GetApiKeyInput } from "@altered/data/shapes"
+import { apiKeys, type Database } from "@altered-internal/data/store"
 import { nanoid } from "nanoid"
 
 type GetApiKeyProps = GetApiKeyInput & {
@@ -14,7 +14,11 @@ type GetApiKeyProps = GetApiKeyInput & {
     }
 }
 
-export async function getApiKey({ query: { service }, options, context: { db, userId } }: GetApiKeyProps): Promise<{ apiKey: APIKey | null }> {
+export async function getApiKey({
+    query: { service },
+    options,
+    context: { db, userId }
+}: GetApiKeyProps): Promise<{ apiKey: APIKey | null }> {
     const { createIfMissing = false } = options ?? {}
 
     const existingKey = await db.query.apiKeys.findFirst({

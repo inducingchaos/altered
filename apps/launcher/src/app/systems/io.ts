@@ -2,7 +2,7 @@
  *
  */
 
-import { ALTEREDSystem } from "@altered/data/shapes"
+import type { ALTEREDSystem } from "@altered/data/shapes"
 import { connectToAiProviderAction, generateLlmsTxtAction } from "app/actions"
 
 export const ioSystem = {

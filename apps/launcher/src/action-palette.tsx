@@ -2,6 +2,4 @@
  *
  */
 
-import { ActionPaletteCommand } from "app/commands/action-palette"
-
-export default ActionPaletteCommand
+export { ActionPaletteCommand as default } from "app/commands/action-palette"

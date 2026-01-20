@@ -2,9 +2,14 @@
  *
  */
 
-import { application } from "@altered-internal/config"
-import { OpenAIMessage, OpenAITextContentPart, OpenAITextMessage, OpenrouterModelID } from "@altered/data/shapes"
+import type {
+    OpenAIMessage,
+    OpenAITextContentPart,
+    OpenAITextMessage,
+    OpenrouterModelID
+} from "@altered/data/shapes"
 import { arktypeToAiJsonSchema } from "@altered/utils"
+import { application } from "@altered-internal/config"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 import { generateText, Output } from "ai"
 import { type } from "arktype"
@@ -24,7 +29,11 @@ export type GenerateChatTitleOptions = {
     }
 }
 
-export type GenerateChatTitleDefaults = Omit<GenerateChatTitleOptions["input"], "messages"> & GenerateChatTitleOptions["options"]
+export type GenerateChatTitleDefaults = Omit<
+    GenerateChatTitleOptions["input"],
+    "messages"
+> &
+    GenerateChatTitleOptions["options"]
 
 /**
  * @todo [P2] Research, adjust, move.
@@ -37,26 +46,39 @@ export const generateChatTitleDefaults = {
 
 const chatTitleSchema = type({
     language: type("string").describe("The language of the title."),
-    title: type("string").describe("A concise, descriptive title for the chat conversation.")
+    title: type("string").describe(
+        "A concise, descriptive title for the chat conversation."
+    )
 })
 
 export type ChatTitleResult = typeof chatTitleSchema.infer
 
+const chatTitlePatterns = [
+    /generate.*(?:a|an|the)?\s*(?:concise|short|brief)?\s*(?:chat|conversation)?\s*title/i,
+    /create.*(?:a|an|the)?\s*(?:chat|conversation)?\s*title/i,
+    /suggest.*(?:a|an|the)?\s*(?:chat|conversation)?\s*title/i,
+    /title.*(?:for|of|this|the)?\s*(?:chat|conversation)/i,
+    /summarize.*(?:as|into)?\s*(?:a|an|the)?\s*title/i
+]
+
 /**
  * @todo [P3] Allow parsing of other message formats, such as that of the AI SDK.
  */
-export function isChatTitleGenerationRequest(messages: OpenAIMessage[]): boolean {
+export function isChatTitleGenerationRequest(
+    messages: OpenAIMessage[]
+): boolean {
     if (!messages.length) return false
 
-    const messagePatterns = [/generate.*(?:a|an|the)?\s*(?:concise|short|brief)?\s*(?:chat|conversation)?\s*title/i, /create.*(?:a|an|the)?\s*(?:chat|conversation)?\s*title/i, /suggest.*(?:a|an|the)?\s*(?:chat|conversation)?\s*title/i, /title.*(?:for|of|this|the)?\s*(?:chat|conversation)/i, /summarize.*(?:as|into)?\s*(?:a|an|the)?\s*title/i]
-
     return messages.some(message =>
-        messagePatterns.some(pattern =>
+        chatTitlePatterns.some(pattern =>
             pattern.test(
                 typeof message.content === "string"
                     ? message.content
                     : message.content
-                          .filter((content): content is OpenAITextContentPart => content.type === "text")
+                          .filter(
+                              (content): content is OpenAITextContentPart =>
+                                  content.type === "text"
+                          )
                           .map(content => content.text)
                           .join("\n\n")
             )
@@ -73,22 +95,35 @@ export function isChatTitleGenerationRequest(messages: OpenAIMessage[]): boolean
  *
  * @todo [P3] Consider consolidating into the `generateChatCompletions` function, or an abstraction layer above it.
  */
-export async function* generateChatTitle({ input, options }: GenerateChatTitleOptions) {
+export async function* generateChatTitle({
+    input,
+    options
+}: GenerateChatTitleOptions) {
     /**
      * @todo [P3] Move to a shared providers layer.
      */
-    const openrouter = createOpenRouter({ apiKey: application.env.providers.openrouter.secret })
+    const openrouter = createOpenRouter({
+        apiKey: application.env.providers.openrouter.secret
+    })
 
     /**
      * @todo [P3] Figure out if this should include our main system prompt.
      */
-    const systemPrompt = "Generate a concise, descriptive title for the chat conversation. Return only a valid JSON object matching the schema."
+    const systemPrompt =
+        "Generate a concise, descriptive title for the chat conversation. Return only a valid JSON object matching the schema."
 
-    const augmentedMessages: OpenAITextMessage[] = [{ role: "system", content: systemPrompt }, ...input.messages]
+    const augmentedMessages: OpenAITextMessage[] = [
+        { role: "system", content: systemPrompt },
+        ...input.messages
+    ]
 
-    const model = openrouter.chat(options.modelId ?? generateChatTitleDefaults.modelId)
-    const temperature = input.temperature ?? generateChatTitleDefaults.temperature
-    const maxOutputTokens = input.maxTokens ?? generateChatTitleDefaults.maxTokens
+    const model = openrouter.chat(
+        options.modelId ?? generateChatTitleDefaults.modelId
+    )
+    const temperature =
+        input.temperature ?? generateChatTitleDefaults.temperature
+    const maxOutputTokens =
+        input.maxTokens ?? generateChatTitleDefaults.maxTokens
 
     const { output } = await generateText({
         model,

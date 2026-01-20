@@ -15,5 +15,16 @@ export const thoughtMetadata = pgTable(
         value: varchar().notNull(),
         createdAt: timestamp().notNull().defaultNow()
     },
-    table => [index("thought_metadata_brain_id_thought_id_idx").on(table.brainId, table.thoughtId), index("thought_metadata_brain_id_key_idx").on(table.brainId, table.key), unique("thought_metadata_brain_id_thought_id_key_unique").on(table.brainId, table.thoughtId, table.key)]
+    table => [
+        index("thought_metadata_brain_id_thought_id_idx").on(
+            table.brainId,
+            table.thoughtId
+        ),
+        index("thought_metadata_brain_id_key_idx").on(table.brainId, table.key),
+        unique("thought_metadata_brain_id_thought_id_key_unique").on(
+            table.brainId,
+            table.thoughtId,
+            table.key
+        )
+    ]
 )

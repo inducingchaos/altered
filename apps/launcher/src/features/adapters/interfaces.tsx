@@ -2,7 +2,7 @@
  *
  */
 
-import { ALTEREDInterface } from "@altered/data/shapes"
+import type { ALTEREDInterface } from "@altered/data/shapes"
 import { Detail } from "@raycast/api"
 
 type InterfaceAdapterOptions = {
@@ -19,15 +19,22 @@ const fallbackMarkdown = `
 Component-based interfaces are not yet implemented.
 `
 
-export function createInterfaceAdapter(interfaces: ALTEREDInterface[], options?: InterfaceAdapterOptions) {
+export function createInterfaceAdapter(
+    interfaces: ALTEREDInterface[],
+    options?: InterfaceAdapterOptions
+) {
     const { platform } = {
         ...defaultOptions,
         ...options
     }
 
-    if (platform !== "raycast") throw new Error(`The '${platform}' platform is currently not supported.`)
+    if (platform !== "raycast")
+        throw new Error(
+            `The '${platform}' platform is currently not supported.`
+        )
 
-    if (interfaces.length === 0) throw new Error("At least one interface must be provided.")
+    if (interfaces.length === 0)
+        throw new Error("At least one interface must be provided.")
 
     for (const alteredInterface of interfaces) {
         if (alteredInterface.custom === true) return alteredInterface.react()

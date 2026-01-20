@@ -2,7 +2,7 @@
  *
  */
 
-import { ALTEREDAction } from "@altered/data/shapes"
+import type { ALTEREDAction } from "@altered/data/shapes"
 import { Action, ActionPanel, Color, Grid, Icon, List } from "@raycast/api"
 import { useState } from "react"
 import { createInterfaceAdapter } from "~/adapters"
@@ -10,8 +10,27 @@ import { config } from "~/config"
 import { ContextProvider } from "~/shared/components"
 import { ActionPaletteProvider, useActionPalette } from "./state"
 
+function ToggleLayoutAction({
+    layout,
+    setLayout
+}: {
+    layout: "grid" | "list"
+    setLayout: (newState: "grid" | "list") => void
+}) {
+    return (
+        <Action
+            icon={layout === "grid" ? Icon.List : Icon.AppWindowGrid2x2}
+            onAction={() => setLayout(layout === "grid" ? "list" : "grid")}
+            shortcut={{ modifiers: ["opt", "shift"], key: "l" }}
+            title={`Change to ${layout === "grid" ? "List" : "Grid"} Layout`}
+        />
+    )
+}
+
 function ActionPalette() {
-    const [collectionLayout, setCollectionLayout] = useState<"grid" | "list">("list")
+    const [collectionLayout, setCollectionLayout] = useState<"grid" | "list">(
+        "list"
+    )
 
     const {
         isLoading,
@@ -29,61 +48,111 @@ function ActionPalette() {
         renderAction
     } = useActionPalette()
 
-    if (renderedAction) return createInterfaceAdapter(renderedAction.interfaces, { platform: "raycast" })
+    if (renderedAction)
+        return createInterfaceAdapter(renderedAction.interfaces, {
+            platform: "raycast"
+        })
 
     const isGrid = collectionLayout === "grid"
     const Collection = isGrid ? Grid : List
 
-    const createActionImageProp = (action: ALTEREDAction) => ({ value: { source: action.icon ?? Icon.Box, tintColor: Color.SecondaryText }, tooltip: action.name })
-
-    const ToggleLayoutAction = () => <Action title={`Change to ${collectionLayout === "grid" ? "List" : "Grid"} Layout`} onAction={() => setCollectionLayout(collectionLayout === "grid" ? "list" : "grid")} icon={collectionLayout === "grid" ? Icon.List : Icon.AppWindowGrid2x2} shortcut={{ modifiers: ["opt", "shift"], key: "l" }} />
+    const createActionImageProp = (action: ALTEREDAction) => ({
+        value: {
+            source: action.icon ?? Icon.Box,
+            tintColor: Color.SecondaryText
+        },
+        tooltip: action.name
+    })
 
     return (
         <Collection
-            columns={7}
-            inset={Grid.Inset.Large}
-            isLoading={isLoading}
-            searchBarAccessory={undefined}
             actions={
                 <ActionPanel>
-                    <ToggleLayoutAction />
+                    <ToggleLayoutAction
+                        layout={collectionLayout}
+                        setLayout={setCollectionLayout}
+                    />
                 </ActionPanel>
             }
+            columns={7}
             filtering={false}
+            inset={Grid.Inset.Large}
+            isLoading={isLoading}
+            navigationTitle={navigationTitle}
+            onSearchTextChange={onSearchTextChange}
+            onSelectionChange={setSelectedItemId}
+            searchBarAccessory={undefined}
             searchBarPlaceholder="Search your ALTERED Systems..."
             searchText={searchText}
             selectedItemId={selectedActionId ?? selectedItemId ?? undefined}
-            onSelectionChange={setSelectedItemId}
-            onSearchTextChange={onSearchTextChange}
-            navigationTitle={navigationTitle}
         >
             {filteredSystems.length ? (
                 filteredSystems.map(system => (
-                    <Collection.Section key={system.id} title={system.title} subtitle={system.name}>
+                    <Collection.Section
+                        key={system.id}
+                        subtitle={system.name}
+                        title={system.title}
+                    >
                         {system.actions.map(action => (
                             <Collection.Item
-                                id={action.id}
-                                key={action.id}
-                                title={action.name}
-                                subtitle={isGrid ? action.trigger : action.description}
-                                icon={config.themeIcons ? createActionImageProp(action) : undefined}
-                                content={createActionImageProp(action)}
+                                accessories={
+                                    action.trigger
+                                        ? [
+                                              {
+                                                  tooltip:
+                                                      "The trigger for this action.",
+                                                  tag: {
+                                                      value: action.trigger,
+                                                      color:
+                                                          selectedActionId ===
+                                                          action.id
+                                                              ? Color.PrimaryText
+                                                              : Color.SecondaryText
+                                                  }
+                                              }
+                                          ]
+                                        : undefined
+                                }
                                 actions={
                                     <ActionPanel>
-                                        <Action title={`Open ${action.name}`} onAction={() => renderAction(action.id)} icon={Icon.ArrowRightCircle} />
+                                        <Action
+                                            icon={Icon.ArrowRightCircle}
+                                            onAction={() =>
+                                                renderAction(action.id)
+                                            }
+                                            title={`Open ${action.name}`}
+                                        />
 
                                         <ActionPanel.Section title="Configure">
-                                            <ToggleLayoutAction />
+                                            <ToggleLayoutAction
+                                                layout={collectionLayout}
+                                                setLayout={setCollectionLayout}
+                                            />
                                         </ActionPanel.Section>
                                     </ActionPanel>
                                 }
-                                accessories={action.trigger ? [{ tooltip: "The trigger for this action.", tag: { value: action.trigger, color: selectedActionId === action.id ? Color.PrimaryText : Color.SecondaryText } }] : undefined}
+                                content={createActionImageProp(action)}
+                                icon={
+                                    config.themeIcons
+                                        ? createActionImageProp(action)
+                                        : undefined
+                                }
+                                id={action.id}
+                                key={action.id}
+                                subtitle={
+                                    isGrid ? action.trigger : action.description
+                                }
+                                title={action.name}
                             />
                         ))}
                     </Collection.Section>
                 ))
             ) : (
-                <Collection.EmptyView icon={Icon.Box} title="No Systems Found" description="Try a different search query." />
+                <Collection.EmptyView
+                    description="Try a different search query."
+                    icon={Icon.Box}
+                    title="No Systems Found"
+                />
             )}
         </Collection>
     )

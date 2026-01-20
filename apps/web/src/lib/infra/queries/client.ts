@@ -17,7 +17,9 @@ export function createQueryClient() {
             },
 
             dehydrate: {
-                shouldDehydrateQuery: query => defaultShouldDehydrateQuery(query) || query.state.status === "pending",
+                shouldDehydrateQuery: query =>
+                    defaultShouldDehydrateQuery(query) ||
+                    query.state.status === "pending",
                 serializeData(data) {
                     const [json, meta] = serializer.serialize(data)
                     return { json, meta }

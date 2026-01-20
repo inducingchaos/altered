@@ -20,5 +20,7 @@ export function ClientRPCTest() {
     const { thought } = safeData
     if (!thought) return <div>No thought found</div>
 
-    return <div className="text-center">{`Latest thought (client): ${thought.content}`}</div>
+    return (
+        <div className="text-center">{`Latest thought (client): ${thought.content}`}</div>
+    )
 }

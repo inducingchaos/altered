@@ -2,9 +2,21 @@
  * @todo [P1] We should/could figure out a way to move this endpoint to the oRPC router.
  */
 
-import { accumulateStreamContent, createOpenAICompletion, createOpenAIErrorResponse, createOpenAIResponseMetadata, createOpenAIStreamResponse, normalizeOpenAIMessagesToText } from "@altered-internal/engine"
-import { ModelID, modelIds, OpenAIMessage, OpenrouterModelID } from "@altered/data/shapes"
-import { NextRequest } from "next/server"
+import {
+    type ModelID,
+    modelIds,
+    type OpenAIMessage,
+    type OpenrouterModelID
+} from "@altered/data/shapes"
+import {
+    accumulateStreamContent,
+    createOpenAICompletion,
+    createOpenAIErrorResponse,
+    createOpenAIResponseMetadata,
+    createOpenAIStreamResponse,
+    normalizeOpenAIMessagesToText
+} from "@altered-internal/engine"
+import type { NextRequest } from "next/server"
 import { api } from "~/lib/infra/rpc"
 
 /**
@@ -13,7 +25,8 @@ import { api } from "~/lib/infra/rpc"
  * @todo [P3] Decide if we should return our branded model ID as the result, or return the input model ID to match OpenAI's specification (to avoid creating mismatches on the client).
  */
 export function resolveModelId(model?: string): OpenrouterModelID {
-    if (model && !modelIds.includes(model as ModelID)) throw new Error(`Invalid model ID: ${model}`)
+    if (model && !modelIds.includes(model as ModelID))
+        throw new Error(`Invalid model ID: ${model}`)
 
     return "google/gemini-2.5-flash-lite"
 }
@@ -33,15 +46,24 @@ export async function POST(request: NextRequest) {
             stream?: boolean
         }
 
-        const rawInput = (await request.json()) as OpenAICompatibleCompletionInput
+        const rawInput =
+            (await request.json()) as OpenAICompatibleCompletionInput
 
         //  REMARKS: These runtime checks won't be necessary with our oRPC validation, but we may want to consider integrating the OpenAI-compatible error responses into our router.
 
-        const invalidMessages = !rawInput.messages || !Array.isArray(rawInput.messages)
+        const invalidMessages = !(
+            rawInput.messages && Array.isArray(rawInput.messages)
+        )
 
-        if (invalidMessages) return createOpenAIErrorResponse({ message: "Invalid messages format", code: "invalid_messages" })
+        if (invalidMessages)
+            return createOpenAIErrorResponse({
+                message: "Invalid messages format",
+                code: "invalid_messages"
+            })
 
-        const normalizedMessages = normalizeOpenAIMessagesToText(rawInput.messages)
+        const normalizedMessages = normalizeOpenAIMessagesToText(
+            rawInput.messages
+        )
         const resolvedModelId = resolveModelId(rawInput.model)
 
         const result = await api.ai.generate.completions.openAICompatible.call({
@@ -59,17 +81,30 @@ export async function POST(request: NextRequest) {
         const responseMetadata = createOpenAIResponseMetadata(resolvedModelId)
 
         if (!shouldStreamResult) {
-            const completionContent = await accumulateStreamContent(resultStream)
+            const completionContent =
+                await accumulateStreamContent(resultStream)
 
-            const completion = createOpenAICompletion(responseMetadata, completionContent)
+            const completion = createOpenAICompletion(
+                responseMetadata,
+                completionContent
+            )
 
-            return new Response(JSON.stringify(completion), { headers: { "Content-Type": "application/json" } })
+            return Response.json(completion, {
+                headers: { "Content-Type": "application/json" }
+            })
         }
 
         return createOpenAIStreamResponse(resultStream, responseMetadata)
     } catch (error) {
         console.error("OpenAI compatible completions API error:", error)
 
-        return createOpenAIErrorResponse({ message: error instanceof Error ? error.message : "An unexpected error occurred.", code: "internal_server_error", status: 500 })
+        return createOpenAIErrorResponse({
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "An unexpected error occurred.",
+            code: "internal_server_error",
+            status: 500
+        })
     }
 }

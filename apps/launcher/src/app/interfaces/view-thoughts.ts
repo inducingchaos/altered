@@ -2,7 +2,7 @@
  *
  */
 
-import { ALTEREDInterface } from "@altered/data/shapes"
+import type { ALTEREDInterface } from "@altered/data/shapes"
 import { viewThoughtsCollectionComponent } from "app/components"
 
 /**

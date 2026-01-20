@@ -2,19 +2,26 @@
  *
  */
 
-import { appendFile, mkdir } from "fs/promises"
-import { dirname, join } from "path"
-import { LoggerPlugin, LoggerPluginFactory } from "../constants"
+import { appendFile, mkdir } from "node:fs/promises"
+import { dirname, join } from "node:path"
+import type { LoggerPlugin, LoggerPluginFactory } from "../constants"
 import { buildLog } from "../utils"
 
-type LogToFilePluginOptions = { enabled?: boolean; cwd?: string; relativePath?: string }
+type LogToFilePluginOptions = {
+    enabled?: boolean
+    cwd?: string
+    relativePath?: string
+}
 
 const logToFilePlugin: LoggerPlugin<LogToFilePluginOptions> = {
     id: "log-to-file",
 
     handle: async ({ logOptions, logType, loggerConfig, pluginOptions }) => {
         try {
-            const logFilePath = join(pluginOptions.cwd ?? process.cwd(), pluginOptions.relativePath ?? "./.logs/app.log")
+            const logFilePath = join(
+                pluginOptions.cwd ?? process.cwd(),
+                pluginOptions.relativePath ?? "./.logs/app.log"
+            )
 
             try {
                 await mkdir(dirname(logFilePath), { recursive: true })
@@ -48,7 +55,9 @@ const logToFilePlugin: LoggerPlugin<LogToFilePluginOptions> = {
 /**
  * @remarks Do we even need a factory? Sure, it allows us to "not run" a plugin, which also requires us to return null - but we're basically just forwarding props. We could always no-op inside the plugin itself.
  */
-export const logToFile: LoggerPluginFactory<LogToFilePluginOptions> = pluginOptions => {
+export const logToFile: LoggerPluginFactory<
+    LogToFilePluginOptions
+> = pluginOptions => {
     if (!pluginOptions?.enabled) return null
 
     const isNodeEnvironment = typeof process !== "undefined"

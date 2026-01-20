@@ -4,12 +4,23 @@
 
 import { application, localization } from "@altered-internal/config"
 import { db } from "@altered-internal/data/store"
-import { betterAuth } from "better-auth"
+import { betterAuth, isProduction } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { nextCookies } from "better-auth/next-js"
 import { oidcProvider } from "better-auth/plugins"
 import { nanoid } from "nanoid"
 import { oidcProviderPolyfill } from "./polyfills/oidc-provider"
+
+/**
+ * @remarks We can't use wildcard origins (yet) because we also use this array for our CORS middleware, and it doesn't support wildcard origins.
+ */
+export const trustedOrigins = [
+    "http://localhost:258",
+    "https://altered.app",
+
+    "http://localhost:3000",
+    "https://chat.altered.app"
+]
 
 export const authBase = betterAuth({
     appName: localization.identity.name,
@@ -30,6 +41,8 @@ export const authBase = betterAuth({
         }
     },
 
+    trustedOrigins,
+
     plugins: [
         nextCookies(),
 
@@ -48,7 +61,9 @@ export const authBase = betterAuth({
                     clientSecret: "placeholder-secret",
 
                     icon: "icon.png",
-                    redirectUrls: ["https://raycast.com/redirect?packageName=Extension"],
+                    redirectUrls: [
+                        "https://raycast.com/redirect?packageName=Extension"
+                    ],
                     disabled: false,
                     skipConsent: true,
                     metadata: { platform: "raycast" }
@@ -58,5 +73,12 @@ export const authBase = betterAuth({
         oidcProviderPolyfill()
     ],
 
-    advanced: { database: { generateId: () => nanoid() } }
+    advanced: {
+        crossSubDomainCookies: {
+            enabled: isProduction,
+            domain: application.locations.origins.production
+        },
+
+        database: { generateId: () => nanoid() }
+    }
 })

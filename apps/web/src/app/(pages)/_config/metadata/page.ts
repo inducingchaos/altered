@@ -3,7 +3,7 @@
  */
 
 import { application, localization } from "@altered-internal/config"
-import { Metadata } from "next"
+import type { Metadata } from "next"
 
 /**
  * @todo [P3] Review all metadata values.

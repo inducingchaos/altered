@@ -2,7 +2,7 @@
  * @remarks The component IDs and the component types themselves are somewhat expandable - so this could potentially be implemented client-side.
  */
 
-import { StatefulConstruct } from "../altered-constructs"
+import type { StatefulConstruct } from "../altered-constructs"
 
 type BaseComponent = StatefulConstruct & {
     type: "component"
@@ -79,6 +79,11 @@ export type CollectionItemMetadataComponent = BaseComponent & {
           }
     )
 
-type Component = MarkdownComponent | CollectionComponent | CollectionGroupComponent | CollectionItemComponent | CollectionItemMetadataComponent
+type Component =
+    | MarkdownComponent
+    | CollectionComponent
+    | CollectionGroupComponent
+    | CollectionItemComponent
+    | CollectionItemMetadataComponent
 
 export type ALTEREDComponent = Component

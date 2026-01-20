@@ -4,7 +4,10 @@
 
 import { StandardRPCJsonSerializer } from "@orpc/client/standard"
 import { Cache } from "@raycast/api"
-import { experimental_createQueryPersister, type PersistedQuery } from "@tanstack/query-persist-client-core"
+import {
+    experimental_createQueryPersister,
+    type PersistedQuery
+} from "@tanstack/query-persist-client-core"
 import { QueryClient } from "@tanstack/react-query"
 
 const serializer = new StandardRPCJsonSerializer({
@@ -24,7 +27,13 @@ const raycastCacheStorage = {
     removeItem: (key: string) => void cache.remove(key)
 }
 
-function getMilliseconds({ duration, unit }: { duration: number; unit: "days" | "hours" | "minutes" | "seconds" }) {
+function getMilliseconds({
+    duration,
+    unit
+}: {
+    duration: number
+    unit: "days" | "hours" | "minutes" | "seconds"
+}) {
     switch (unit) {
         case "days":
             return 1000 * 60 * 60 * 24 * duration
@@ -34,6 +43,8 @@ function getMilliseconds({ duration, unit }: { duration: number; unit: "days" | 
             return 1000 * 60 * duration
         case "seconds":
             return 1000 * duration
+        default:
+            throw new Error(`Invalid unit: ${unit}`)
     }
 }
 

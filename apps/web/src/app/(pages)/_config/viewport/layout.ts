@@ -2,7 +2,7 @@
  *
  */
 
-import { Viewport } from "next"
+import type { Viewport } from "next"
 
 /**
  * @todo [P3] Review this viewport config.

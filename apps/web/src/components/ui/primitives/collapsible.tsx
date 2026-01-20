@@ -4,19 +4,36 @@
 
 "use client"
 
+// biome-ignore lint/performance/noNamespaceImport: Recommended pattern - used to categorically group imports from a module.
 import * as CollapsiblePrimitive from "@radix-ui/react-collapsible"
-import { ComponentProps } from "react"
+import type { ComponentProps } from "react"
 
-function Collapsible({ ...props }: ComponentProps<typeof CollapsiblePrimitive.Root>) {
+function Collapsible({
+    ...props
+}: ComponentProps<typeof CollapsiblePrimitive.Root>) {
     return <CollapsiblePrimitive.Root data-slot="collapsible" {...props} />
 }
 
-function CollapsibleTrigger({ ...props }: ComponentProps<typeof CollapsiblePrimitive.CollapsibleTrigger>) {
-    return <CollapsiblePrimitive.CollapsibleTrigger data-slot="collapsible-trigger" {...props} />
+function CollapsibleTrigger({
+    ...props
+}: ComponentProps<typeof CollapsiblePrimitive.CollapsibleTrigger>) {
+    return (
+        <CollapsiblePrimitive.CollapsibleTrigger
+            data-slot="collapsible-trigger"
+            {...props}
+        />
+    )
 }
 
-function CollapsibleContent({ ...props }: ComponentProps<typeof CollapsiblePrimitive.CollapsibleContent>) {
-    return <CollapsiblePrimitive.CollapsibleContent data-slot="collapsible-content" {...props} />
+function CollapsibleContent({
+    ...props
+}: ComponentProps<typeof CollapsiblePrimitive.CollapsibleContent>) {
+    return (
+        <CollapsiblePrimitive.CollapsibleContent
+            data-slot="collapsible-content"
+            {...props}
+        />
+    )
 }
 
 export { Collapsible, CollapsibleTrigger, CollapsibleContent }

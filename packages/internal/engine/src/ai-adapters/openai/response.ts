@@ -2,14 +2,17 @@
  *
  */
 
-import { OpenAICompletionResponse, OpenAIResponseMetadata } from "./types"
+import type { OpenAICompletionResponse, OpenAIResponseMetadata } from "./types"
 
 /**
  * Creates a non-streaming, OpenAI-compatible completion object.
  *
  * @remarks As part of our abstraction, we set the usage to zero. We can wire up actual usage from the AI SDK if desired.
  */
-export function createOpenAICompletion(metadata: OpenAIResponseMetadata, content: string): OpenAICompletionResponse {
+export function createOpenAICompletion(
+    metadata: OpenAIResponseMetadata,
+    content: string
+): OpenAICompletionResponse {
     return {
         ...metadata,
 
@@ -29,12 +32,16 @@ export function createOpenAICompletion(metadata: OpenAIResponseMetadata, content
 /**
  * Converts a text stream to an OpenAI-compatible SSE format.
  */
-export function createOpenAIStreamResponse(textStream: AsyncIterable<string>, metadata: OpenAIResponseMetadata): Response {
+export function createOpenAIStreamResponse(
+    textStream: AsyncIterable<string>,
+    metadata: OpenAIResponseMetadata
+): Response {
     const stream = new ReadableStream({
         async start(controller) {
             const encoder = new TextEncoder()
 
-            const encode = (data: unknown) => encoder.encode(`data: ${JSON.stringify(data)}\n\n`)
+            const encode = (data: unknown) =>
+                encoder.encode(`data: ${JSON.stringify(data)}\n\n`)
 
             try {
                 for await (const chunk of textStream)
@@ -43,7 +50,13 @@ export function createOpenAIStreamResponse(textStream: AsyncIterable<string>, me
                             ...metadata,
 
                             object: "chat.completion.chunk",
-                            choices: [{ index: 0, delta: { content: chunk }, finish_reason: null }]
+                            choices: [
+                                {
+                                    index: 0,
+                                    delta: { content: chunk },
+                                    finish_reason: null
+                                }
+                            ]
                         })
                     )
 
@@ -52,7 +65,9 @@ export function createOpenAIStreamResponse(textStream: AsyncIterable<string>, me
                         ...metadata,
 
                         object: "chat.completion.chunk",
-                        choices: [{ index: 0, delta: {}, finish_reason: "stop" }]
+                        choices: [
+                            { index: 0, delta: {}, finish_reason: "stop" }
+                        ]
                     })
                 )
 

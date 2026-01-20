@@ -12,7 +12,11 @@ export const logger = createLogger({
     plugins: [
         //  We have to set the `cwd` manually because Raycast modifies `process.cwd()` to return `/` and `__dirname` to return the folder in the Raycast extensions directory.
 
-        logToFile({ enabled: config.logToFile, cwd: config.cwd, relativePath: "./.logs/app.log" })
+        logToFile({
+            enabled: config.logToFile,
+            cwd: config.cwd,
+            relativePath: "./.logs/app.log"
+        })
     ]
 })
 

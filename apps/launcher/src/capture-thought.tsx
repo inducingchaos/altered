@@ -2,6 +2,4 @@
  *
  */
 
-import { CaptureThoughtCommand } from "app/commands/capture-thought"
-
-export default CaptureThoughtCommand
+export { CaptureThoughtCommand as default } from "app/commands/capture-thought"

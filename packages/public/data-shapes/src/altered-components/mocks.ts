@@ -2,7 +2,7 @@
  *
  */
 
-import { ALTEREDComponent } from "./meta"
+import type { ALTEREDComponent } from "./meta"
 
 export const mockComponent = {
     id: "component-mock",

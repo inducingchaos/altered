@@ -2,7 +2,7 @@
  *
  */
 
-import { ENVConfig, envSchema } from "./schema"
+import { type ENVConfig, envSchema } from "./schema"
 
 const envConfig: ENVConfig = {
     config: {
@@ -38,10 +38,15 @@ const envConfig: ENVConfig = {
         //  @todo [P2] Separate the client/server variables, or adjust so 1) secrets aren't leaked to the server, and 2) the schema input/output types respect what's available to the client.
 
         vercel: {
-            environment: process.env.VERCEL_ENV ?? process.env.NEXT_PUBLIC_VERCEL_ENV,
+            environment:
+                process.env.VERCEL_ENV ?? process.env.NEXT_PUBLIC_VERCEL_ENV,
             url: process.env.VERCEL_URL ?? process.env.NEXT_PUBLIC_VERCEL_URL,
-            branchUrl: process.env.VERCEL_BRANCH_URL ?? process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL,
-            productionUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
+            branchUrl:
+                process.env.VERCEL_BRANCH_URL ??
+                process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL,
+            productionUrl:
+                process.env.VERCEL_PROJECT_PRODUCTION_URL ??
+                process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
         }
     }
 }
