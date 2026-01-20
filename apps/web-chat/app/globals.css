@@ -199,12 +199,13 @@
 
     body {
         @apply bg-background text-foreground;
-        overflow-x: hidden;
-        position: relative;
+        overflow: hidden;
+        height: 100dvh;
     }
 
     html {
-        overflow-x: hidden;
+        overflow: hidden;
+        height: 100%;
     }
 }
 
