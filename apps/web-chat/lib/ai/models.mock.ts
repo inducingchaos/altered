@@ -1,10 +1,10 @@
 import type { LanguageModel } from "ai"
 
-const mockResponses: Record<string, string> = {
+const mockResponses = {
     default: "This is a mock response for testing.",
     weather: "The weather in San Francisco is sunny and 72°F.",
     greeting: "Hello! How can I help you today?"
-}
+} as const
 
 const mockUsage = {
     inputTokens: { total: 10, noCache: 10, cacheRead: 0, cacheWrite: 0 },

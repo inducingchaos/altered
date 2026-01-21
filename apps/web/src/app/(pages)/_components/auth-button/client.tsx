@@ -54,7 +54,15 @@ export function AuthButtonWithoutSession({
         if (isAuthenticated) return "signedIn"
         return "signedOut"
     }
+    //  TODO [P2] Review this code.
+
+    useEffect(() => {
+        setIsWorking(false)
+    }, [])
+
     const buttonState = buttonStates[getButtonStateKey()]
+
+    if (!buttonState) return null
 
     const onClick = () => {
         if (isLoading) return
@@ -62,12 +70,6 @@ export function AuthButtonWithoutSession({
         setIsWorking(true)
         buttonState.onClick?.()
     }
-
-    //  TODO [P2] Review this code.
-
-    useEffect(() => {
-        setIsWorking(false)
-    }, [])
 
     return (
         <div className={className}>

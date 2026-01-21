@@ -29,10 +29,7 @@ import {
     IconShield,
     IconSun,
     IconUser
-} from "@tabler/icons-react"
-// biome-ignore lint/performance/noNamespaceImport: Third-party code - preserve functionality.
-import * as React from "react"
-import { Example, ExampleWrapper } from "@/components/example"
+} from "@altered-internal/interfaces/icons"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -44,9 +41,9 @@ import {
     AlertDialogMedia,
     AlertDialogTitle,
     AlertDialogTrigger
-} from "@/components/ui/alert-dialog"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+} from "@altered-internal/interfaces/shadcn/alert-dialog"
+import { Badge } from "@altered-internal/interfaces/shadcn/badge"
+import { Button } from "@altered-internal/interfaces/shadcn/button"
 import {
     Card,
     CardAction,
@@ -55,7 +52,7 @@ import {
     CardFooter,
     CardHeader,
     CardTitle
-} from "@/components/ui/card"
+} from "@altered-internal/interfaces/shadcn/card"
 import {
     Combobox,
     ComboboxContent,
@@ -63,7 +60,7 @@ import {
     ComboboxInput,
     ComboboxItem,
     ComboboxList
-} from "@/components/ui/combobox"
+} from "@altered-internal/interfaces/shadcn/combobox"
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -80,9 +77,13 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
     DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from "@altered-internal/interfaces/shadcn/dropdown-menu"
+import {
+    Field,
+    FieldGroup,
+    FieldLabel
+} from "@altered-internal/interfaces/shadcn/field"
+import { Input } from "@altered-internal/interfaces/shadcn/input"
 import {
     Select,
     SelectContent,
@@ -90,8 +91,11 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
+} from "@altered-internal/interfaces/shadcn/select"
+import { Textarea } from "@altered-internal/interfaces/shadcn/textarea"
+// biome-ignore lint/performance/noNamespaceImport: Third-party code - preserve functionality.
+import * as React from "react"
+import { Example, ExampleWrapper } from "@/components/example"
 
 export function ComponentExample() {
     return (

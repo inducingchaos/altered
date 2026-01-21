@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     if (documents.length > 0) {
         const [doc] = documents
 
-        if (doc.userId !== user.id) {
+        if (doc && doc.userId !== user.id) {
             return new ChatSDKError("forbidden:document").toResponse()
         }
     }
@@ -106,6 +106,10 @@ export async function DELETE(request: Request) {
     const documents = await getDocumentsById({ id })
 
     const [document] = documents
+
+    if (!document) {
+        return new ChatSDKError("not_found:document").toResponse()
+    }
 
     if (document.userId !== user.id) {
         return new ChatSDKError("forbidden:document").toResponse()

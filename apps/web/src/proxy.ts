@@ -155,6 +155,9 @@ const sessionMiddleware = createProxyMiddleware(
     { config: { matcher: ["/app/:path*"] } }
 )
 
-export const { proxy, config } = composeProxy({
+const result = composeProxy({
     middleware: [corsMiddleware, sessionMiddleware]
 })
+
+export const proxy = result.proxy
+export const config = result.config

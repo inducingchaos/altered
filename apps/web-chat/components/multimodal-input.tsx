@@ -484,6 +484,9 @@ function PureModelSelectorCompact({
         chatModels.find(m => m.id === selectedModelId) ??
         chatModels.find(m => m.id === DEFAULT_CHAT_MODEL) ??
         chatModels[0]
+
+    if (!selectedModel) return null
+
     const [provider] = selectedModel.id.split("/")
 
     // Provider display names
@@ -533,7 +536,7 @@ function PureModelSelectorCompact({
                                             value={model.id}
                                         >
                                             <ModelSelectorLogo
-                                                provider={logoProvider}
+                                                provider={logoProvider ?? ""}
                                             />
                                             <ModelSelectorName>
                                                 {model.name}

@@ -14,9 +14,12 @@ export const documentSchema = new Schema({
 })
 
 export function headingRule(level: number) {
+    const headingNode = documentSchema.nodes.heading
+    if (!headingNode) throw new Error("Heading node not found in schema")
+
     return textblockTypeInputRule(
         new RegExp(`^(#{1,${level}})\\s$`),
-        documentSchema.nodes.heading,
+        headingNode,
         () => ({ level })
     )
 }
