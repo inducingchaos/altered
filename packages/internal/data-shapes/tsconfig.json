@@ -1,4 +1,4 @@
 {
-    "extends": "@altered-internal/typescript/internal-package.json",
+    "extends": "@altered-internal/typescript/library.json",
     "include": ["src/**/*"]
 }

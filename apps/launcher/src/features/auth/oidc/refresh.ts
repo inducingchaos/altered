@@ -8,12 +8,26 @@ import { configureLogger } from "~/observability"
 
 const logger = configureLogger({ defaults: { scope: "oauth:refresh" } })
 
+export type RefreshTokensSuccess = {
+    success: true
+
+    tokens: OAuth.TokenResponse
+}
+
+export type RefreshTokensFailure = {
+    success: false
+
+    reason: "expired" | "unknown"
+}
+
+export type RefreshTokensResult = RefreshTokensSuccess | RefreshTokensFailure
+
 /**
  * Refreshes the access token using the refresh token.
  */
 export async function refreshTokens(
     refreshToken: string
-): Promise<OAuth.TokenResponse> {
+): Promise<RefreshTokensResult> {
     const params = new URLSearchParams()
 
     params.append("client_id", config.oauthClientId)
@@ -27,18 +41,32 @@ export async function refreshTokens(
     })
 
     if (!response.ok) {
-        const errorText = await response.text()
+        const responseBody = (await response.json()) as
+            | {
+                  error_description: string
+                  error: string
+              }
+            | unknown
 
         logger.error({
             title: "Failed to Refresh Tokens",
             data: {
                 status: response.status,
                 statusText: response.statusText,
-                body: errorText
+                responseBody
             }
         })
 
-        throw new Error(`Failed to refresh tokens: ${response.statusText}`)
+        const isExpiredToken =
+            responseBody &&
+            typeof responseBody === "object" &&
+            "error" in responseBody &&
+            responseBody.error === "invalid_grant"
+
+        return {
+            success: false,
+            reason: isExpiredToken ? "expired" : "unknown"
+        }
     }
 
     const tokenResponse = (await response.json()) as OAuth.TokenResponse
@@ -54,5 +82,8 @@ export async function refreshTokens(
         }
     })
 
-    return tokenResponse
+    return {
+        success: true,
+        tokens: tokenResponse
+    }
 }

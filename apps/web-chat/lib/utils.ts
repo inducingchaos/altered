@@ -82,7 +82,7 @@ export function getDocumentTimestampByIndex(
         return new Date()
     }
 
-    return documents[index].createdAt
+    return documents[index]?.createdAt ?? new Date()
 }
 
 export function getTrailingMessageId({

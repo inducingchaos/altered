@@ -7,6 +7,7 @@
 
         "dev": "turbo dev",
         "dev:web": "turbo dev --filter=altered-web",
+        "dev:web-v2": "turbo dev --filter=altered-web-v2",
         "dev:chat": "turbo dev --filter=altered-web --filter=altered-web-chat",
         "dev:launcher": "turbo dev --filter=altered-web --filter=altered-launcher",
 

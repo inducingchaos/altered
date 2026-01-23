@@ -50,24 +50,64 @@ export async function authenticateWithTokens(): Promise<string> {
 
                 refreshPromise = (async () => {
                     try {
-                        const refreshedTokens =
-                            await refreshTokens(refreshToken)
-                        await client.setTokens(refreshedTokens)
+                        const result = await refreshTokens(refreshToken)
+
+                        if (!result.success) {
+                            if (result.reason === "expired") {
+                                logger.log({
+                                    title: "Refresh Token Expired - Clearing Tokens"
+                                })
+
+                                await client.removeTokens()
+
+                                const { authorizationCode, authRequest } =
+                                    await requestAuthorizationCode(client)
+
+                                const tokenResponse =
+                                    await exchangeCodeForTokens(
+                                        authRequest,
+                                        authorizationCode
+                                    )
+
+                                await client.setTokens(tokenResponse)
+
+                                logger.log({
+                                    title: "Re-authenticated After Refresh Token Expiry",
+                                    data: {
+                                        expires_in: tokenResponse.expires_in,
+                                        hasAccessToken: Boolean(
+                                            tokenResponse.access_token
+                                        ),
+                                        hasRefreshToken: Boolean(
+                                            tokenResponse.refresh_token
+                                        )
+                                    }
+                                })
+
+                                return tokenResponse.access_token
+                            }
+
+                            throw new Error(
+                                "Failed to refresh tokens - unknown error."
+                            )
+                        }
+
+                        await client.setTokens(result.tokens)
 
                         logger.log({
                             title: "Refreshed and Stored Tokens",
                             data: {
-                                expires_in: refreshedTokens.expires_in,
+                                expires_in: result.tokens.expires_in,
                                 hasAccessToken: Boolean(
-                                    refreshedTokens.access_token
+                                    result.tokens.access_token
                                 ),
                                 hasRefreshToken: Boolean(
-                                    refreshedTokens.refresh_token
+                                    result.tokens.refresh_token
                                 )
                             }
                         })
 
-                        return refreshedTokens.access_token
+                        return result.tokens.access_token
                     } finally {
                         refreshPromise = null
                     }

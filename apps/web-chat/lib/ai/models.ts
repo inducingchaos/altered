@@ -77,13 +77,12 @@ export const chatModels: ChatModel[] = [
 ]
 
 // Group models by provider for UI
-export const modelsByProvider = chatModels.reduce(
+export const modelsByProvider = chatModels.reduce<Record<string, ChatModel[]>>(
     (acc, model) => {
-        if (!acc[model.provider]) {
-            acc[model.provider] = []
-        }
-        acc[model.provider].push(model)
+        const providerModels = acc[model.provider] ?? []
+        providerModels.push(model)
+        acc[model.provider] = providerModels
         return acc
     },
-    {} as Record<string, ChatModel[]>
+    {}
 )

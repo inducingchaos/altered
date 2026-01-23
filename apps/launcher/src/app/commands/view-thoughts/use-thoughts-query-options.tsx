@@ -29,6 +29,8 @@ export function useThoughtsQueryOptions(props?: { authToken: string | null }) {
             const lastThoughtIndex = thoughts.length - 1
             const lastThought = thoughts[lastThoughtIndex]
 
+            if (!lastThought) return null
+
             const cursorDef: CursorDefinition = {
                 field: "created-at",
                 value: lastThought.createdAt

@@ -90,6 +90,7 @@
         "zod": "^3.25.76"
     },
     "devDependencies": {
+        "@altered-internal/typescript": "workspace:*",
         "@playwright/test": "^1.50.1",
         "@tailwindcss/postcss": "^4.1.13",
         "@tailwindcss/typography": "^0.5.15",
