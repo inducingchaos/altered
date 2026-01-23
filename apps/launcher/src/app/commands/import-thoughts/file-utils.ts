@@ -4,14 +4,30 @@
 
 import { readdir, readFile, stat } from "node:fs/promises"
 import { basename, extname, join } from "node:path"
+import { configureLogger } from "~/observability"
+
+const logger = configureLogger({
+    defaults: { scope: "file-utils" }
+})
 
 /**
  * File types that can safely be read as text content.
  */
 const SUPPORTED_FILE_EXTENSIONS = new Set([".txt", ".md", ".markdown", ".mdc"])
 
+/**
+ * Filenames that should be completely ignored during file operations.
+ */
+const IGNORED_FILENAMES = new Set([".DS_Store"])
+
 export function isSupportedFileExtension(extension: string): boolean {
     return SUPPORTED_FILE_EXTENSIONS.has(extension.toLowerCase())
+}
+
+export function isIgnoredFile(filePath: string): boolean {
+    const filename = basename(filePath)
+
+    return IGNORED_FILENAMES.has(filename)
 }
 
 /**
@@ -75,9 +91,9 @@ export async function introspectDirectory(
 ): Promise<string[]> {
     const { recursively = true } = options ?? {}
 
-    const filePaths: string[] = []
+    async function traverseDirectory(currentPath: string): Promise<string[]> {
+        const filePaths: string[] = []
 
-    async function traverseDirectory(currentPath: string) {
         try {
             const dirEntries = await readdir(currentPath, {
                 withFileTypes: true
@@ -89,21 +105,35 @@ export async function introspectDirectory(
                 if (dirEntry.isDirectory() && recursively) {
                     const subDirPaths = await traverseDirectory(fullPath)
 
-                    filePaths.push(...subDirPaths)
-                } else if (dirEntry.isFile()) {
-                    filePaths.push(fullPath)
+                    return subDirPaths
                 }
+
+                if (dirEntry.isFile()) {
+                    if (isIgnoredFile(fullPath)) return []
+
+                    return [fullPath]
+                }
+
+                return []
             })
 
-            await Promise.all(promises)
+            const results = await Promise.all(promises)
+
+            for (const result of results) filePaths.push(...result)
         } catch (error) {
-            console.error(`Error reading directory "${currentPath}".`, error)
+            logger.error({
+                title: "Failed to Read Directory",
+                description: `Could not read directory "${currentPath}".`,
+                data: { error }
+            })
         }
 
         return filePaths
     }
 
-    return await traverseDirectory(path)
+    const result = await traverseDirectory(path)
+
+    return result
 }
 
 /**
