@@ -130,7 +130,8 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                     alias: thoughtInput.alias,
                     content: thoughtInput.content,
                     createdAt: new Date(),
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
+                    addedAt: new Date()
                 }
 
                 setPersistentQueryData(getThoughtsQueryKey, staleData => {

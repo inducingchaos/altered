@@ -4,36 +4,38 @@ packages:
   - packages/internal/*
   - tooling/*
 
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
-
 catalogs:
-  react:
-    react: 19.2.3
-    react-dom: 19.2.3
-    "@types/react": 19.2.3
-    "@types/react-dom": 19.2.3
-  next:
-    next: 16.1.4
-  drizzle:
-    drizzle-orm: 1.0.0-beta.2-86f844e
-    drizzle-kit: 1.0.0-beta.2-86f844e
+  ai:
+    '@openrouter/ai-sdk-provider': 2.0.0
+    ai: 6.0.42
   better-auth:
     better-auth: 1.4.5
+  drizzle:
+    drizzle-kit: 1.0.0-beta.9-e89174b
+    drizzle-orm: 1.0.0-beta.9-e89174b
+  next:
+    next: 16.1.4
   orpc:
-    "@orpc/arktype": 1.13.4
-    "@orpc/client": 1.13.4
-    "@orpc/contract": 1.13.4
-    "@orpc/openapi": 1.13.4
-    "@orpc/server": 1.13.4
-    "@orpc/tanstack-query": 1.13.4
-    "@orpc/zod": 1.13.4
+    '@orpc/arktype': 1.13.4
+    '@orpc/client': 1.13.4
+    '@orpc/contract': 1.13.4
+    '@orpc/openapi': 1.13.4
+    '@orpc/server': 1.13.4
+    '@orpc/tanstack-query': 1.13.4
+    '@orpc/zod': 1.13.4
+  react:
+    '@types/react': 19.2.3
+    '@types/react-dom': 19.2.3
+    react: 19.2.3
+    react-dom: 19.2.3
+  tanstack-query:
+    '@tanstack/query-persist-client-core': 5.91.15
+    '@tanstack/react-query': 5.90.16
   typescript:
     typescript: 5.9.3
-  tanstack-query:
-    "@tanstack/react-query": 5.90.16
-    "@tanstack/query-persist-client-core": 5.91.15
-  ai:
-    ai: 6.0.42
-    "@openrouter/ai-sdk-provider": 2.0.0
+
+onlyBuiltDependencies:
+  - esbuild
+  - msw
+  - sharp
+  - unrs-resolver

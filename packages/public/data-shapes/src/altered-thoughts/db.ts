@@ -9,16 +9,21 @@ export const thoughtSchema = type({
     alias: "string | null",
     content: "string | null",
     createdAt: "Date",
-    updatedAt: "Date"
+    updatedAt: "Date",
+    addedAt: "Date"
 })
 
+/**
+ * @remarks We may need to update this to allow submitting the creation/modified date from the client, as an optional parameter. `addedAt` should remain untouchable as the default indicator of when the Thought was added to the database.
+ */
 export const creatableThoughtSchema = thoughtSchema
-    .omit("createdAt", "updatedAt")
+    .omit("createdAt", "updatedAt", "addedAt")
     .merge({ "id?": "string" })
 export const updatableThoughtSchema = thoughtSchema.omit(
     "id",
     "createdAt",
-    "updatedAt"
+    "updatedAt",
+    "addedAt"
 )
 
 /**
