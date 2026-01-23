@@ -7,6 +7,9 @@ import { useActionPalette } from "app/commands/action-palette/state"
 import { useAuthentication } from "~/auth"
 import { ReturnToActionPaletteAction } from "./return-to-action-palette"
 
+/**
+ * @todo [P2] Keeping as list for now because it allows us to use `EmptyView`, but we could change this to a detail/form (or similar). Should be generic for use with other commands.
+ */
 export function AuthView(props?: { title?: string; description?: string }) {
     const {
         title = "Authenticate to Continue",
