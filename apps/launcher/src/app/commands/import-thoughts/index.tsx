@@ -2,6 +2,7 @@
  *
  */
 
+import type { CreatableThought } from "@altered/data/shapes"
 import {
     Action,
     ActionPanel,
@@ -15,8 +16,10 @@ import {
     showToast,
     Toast
 } from "@raycast/api"
-import { FormValidation, useForm } from "@raycast/utils"
+import { useForm } from "@raycast/utils"
+import { nanoid } from "nanoid"
 import { type ComponentProps, useCallback } from "react"
+import { api } from "~/api"
 import { useAuthentication } from "~/auth"
 import { configureLogger } from "~/observability"
 import {
@@ -26,6 +29,14 @@ import {
     withContext
 } from "~/shared/components"
 import { useActionPalette } from "../action-palette/state"
+import {
+    expandFilesystemPaths,
+    getFileExtension,
+    getFileMetadata,
+    getFilenameWithoutExtension,
+    isSupportedFileExtension,
+    readTextFile
+} from "./file-utils"
 
 const logger = configureLogger({
     defaults: { scope: "commands:import-thoughts" }
@@ -175,7 +186,15 @@ const UseFilenameAsAliasCheckbox = (
 
 type FileSourceBase = {
     path: string
+
+    /**
+     * The name of the file (without the extension).
+     */
     name: string
+
+    /**
+     * The file extension (with the dot).
+     */
     extension: string
 }
 
@@ -215,60 +234,120 @@ type IngestImportSourcesResult =
  * - [P3] Consider expanding support for unrecognized filetypes using an intermediary UI.
  * - [P3] Add content-based validation (check by decoding as UTF-8) in addition to extension whitelist.
  */
-// biome-ignore lint/suspicious/useAwait: Not implemented.
 async function ingestImportSources(
-    _sourcePaths: string[]
+    sourcePaths: string[]
 ): Promise<IngestImportSourcesResult> {
-    //  File validation and consumption logic will go here. The following code temporarily exists for UI testing.
+    const allFilePaths = await expandFilesystemPaths(sourcePaths)
 
-    const mockSupportedSource: SupportedFileSource = {
-        isSupported: true,
-        path: "path/to/supported.txt",
-        name: "supported.txt",
-        extension: "txt",
-        content: "Supported content",
-        metadata: {
-            createdAt: new Date(),
-            modifiedAt: new Date()
-        }
-    }
+    const sources = await Promise.all(
+        allFilePaths.map(async (filePath): Promise<FileSource> => {
+            const name = getFilenameWithoutExtension(filePath)
+            const extension = getFileExtension(filePath)
 
-    const mockUnsupportedSource: UnsupportedFileSource = {
-        isSupported: false,
-        path: "path/to/unsupported.txt",
-        name: "unsupported.txt",
-        extension: "txt"
-    }
+            if (!isSupportedFileExtension(extension))
+                return {
+                    isSupported: false,
 
-    const selector = Math.random()
+                    path: filePath,
+                    name,
+                    extension
+                }
 
-    if (selector < 1 / 4) {
+            try {
+                const [content, metadata] = await Promise.all([
+                    readTextFile(filePath),
+                    getFileMetadata(filePath)
+                ])
+
+                return {
+                    isSupported: true,
+
+                    path: filePath,
+                    name,
+                    extension,
+
+                    content,
+                    metadata
+                }
+            } catch (error) {
+                logger.error({
+                    title: "Failed to Read File",
+                    description: `Could not read file "${filePath}".`,
+                    data: { error }
+                })
+
+                return {
+                    isSupported: false,
+
+                    path: filePath,
+                    name,
+                    extension
+                }
+            }
+        })
+    )
+
+    const supportedSources = sources.filter(
+        (source): source is SupportedFileSource => source.isSupported
+    )
+
+    const unsupportedSources = sources.filter(
+        (source): source is UnsupportedFileSource => !source.isSupported
+    )
+
+    if (supportedSources.length === sources.length)
         return {
             supported: "all",
-            sources: [mockSupportedSource]
+            sources: supportedSources
         }
-    }
 
-    if (selector < 2 / 4) {
-        return {
-            supported: "some",
-            sources: [mockSupportedSource, mockUnsupportedSource]
-        }
-    }
-
-    if (selector < 3 / 4)
+    if (supportedSources.length === 0)
         return {
             supported: "none",
-            sources: [mockUnsupportedSource]
+            sources: unsupportedSources
         }
 
     return {
-        supported: "all",
-        sources: []
+        supported: "some",
+        sources
     }
 }
 
-function ImportThoughtsForm({ authToken: _authToken }: { authToken: string }) {
+async function showUnsupportedFilesAlert(
+    ingestedSources: IngestImportSourcesResult
+): Promise<boolean> {
+    const unsupportedFilesCount = ingestedSources.sources.filter(
+        source => !source.isSupported
+    ).length
+
+    const skippedFilesPart = `${unsupportedFilesCount} file${unsupportedFilesCount > 1 ? "s" : ""} will be skipped.`
+
+    const supportedFilesCount =
+        ingestedSources.sources.length - unsupportedFilesCount
+
+    const supportedFilesPart = `Continue with ${supportedFilesCount} supported file${supportedFilesCount > 1 ? "s" : ""}?`
+
+    const confirmationMessage = `${skippedFilesPart} ${supportedFilesPart}`
+
+    const shouldContinue = await confirmAlert({
+        title: "Unsupported Files Found",
+        message: confirmationMessage,
+
+        primaryAction: {
+            title: "Continue",
+            style: Alert.ActionStyle.Default
+        },
+
+        dismissAction: {
+            title: "Cancel",
+            style: Alert.ActionStyle.Cancel
+        }
+    })
+
+    return shouldContinue
+}
+
+function ImportThoughtsForm({ authToken }: { authToken: string }) {
     const actionPaletteContext = useActionPalette({ safe: true })
 
     const { handleSubmit, itemProps } = useForm<ImportThoughtsFormValues>({
@@ -281,7 +360,10 @@ function ImportThoughtsForm({ authToken: _authToken }: { authToken: string }) {
         },
 
         validation: {
-            importSources: FormValidation.Required
+            importSources: value =>
+                value?.length
+                    ? undefined
+                    : "At least one import source is required."
         },
 
         onSubmit: async formValues => {
@@ -309,33 +391,8 @@ function ImportThoughtsForm({ authToken: _authToken }: { authToken: string }) {
             }
 
             if (sourcesResult.supported === "some") {
-                const unsupportedFilesCount = sourcesResult.sources.filter(
-                    source => !source.isSupported
-                ).length
-
-                const skippedFilesPart = `${unsupportedFilesCount} file${unsupportedFilesCount > 1 ? "s" : ""} will be skipped.`
-
-                const supportedFilesCount =
-                    sourcesResult.sources.length - unsupportedFilesCount
-
-                const supportedFilesPart = `Continue with ${supportedFilesCount} supported file${supportedFilesCount > 1 ? "s" : ""}?`
-
-                const confirmationMessage = `${skippedFilesPart} ${supportedFilesPart}`
-
-                const shouldContinue = await confirmAlert({
-                    title: "Unsupported Files Found",
-                    message: confirmationMessage,
-
-                    primaryAction: {
-                        title: "Continue",
-                        style: Alert.ActionStyle.Default
-                    },
-
-                    dismissAction: {
-                        title: "Cancel",
-                        style: Alert.ActionStyle.Cancel
-                    }
-                })
+                const shouldContinue =
+                    await showUnsupportedFilesAlert(sourcesResult)
 
                 if (!shouldContinue) return
             }
@@ -362,33 +419,64 @@ function ImportThoughtsForm({ authToken: _authToken }: { authToken: string }) {
                 title: "Importing Thoughts..."
             })
 
-            //  An API call should be made here.
+            const supportedSources =
+                sourcesResult.supported === "all"
+                    ? sourcesResult.sources
+                    : sourcesResult.sources.filter(
+                          (source): source is SupportedFileSource =>
+                              source.isSupported
+                      )
 
-            await new Promise(resolve => setTimeout(resolve, 3000))
+            const thoughtsToCreate: CreatableThought[] = supportedSources.map(
+                ({ name, content, metadata }) => ({
+                    id: nanoid(),
 
-            const mockImportSuccess: boolean = true
+                    alias: formValues.useFilenameAsAlias ? name : null,
+                    content,
 
-            //  Client-side character/file count logic should go somewhere here.
+                    ...(formValues.preserveCreatedDate &&
+                        metadata.createdAt && {
+                            createdAt: metadata.createdAt
+                        }),
 
-            const mockImportCount: number = 17
-            const mockImportTotalChars: number = 1705
+                    ...(formValues.preserveModifiedDate &&
+                        metadata.modifiedAt && {
+                            updatedAt: metadata.modifiedAt
+                        })
+                })
+            )
 
-            if (actionPaletteContext) actionPaletteContext.resetState()
-            else popToRoot({ clearSearchBar: true })
+            const totalContentLength = thoughtsToCreate.reduce(
+                (sum, thought) => sum + (thought.content?.length ?? 0),
+                0
+            )
 
-            if (!mockImportSuccess) {
+            const { error } = await api.thoughts.createMany(
+                { thoughts: thoughtsToCreate },
+                { context: { authToken } }
+            )
+
+            if (error) {
+                logger.error({
+                    title: "Failed to Import Thoughts",
+                    description: error.message,
+                    data: { cause: error.cause }
+                })
+
                 await showToast({
                     style: Toast.Style.Failure,
                     title: "Failed to Import Thoughts",
-                    message:
-                        "An unknown error occurred. Please try again later."
+                    message: "Please try again later."
                 })
 
                 return
             }
 
-            const thoughtsCountPart = `Imported ${mockImportCount} thought${mockImportCount > 1 ? "s" : ""}`
-            const thoughtsCharsPart = `(${mockImportTotalChars.toLocaleString()} characters).`
+            if (actionPaletteContext) actionPaletteContext.resetState()
+            else popToRoot({ clearSearchBar: true })
+
+            const thoughtsCountPart = `Imported ${thoughtsToCreate.length} thought${thoughtsToCreate.length > 1 ? "s" : ""}`
+            const thoughtsCharsPart = `(${totalContentLength.toLocaleString()} characters).`
 
             const message = `${thoughtsCountPart} ${thoughtsCharsPart}`
 
@@ -400,7 +488,11 @@ function ImportThoughtsForm({ authToken: _authToken }: { authToken: string }) {
 
             logger.log({
                 title: "Import Complete",
-                description: message
+                description: message,
+                data: {
+                    count: thoughtsToCreate.length,
+                    totalContentLength
+                }
             })
         }
     })

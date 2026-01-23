@@ -3,6 +3,7 @@
  */
 
 import {
+    createManyThoughts,
     createThought,
     deleteThought,
     getLatestThought,
@@ -44,6 +45,20 @@ export const createThoughtProcedure =
         })
     )
 
+export const createManyThoughtsProcedure =
+    enrichedRouteFactory.thoughts.createMany.handler(
+        async ({ input, context }) => ({
+            thoughts: await createManyThoughts({
+                thoughts: input.thoughts.map(thought => ({
+                    brainId: context.app.selectedBrainId,
+                    kind: null,
+                    ...thought
+                })),
+                db: context.db
+            })
+        })
+    )
+
 export const getLatestThoughtProcedure =
     enrichedRouteFactory.thoughts.getLatest.handler(async ({ context }) => ({
         thought: await getLatestThought({
@@ -78,6 +93,7 @@ export const thoughtsRouter = {
     get: getThoughtsProcedure,
     find: findThoughtProcedure,
     create: createThoughtProcedure,
+    createMany: createManyThoughtsProcedure,
     getLatest: getLatestThoughtProcedure,
     delete: deleteThoughtProcedure,
     update: updateThoughtProcedure

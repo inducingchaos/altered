@@ -2,20 +2,19 @@
  *
  */
 
-import { creatableThoughtSchema, thoughtSchema } from "@altered/data/shapes"
+import { thoughtSchema } from "@altered/data/shapes"
 
 export const internalThoughtSchema = thoughtSchema.merge({
     brainId: "string",
     kind: '"dataset" | "attribute" | "preference" | null'
 })
 
-/**
- * @remarks We may want to update this, see {@link creatableThoughtSchema}.
- */
 export const internalCreatableThoughtSchema = internalThoughtSchema
-    .omit("createdAt", "updatedAt", "addedAt")
+    .omit("addedAt")
     .merge({
-        "id?": "string"
+        "id?": "string",
+        "createdAt?": "Date",
+        "updatedAt?": "Date"
     })
 
 export type InternalThought = typeof internalThoughtSchema.infer
