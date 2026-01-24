@@ -45,6 +45,22 @@ export const thoughtsContract = {
             })
         ),
 
+    createMany: contractFactory
+        .route({
+            tags: ["internal"],
+            path: "/create-many"
+        })
+        .input(
+            type({
+                thoughts: creatableThoughtSchema.array()
+            })
+        )
+        .output(
+            type({
+                thoughts: thoughtSchema.array()
+            })
+        ),
+
     update: contractFactory
         .route({ tags: ["internal"] })
         .input(

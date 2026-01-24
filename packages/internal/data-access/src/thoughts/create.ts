@@ -28,7 +28,7 @@ export async function createThought({
 
         if (!createdThought)
             throw new ORPCError("INTERNAL_SERVER_ERROR", {
-                message: "Failed to create thought"
+                message: "Failed to create thought."
             })
 
         return createdThought

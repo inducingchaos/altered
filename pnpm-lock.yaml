@@ -18,11 +18,11 @@ catalogs:
       version: 1.4.5
   drizzle:
     drizzle-kit:
-      specifier: 1.0.0-beta.2-86f844e
-      version: 1.0.0-beta.2-86f844e
+      specifier: 1.0.0-beta.9-e89174b
+      version: 1.0.0-beta.9-e89174b
     drizzle-orm:
-      specifier: 1.0.0-beta.2-86f844e
-      version: 1.0.0-beta.2-86f844e
+      specifier: 1.0.0-beta.9-e89174b
+      version: 1.0.0-beta.9-e89174b
   next:
     next:
       specifier: 16.1.4
@@ -306,7 +306,7 @@ importers:
         version: 17.2.3
       drizzle-orm:
         specifier: catalog:drizzle
-        version: 1.0.0-beta.2-86f844e(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@upstash/redis@1.36.1)(mssql@11.0.1)(postgres@3.4.8)
+        version: 1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@upstash/redis@1.36.1)(mssql@11.0.1)(postgres@3.4.8)
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@19.2.3)
@@ -382,7 +382,7 @@ importers:
         version: 19.2.3(@types/react@19.2.3)
       drizzle-kit:
         specifier: catalog:drizzle
-        version: 1.0.0-beta.2-86f844e
+        version: 1.0.0-beta.9-e89174b
       tailwindcss:
         specifier: ^4
         version: 4.1.18
@@ -826,7 +826,7 @@ importers:
         version: link:../../public/data-shapes
       drizzle-orm:
         specifier: catalog:drizzle
-        version: 1.0.0-beta.2-86f844e(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@upstash/redis@1.36.1)(mssql@11.0.1)(postgres@3.4.8)
+        version: 1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@upstash/redis@1.36.1)(mssql@11.0.1)(postgres@3.4.8)
       postgres:
         specifier: ^3.4.7
         version: 3.4.8
@@ -839,7 +839,7 @@ importers:
         version: 17.2.3
       drizzle-kit:
         specifier: catalog:drizzle
-        version: 1.0.0-beta.2-86f844e
+        version: 1.0.0-beta.9-e89174b
       tsx:
         specifier: ^4.20.6
         version: 4.21.0
@@ -4200,15 +4200,17 @@ packages:
     resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
     engines: {node: '>=12'}
 
-  drizzle-kit@1.0.0-beta.2-86f844e:
-    resolution: {integrity: sha512-wRllWKoXyazP8D8jNOKBsjC33ZmZr85jwhxf9GTjNekPPXvsUVmflkRiht/853Gzf6WFxCzeCaGDm7qyUegyTA==}
+  drizzle-kit@1.0.0-beta.9-e89174b:
+    resolution: {integrity: sha512-Xrw3k8E2CbSZr+kqe3k5W4oxd2fbEyczjKtyGIkAq0x9Wqpa/VtAT6Mkh83sIzqG4OSN7lOoUafsDxSE/AR7RA==}
     hasBin: true
 
-  drizzle-orm@1.0.0-beta.2-86f844e:
-    resolution: {integrity: sha512-h7I6sNqAXzzNJ1crmpjjfj6lwCgXMCkl4OV4DwmQQlbBRW1h3/aqpZSROd4XwihAKKZ3qDMFpX4TP+vjveh8vQ==}
+  drizzle-orm@1.0.0-beta.9-e89174b:
+    resolution: {integrity: sha512-B5KR/qYMZ0JMOurK+0xi1ObpOQcgrjaC9wHUiU2eTJjLemuh2CoQIw6yur68NxZG6Xcd0b9qghUNC/78/bEfbg==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
+      '@effect/sql': ^0.48.5
+      '@effect/sql-pg': ^0.49.7
       '@electric-sql/pglite': '>=0.2.0'
       '@libsql/client': '>=0.10.0'
       '@libsql/client-wasm': '>=0.10.0'
@@ -4244,6 +4246,10 @@ packages:
       '@aws-sdk/client-rds-data':
         optional: true
       '@cloudflare/workers-types':
+        optional: true
+      '@effect/sql':
+        optional: true
+      '@effect/sql-pg':
         optional: true
       '@electric-sql/pglite':
         optional: true
@@ -4379,11 +4385,6 @@ packages:
   es-object-atoms@1.1.1:
     resolution: {integrity: sha512-FGgH2h8zKNim9ljj7dankFPcICIK9Cp5bm+c2gQSYePhpaG5+esrLODihIorn+Pe6FGJzWhXQotPv73jTaldXA==}
     engines: {node: '>= 0.4'}
-
-  esbuild-register@3.6.0:
-    resolution: {integrity: sha512-H2/S7Pm8a9CL1uhp9OvjwrBh5Pvx0H8qVOxNu8Wed9Y7qv56MPtq+GGM8RJpq6glYJn9Wspr8uw7l55uyinNeg==}
-    peerDependencies:
-      esbuild: '>=0.12 <1'
 
   esbuild@0.25.12:
     resolution: {integrity: sha512-bbPBYYrtZbkt6Os6FiTLCTFxvq4tt3JKall1vRwshA3fdVztsLAatFaZobhkBC8/BrPetoa0oksYoKXoG4ryJg==}
@@ -9857,16 +9858,14 @@ snapshots:
 
   dotenv@17.2.3: {}
 
-  drizzle-kit@1.0.0-beta.2-86f844e:
+  drizzle-kit@1.0.0-beta.9-e89174b:
     dependencies:
       '@drizzle-team/brocli': 0.11.0
       '@js-temporal/polyfill': 0.5.1
       esbuild: 0.25.12
-      esbuild-register: 3.6.0(esbuild@0.25.12)
-    transitivePeerDependencies:
-      - supports-color
+      tsx: 4.21.0
 
-  drizzle-orm@1.0.0-beta.2-86f844e(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@upstash/redis@1.36.1)(mssql@11.0.1)(postgres@3.4.8):
+  drizzle-orm@1.0.0-beta.9-e89174b(@opentelemetry/api@1.9.0)(@types/mssql@9.1.9)(@upstash/redis@1.36.1)(mssql@11.0.1)(postgres@3.4.8):
     dependencies:
       '@types/mssql': 9.1.9
       mssql: 11.0.1
@@ -9940,13 +9939,6 @@ snapshots:
   es-object-atoms@1.1.1:
     dependencies:
       es-errors: 1.3.0
-
-  esbuild-register@3.6.0(esbuild@0.25.12):
-    dependencies:
-      debug: 4.4.3(supports-color@8.1.1)
-      esbuild: 0.25.12
-    transitivePeerDependencies:
-      - supports-color
 
   esbuild@0.25.12:
     optionalDependencies:

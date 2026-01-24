@@ -10,9 +10,11 @@ export const internalThoughtSchema = thoughtSchema.merge({
 })
 
 export const internalCreatableThoughtSchema = internalThoughtSchema
-    .omit("createdAt", "updatedAt")
+    .omit("addedAt")
     .merge({
-        "id?": "string"
+        "id?": "string",
+        "createdAt?": "Date",
+        "updatedAt?": "Date"
     })
 
 export type InternalThought = typeof internalThoughtSchema.infer
@@ -27,5 +29,6 @@ export const internalTestThought = {
     alias: "Test Thought",
     content: "This is a test thought.",
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
+    addedAt: new Date()
 } satisfies InternalThought

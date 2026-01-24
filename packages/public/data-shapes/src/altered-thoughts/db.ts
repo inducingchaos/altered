@@ -9,16 +9,20 @@ export const thoughtSchema = type({
     alias: "string | null",
     content: "string | null",
     createdAt: "Date",
-    updatedAt: "Date"
+    updatedAt: "Date",
+    addedAt: "Date"
 })
 
-export const creatableThoughtSchema = thoughtSchema
-    .omit("createdAt", "updatedAt")
-    .merge({ "id?": "string" })
+export const creatableThoughtSchema = thoughtSchema.omit("addedAt").merge({
+    "id?": "string",
+    "createdAt?": "Date",
+    "updatedAt?": "Date"
+})
 export const updatableThoughtSchema = thoughtSchema.omit(
     "id",
     "createdAt",
-    "updatedAt"
+    "updatedAt",
+    "addedAt"
 )
 
 /**

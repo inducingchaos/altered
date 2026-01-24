@@ -33,6 +33,12 @@
             "mode": "view"
         },
         {
+            "name": "import-thoughts",
+            "title": "Import Thoughts",
+            "description": "Import Thoughts from documents on your computer.",
+            "mode": "view"
+        },
+        {
             "name": "connect-to-ai-provider",
             "title": "Connect to AI Provider",
             "description": "Get configuration values to use ALTERED AI in other applications.",

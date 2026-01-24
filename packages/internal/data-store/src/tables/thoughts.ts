@@ -17,7 +17,8 @@ export const thoughts = pgTable(
         updatedAt: timestamp()
             .notNull()
             .defaultNow()
-            .$onUpdateFn(() => new Date())
+            .$onUpdateFn(() => new Date()),
+        addedAt: timestamp().notNull().defaultNow()
     },
     table => [
         index("thoughts_brain_id_created_at_idx").on(
