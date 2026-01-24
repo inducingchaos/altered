@@ -10,22 +10,49 @@ type ProxyMiddlewareHandler = (
     request: NextRequest
 ) => NextResponse | null | Promise<NextResponse | null>
 
-type ProxyMiddlewareOptions = {
-    config?: ProxyConfig
+type ProxyMiddlewareOptions<Config extends ProxyConfig = ProxyConfig> = {
+    config?: Config
 }
 
-type MergeProxyConfigs = (prev: ProxyConfig, next: ProxyConfig) => ProxyConfig
+type ProxyMiddleware<Config extends ProxyConfig = ProxyConfig> = {
+    handler: ProxyMiddlewareHandler
+    options?: ProxyMiddlewareOptions<Config>
+}
 
-type ComposeProxyOptions = {
-    middleware: ReturnType<typeof createProxyMiddleware>[]
+type ExtractConfig<Middleware> =
+    Middleware extends ProxyMiddleware<infer Config> ? Config : never
+
+type MergeMatchers<Middleware extends readonly ProxyMiddleware[]> =
+    Middleware extends readonly [
+        infer FirstMiddleware extends ProxyMiddleware,
+        ...infer RestMiddleware extends ProxyMiddleware[]
+    ]
+        ? [
+              ...(ExtractConfig<FirstMiddleware> extends {
+                  matcher: infer Matcher extends readonly unknown[]
+              }
+                  ? Matcher
+                  : []),
+              ...MergeMatchers<RestMiddleware>
+          ]
+        : []
+
+type TupleToUnion<Tuple extends readonly unknown[]> = Tuple[number]
+
+type MergeConfigsType<Middleware extends readonly ProxyMiddleware[]> = {
+    matcher: readonly TupleToUnion<MergeMatchers<Middleware>>[]
+}
+
+type ComposeProxyOptions<Middleware extends readonly ProxyMiddleware[]> = {
+    middleware: Middleware
 
     /**
      * Customize the way middleware configurations are merged.
      */
-    mergeConfigs?: MergeProxyConfigs
+    mergeConfigs?: (prev: ProxyConfig, next: ProxyConfig) => ProxyConfig
 }
 
-const mergeConfigs: MergeProxyConfigs = (prev, next) => ({
+const mergeConfigs = (prev: ProxyConfig, next: ProxyConfig): ProxyConfig => ({
     ...prev,
     ...next,
 
@@ -37,17 +64,24 @@ const mergeConfigs: MergeProxyConfigs = (prev, next) => ({
  *
  * @remarks Return `null` to continue, or a `NextResponse` to short-circuit.
  */
-function createProxyMiddleware(
+function createProxyMiddleware<const Options extends ProxyMiddlewareOptions>(
     handler: ProxyMiddlewareHandler,
-    options?: ProxyMiddlewareOptions
+    options?: Options
 ) {
-    return { handler, options }
+    type InferredConfig =
+        Options extends ProxyMiddlewareOptions<infer Config>
+            ? Config
+            : ProxyConfig
+
+    return { handler, options } as ProxyMiddleware<InferredConfig>
 }
 
 /**
  * Composes multiple `createProxyMiddleware` instances to produce a single proxy handler and config object to export.
  */
-function composeProxy(options: ComposeProxyOptions) {
+function composeProxy<const Middleware extends readonly ProxyMiddleware[]>(
+    options: ComposeProxyOptions<Middleware>
+) {
     const proxy: ProxyMiddlewareHandler = async request => {
         for (const middleware of options.middleware) {
             const response = await middleware.handler(request)
@@ -60,13 +94,20 @@ function composeProxy(options: ComposeProxyOptions) {
 
     let config: ProxyConfig = {}
 
-    const handleMergeConfigs = options.mergeConfigs ?? mergeConfigs
+    const merge = options.mergeConfigs ?? mergeConfigs
 
     for (const middleware of options.middleware)
         if (middleware.options?.config)
-            config = handleMergeConfigs(config, middleware.options.config)
+            config = merge(config, middleware.options.config)
 
-    return { proxy, config }
+    return {
+        proxy,
+
+        /**
+         * Since the Next.js proxy config is required to be a static object, this is best used in a `satisfies` check on the config object to ensure consistency across multiple middleware.
+         */
+        config: config as unknown as MergeConfigsType<Middleware>
+    }
 }
 
 /**
@@ -155,6 +196,18 @@ const sessionMiddleware = createProxyMiddleware(
     { config: { matcher: ["/app/:path*"] } }
 )
 
-export const { proxy, config } = composeProxy({
+export const comp = composeProxy({
     middleware: [corsMiddleware, sessionMiddleware]
 })
+
+/**
+ * @remarks Compiler can't detect deconstructed exports from `composeProxy` so this is needed.
+ */
+export const proxy = comp.proxy
+
+/**
+ * @remarks The proxy config must be a static object, so we redefine it and use a satisfies check to maintain consistency.
+ */
+export const config = {
+    matcher: ["/app/:path*", "/api/auth/:path*"]
+} satisfies typeof comp.config
