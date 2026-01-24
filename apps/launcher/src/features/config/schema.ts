@@ -36,6 +36,8 @@ export const configSchema = z
         appIcon: z.string(),
         appVersion: z.string(),
 
+        apiDelay: z.number().optional(),
+
         themeIcons: z.boolean(),
 
         listPaginationLimit: z.number(),

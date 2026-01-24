@@ -45,6 +45,13 @@
             "mode": "view"
         },
         {
+            "name": "menu-bar-text",
+            "title": "Activate Menu Bar Text",
+            "description": "Add dynamic text to your menu bar.",
+            "mode": "menu-bar",
+            "interval": "1m"
+        },
+        {
             "name": "get-latest-thought",
             "title": "[DEV] Get Latest Thought",
             "description": "Get the latest thought from your ALTERED brain.",

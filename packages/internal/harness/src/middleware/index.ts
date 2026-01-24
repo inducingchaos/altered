@@ -3,6 +3,7 @@
  */
 
 export * from "./app-context-provider"
+export * from "./artificial-delay"
 export * from "./check-version"
 export * from "./db-provider"
 export * from "./log-error"

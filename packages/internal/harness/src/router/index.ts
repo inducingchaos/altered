@@ -3,6 +3,7 @@
  */
 
 import { apiFactory } from "../factory"
+import { aggregateRouter } from "./aggregate"
 import { aiRouter } from "./ai"
 import { authRouter } from "./auth"
 import { experimentalRouter } from "./experimental"
@@ -14,6 +15,7 @@ export const router = apiFactory.router({
     thoughts: thoughtsRouter,
     ai: aiRouter,
 
+    aggregate: aggregateRouter,
     experimental: experimentalRouter
 })
 

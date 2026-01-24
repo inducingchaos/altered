@@ -21,6 +21,8 @@ export const configDef = {
     appIcon: "altered/extension-icon.png",
     appVersion: "0.1.0",
 
+    apiDelay: 0,
+
     themeIcons: false,
 
     listPaginationLimit: 25,
