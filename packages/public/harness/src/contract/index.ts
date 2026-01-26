@@ -8,6 +8,7 @@ import type {
     InferContractRouterInputs,
     InferContractRouterOutputs
 } from "@orpc/contract"
+import { aggregateContract } from "./aggregate"
 import { aiContract } from "./ai"
 import { authContract } from "./auth"
 import { experimentalContract } from "./experimental"
@@ -19,6 +20,7 @@ export const contract = {
     thoughts: thoughtsContract,
     ai: aiContract,
 
+    aggregate: aggregateContract,
     experimental: experimentalContract
 }
 

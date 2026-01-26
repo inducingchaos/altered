@@ -11,6 +11,7 @@ import { ORPCError, onError, ValidationError } from "@orpc/server"
 import { apiFactory } from "../factory"
 import {
     appContextProvider,
+    artificialDelay,
     checkVersion,
     dbProvider,
     logError,
@@ -41,6 +42,7 @@ const logValidationError = (error: unknown) => {
 
 const routeMiddleware = logError
     .concat(onError(logValidationError))
+    .concat(artificialDelay)
     .concat(dbProvider)
 const clientRouteMiddleware = routeMiddleware.concat(checkVersion)
 const authenticatedRouteMiddleware = clientRouteMiddleware.concat(requireAuth)
