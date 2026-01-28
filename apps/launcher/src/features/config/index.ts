@@ -3,7 +3,7 @@
  * @todo [P0] Remove the `environment` property as it should auto-change based on the `NODE_ENV` environment variable.
  */
 
-import { type ConfigDef, configSchema } from "./schema"
+import { type ConfigDefinition, configFactory } from "./schema"
 
 export const configDef = {
     cwd: "/Users/inducingchaos/Workspace/containers/altered/apps/launcher",
@@ -36,6 +36,8 @@ export const configDef = {
 
     oauthClientId: "altered-launcher",
     oauthClientScope: "openid profile email offline_access"
-} satisfies ConfigDef
+} as const satisfies ConfigDefinition
 
-export const config = configSchema.parse(configDef)
+export const config = configFactory.create(configDef)
+
+export type Config = typeof config
