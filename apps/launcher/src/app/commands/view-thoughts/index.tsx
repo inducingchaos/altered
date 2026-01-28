@@ -16,7 +16,7 @@ import {
     Toast
 } from "@raycast/api"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { usePersistQuery } from "~/api"
 import { api as reactApi } from "~/api/react"
 import {
@@ -27,6 +27,7 @@ import { useAuthentication } from "~/auth"
 import { config } from "~/config"
 import { configureLogger } from "~/observability"
 import { ReturnToActionPaletteAction, withContext } from "~/shared/components"
+import { formatDate } from "~/shared/utils"
 import { useActionPalette } from "../action-palette/state"
 import { CaptureThought } from "../capture-thought"
 import { EditThought } from "../edit-thought"
@@ -107,6 +108,31 @@ function ThoughtsList({ authToken }: { authToken: string }) {
         refresh,
         pagination
     } = useThoughts()
+
+    const accessoriesCache = useRef(new Map<string, List.Item.Accessory[]>())
+
+    const getAccessories = useCallback(
+        (thought: Thought) => {
+            if (isShowingInspector) return null
+
+            if (!accessoriesCache.current.has(thought.id))
+                accessoriesCache.current.set(thought.id, [
+                    {
+                        date: thought.createdAt,
+                        tooltip: `Created: ${thought.createdAt.toLocaleString()}`
+                    }
+                ])
+
+            const cached = accessoriesCache.current.get(thought.id)
+            if (!cached)
+                throw new Error(
+                    `Accessories cache miss for thought ID: '${thought.id}'. This should never happen.`
+                )
+
+            return cached
+        },
+        [isShowingInspector]
+    )
 
     const createMutation = useMutation(
         reactApi.thoughts.create.mutationOptions({
@@ -386,6 +412,65 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 
     const actionPaletteContext = useActionPalette({ safe: true })
 
+    const handleCreateThought = useCallback(
+        (thought: CreatableThought) => createMutation.mutate(thought),
+        [createMutation.mutate]
+    )
+
+    const handleUpdateThought = useCallback<HandleUpdateThought>(
+        props => updateMutation.mutate(props),
+        [updateMutation.mutate]
+    )
+
+    const handleDeleteThought = useCallback<HandleDeleteThought>(
+        async (thought, props) => {
+            const { showConfirmation = true } = props ?? {}
+
+            if (showConfirmation) {
+                const thoughtSummary = thought.alias ?? thought.content ?? null
+                const thoughtDescriptor = thoughtSummary
+                    ? `"${thoughtSummary.length > 10 ? `${thoughtSummary.slice(0, 16)}...` : thoughtSummary}"`
+                    : "this thought"
+
+                const isConfirmed = await confirmAlert({
+                    title: "Delete Thought",
+                    message: `Are you sure you want to delete ${thoughtDescriptor}? This action cannot be undone.`,
+                    icon: Icon.Trash,
+
+                    primaryAction: {
+                        title: "Delete",
+                        style: Alert.ActionStyle.Destructive
+                    },
+
+                    /**
+                     * @remarks Don't use, it doesn't work. Shows a nice checkbox but it shows up unchecked even after checking it. Could have to do with our dynamic confirmation message - but this is definitely a bug. Confirmation preferences should not be stored based on the content of the confirmation message.
+                     */
+                    rememberUserChoice: false
+                })
+
+                if (!isConfirmed) return
+            }
+
+            deleteMutation.mutate({ id: thought.id })
+
+            return
+        },
+        [deleteMutation.mutate]
+    )
+
+    const actionProps = useMemo<ThoughtListActionsProps>(
+        () => ({
+            isShowingInspector,
+            setIsShowingInspector,
+            setIsCreatingThought,
+            setEditingThoughtId,
+            handleDeleteThought,
+
+            refreshThoughts: refresh
+        }),
+        [isShowingInspector, handleDeleteThought, refresh]
+    )
+
     const isFetchingMutation =
         createMutation.isPending ||
         updateMutation.isPending ||
@@ -410,45 +495,6 @@ function ThoughtsList({ authToken }: { authToken: string }) {
         console.error(error)
     }
 
-    const handleCreateThought = (thought: CreatableThought) =>
-        createMutation.mutate(thought)
-
-    const handleUpdateThought: HandleUpdateThought = props =>
-        updateMutation.mutate(props)
-
-    const handleDeleteThought: HandleDeleteThought = async (thought, props) => {
-        const { showConfirmation = true } = props ?? {}
-
-        if (showConfirmation) {
-            const thoughtSummary = thought.alias ?? thought.content ?? null
-            const thoughtDescriptor = thoughtSummary
-                ? `"${thoughtSummary.length > 10 ? `${thoughtSummary.slice(0, 16)}...` : thoughtSummary}"`
-                : "this thought"
-
-            const isConfirmed = await confirmAlert({
-                title: "Delete Thought",
-                message: `Are you sure you want to delete ${thoughtDescriptor}? This action cannot be undone.`,
-                icon: Icon.Trash,
-
-                primaryAction: {
-                    title: "Delete",
-                    style: Alert.ActionStyle.Destructive
-                },
-
-                /**
-                 * @remarks Don't use, it doesn't work. Shows a nice checkbox but it shows up unchecked even after checking it. Could have to do with our dynamic confirmation message - but this is definitely a bug. Confirmation preferences should not be stored based on the content of the confirmation message.
-                 */
-                rememberUserChoice: false
-            })
-
-            if (!isConfirmed) return
-        }
-
-        deleteMutation.mutate({ id: thought.id })
-
-        return
-    }
-
     if (isCreatingThought)
         return (
             <CaptureThought
@@ -471,16 +517,6 @@ function ThoughtsList({ authToken }: { authToken: string }) {
             />
         )
 
-    const actionProps: ThoughtListActionsProps = {
-        isShowingInspector,
-        setIsShowingInspector,
-        setIsCreatingThought,
-        setEditingThoughtId,
-        handleDeleteThought,
-
-        refreshThoughts: refresh
-    }
-
     return (
         <List
             actions={<ThoughtListActions {...actionProps} />}
@@ -497,16 +533,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 
             {thoughts?.map(thought => (
                 <List.Item
-                    accessories={
-                        isShowingInspector
-                            ? null
-                            : [
-                                  {
-                                      date: thought.createdAt,
-                                      tooltip: `Created: ${thought.createdAt.toLocaleString()}`
-                                  }
-                              ]
-                    }
+                    accessories={getAccessories(thought)}
                     actions={
                         <ThoughtListActions
                             {...actionProps}
@@ -536,22 +563,14 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 
                                     <List.Item.Detail.Metadata.Separator />
                                     <List.Item.Detail.Metadata.Label
-                                        text={
-                                            //  TODO: Refactor to function and stabilize reference?
+                                        text={{
+                                            value: formatDate(
+                                                thought.createdAt,
+                                                { preset: "compact" }
+                                            ),
 
-                                            {
-                                                value: new Intl.DateTimeFormat(
-                                                    undefined,
-                                                    {
-                                                        dateStyle: "short",
-                                                        timeStyle: "short",
-                                                        hour12: false
-                                                    }
-                                                ).format(thought.createdAt),
-
-                                                color: Color.SecondaryText
-                                            }
-                                        }
+                                            color: Color.SecondaryText
+                                        }}
                                         title="Created"
                                     />
                                 </List.Item.Detail.Metadata>

@@ -62,7 +62,10 @@ export function useThoughts() {
     const { isFetching, data, error, hasNextPage, fetchNextPage, refetch } =
         useInfiniteQuery(getThoughtsQueryOptions)
 
-    const thoughts = data?.pages.flatMap(page => page.thoughts ?? []) ?? null
+    const thoughts = useMemo(
+        () => data?.pages.flatMap(page => page.thoughts ?? []) ?? null,
+        [data?.pages]
+    )
 
     const pagination: RaycastPaginationOptions = useMemo(
         () => ({
