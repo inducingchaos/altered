@@ -2,7 +2,12 @@
  *
  */
 
-import type { CreatableThought, Thought } from "@altered/data/shapes"
+import type {
+    CreatableThought,
+    QueryableThought,
+    Thought,
+    UpdatableThought
+} from "@altered/core"
 import {
     Action,
     ActionPanel,
@@ -16,8 +21,7 @@ import {
     Toast
 } from "@raycast/api"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { DateTime } from "luxon"
-import { useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { usePersistQuery } from "~/api"
 import { api as reactApi } from "~/api/react"
 import {
@@ -28,6 +32,7 @@ import { useAuthentication } from "~/auth"
 import { config } from "~/config"
 import { configureLogger } from "~/observability"
 import { ReturnToActionPaletteAction, withContext } from "~/shared/components"
+import { formatDate } from "~/shared/utils"
 import { useActionPalette } from "../action-palette/state"
 import { CaptureThought } from "../capture-thought"
 import { EditThought } from "../edit-thought"
@@ -109,277 +114,401 @@ function ThoughtsList({ authToken }: { authToken: string }) {
         pagination
     } = useThoughts()
 
-    const createMutation = useMutation(
-        reactApi.thoughts.create.mutationOptions({
-            context: { authToken },
+    const accessoriesCache = useRef(new Map<string, List.Item.Accessory[]>())
 
-            onMutate: async thoughtInput => {
-                await queryClient.cancelQueries({
-                    queryKey: getThoughtsQueryKey
-                })
+    const getAccessories = useCallback(
+        (thought: Thought) => {
+            if (isShowingInspector) return null
 
-                const staleData = queryClient.getQueryData(getThoughtsQueryKey)
+            if (!accessoriesCache.current.has(thought.id))
+                accessoriesCache.current.set(thought.id, [
+                    {
+                        date: thought.createdAt,
+                        tooltip: `Created: ${thought.createdAt.toLocaleString()}`
+                    }
+                ])
 
-                if (!thoughtInput.id)
-                    throw new Error(
-                        "Thought ID is missing - unable to perform optimistic update. In order for our optimistic updates to work, the Thought ID must be created on the client and passed to the mutation."
+            const cached = accessoriesCache.current.get(thought.id)
+            if (!cached)
+                throw new Error(
+                    `Accessories cache miss for thought ID: '${thought.id}'. This should never happen.`
+                )
+
+            return cached
+        },
+        [isShowingInspector]
+    )
+
+    const onCreateMutate = useCallback(
+        async (thoughtInput: CreatableThought) => {
+            await queryClient.cancelQueries({
+                queryKey: getThoughtsQueryKey
+            })
+
+            const staleData = queryClient.getQueryData(getThoughtsQueryKey)
+
+            if (!thoughtInput.id)
+                throw new Error(
+                    "Thought ID is missing - unable to perform optimistic update. In order for our optimistic updates to work, the Thought ID must be created on the client and passed to the mutation."
+                )
+
+            const optimisticThought: Thought = {
+                id: thoughtInput.id,
+                alias: thoughtInput.alias,
+                content: thoughtInput.content,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                addedAt: new Date()
+            }
+
+            setPersistentQueryData(getThoughtsQueryKey, staleData => {
+                const data = staleData ?? { pages: [], pageParams: [] }
+
+                const pageThoughtLimit = config.listPaginationLimit
+
+                const staleThoughts = data.pages.flatMap(
+                    page => page.thoughts ?? []
+                )
+
+                const stalePageCount = data.pages.length
+                const staleDataHasMore =
+                    data.pages[stalePageCount - 1]?.hasMore ?? false
+
+                const updatedThoughts = [optimisticThought, ...staleThoughts]
+
+                const updatedPageCount = Math.ceil(
+                    updatedThoughts.length / pageThoughtLimit
+                )
+
+                const updatedPages: typeof data.pages = []
+
+                for (const pageIndex of new Array(updatedPageCount).keys()) {
+                    const isLastPage = pageIndex === updatedPageCount - 1
+
+                    const startThoughtIndex = pageIndex * pageThoughtLimit
+                    const endThoughtIndex = startThoughtIndex + pageThoughtLimit
+
+                    const pageThoughts = updatedThoughts.slice(
+                        startThoughtIndex,
+                        endThoughtIndex
                     )
 
-                const optimisticThought: Thought = {
-                    id: thoughtInput.id,
-                    alias: thoughtInput.alias,
-                    content: thoughtInput.content,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                    addedAt: new Date()
+                    updatedPages.push({
+                        thoughts: pageThoughts,
+                        hasMore: isLastPage ? staleDataHasMore : true
+                    })
                 }
 
-                setPersistentQueryData(getThoughtsQueryKey, staleData => {
-                    const data = staleData ?? { pages: [], pageParams: [] }
+                return { ...data, pages: updatedPages }
+            })
 
-                    const pageThoughtLimit = config.listPaginationLimit
-
-                    const staleThoughts = data.pages.flatMap(
-                        page => page.thoughts ?? []
-                    )
-
-                    const stalePageCount = data.pages.length
-                    const staleDataHasMore =
-                        data.pages[stalePageCount - 1]?.hasMore ?? false
-
-                    const updatedThoughts = [
-                        optimisticThought,
-                        ...staleThoughts
-                    ]
-
-                    const updatedPageCount = Math.ceil(
-                        updatedThoughts.length / pageThoughtLimit
-                    )
-
-                    const updatedPages: typeof data.pages = []
-
-                    for (const pageIndex of new Array(
-                        updatedPageCount
-                    ).keys()) {
-                        const isLastPage = pageIndex === updatedPageCount - 1
-
-                        const startThoughtIndex = pageIndex * pageThoughtLimit
-                        const endThoughtIndex =
-                            startThoughtIndex + pageThoughtLimit
-
-                        const pageThoughts = updatedThoughts.slice(
-                            startThoughtIndex,
-                            endThoughtIndex
-                        )
-
-                        updatedPages.push({
-                            thoughts: pageThoughts,
-                            hasMore: isLastPage ? staleDataHasMore : true
-                        })
-                    }
-
-                    return { ...data, pages: updatedPages }
-                })
-
-                return { staleData }
-            },
-
-            onError: (error, _variables, context) => {
-                logger.error({
-                    title: "Failed to Create Thought",
-                    description: error.message,
-                    data: { error }
-                })
-
-                if (context?.staleData)
-                    setPersistentQueryData(
-                        getThoughtsQueryKey,
-                        context.staleData
-                    )
-
-                showToast({
-                    style: Toast.Style.Failure,
-                    title: "Failed to Create Thought",
-                    message: "Please try again later."
-                })
-            },
-
-            onSettled: () => {
-                if (
-                    queryClient.isMutating({
-                        mutationKey: thoughtsQueryKey
-                    }) === 1
-                )
-                    queryClient.invalidateQueries({
-                        queryKey: getThoughtsQueryKey
-                    })
-            }
-        })
+            return { staleData }
+        },
+        [queryClient, getThoughtsQueryKey, setPersistentQueryData]
     )
 
-    const deleteMutation = useMutation(
-        reactApi.thoughts.delete.mutationOptions({
-            context: { authToken },
+    const onCreateError = useCallback(
+        (
+            error: Error,
+            _variables: CreatableThought,
+            context: { staleData: unknown } | undefined
+        ) => {
+            logger.error({
+                title: "Failed to Create Thought",
+                description: error.message,
+                data: { error }
+            })
 
-            onMutate: async variables => {
-                await queryClient.cancelQueries({
-                    queryKey: getThoughtsQueryKey
-                })
+            if (context?.staleData)
+                setPersistentQueryData(getThoughtsQueryKey, context.staleData)
 
-                const staleData = queryClient.getQueryData(getThoughtsQueryKey)
-
-                setPersistentQueryData(getThoughtsQueryKey, staleData => {
-                    const data = staleData ?? { pages: [], pageParams: [] }
-
-                    const pageThoughtLimit = config.listPaginationLimit
-
-                    const staleThoughts = data.pages.flatMap(
-                        page => page.thoughts ?? []
-                    )
-
-                    const stalePageCount = data.pages.length
-                    const staleDataHasMore =
-                        data.pages[stalePageCount - 1]?.hasMore ?? false
-
-                    const updatedThoughts = staleThoughts.filter(
-                        thought => thought.id !== variables.id
-                    )
-
-                    const updatedPageCount =
-                        Math.ceil(updatedThoughts.length / pageThoughtLimit) ||
-                        1
-
-                    const updatedPages: typeof data.pages = []
-
-                    for (const pageIndex of new Array(
-                        updatedPageCount
-                    ).keys()) {
-                        const isLastPage = pageIndex === updatedPageCount - 1
-
-                        const startThoughtIndex = pageIndex * pageThoughtLimit
-                        const endThoughtIndex =
-                            startThoughtIndex + pageThoughtLimit
-
-                        const pageThoughts = updatedThoughts.slice(
-                            startThoughtIndex,
-                            endThoughtIndex
-                        )
-
-                        updatedPages.push({
-                            thoughts: pageThoughts,
-                            hasMore: isLastPage ? staleDataHasMore : true
-                        })
-                    }
-
-                    return { ...data, pages: updatedPages }
-                })
-
-                return { staleData }
-            },
-
-            onError: (error, _variables, context) => {
-                logger.error({
-                    title: "Failed to Delete Thought",
-                    data: { error }
-                })
-
-                if (context?.staleData)
-                    setPersistentQueryData(
-                        getThoughtsQueryKey,
-                        context.staleData
-                    )
-
-                showToast({
-                    style: Toast.Style.Failure,
-                    title: "Failed to Delete Thought",
-                    message: "Please try again later."
-                })
-            },
-
-            onSettled: () => {
-                if (
-                    queryClient.isMutating({
-                        mutationKey: thoughtsQueryKey
-                    }) === 1
-                )
-                    queryClient.invalidateQueries({
-                        queryKey: getThoughtsQueryKey
-                    })
-            }
-        })
+            showToast({
+                style: Toast.Style.Failure,
+                title: "Failed to Create Thought",
+                message: "Please try again later."
+            })
+        },
+        [getThoughtsQueryKey, setPersistentQueryData]
     )
 
-    const updateMutation = useMutation(
-        reactApi.thoughts.update.mutationOptions({
-            context: { authToken },
+    const onCreateSettled = useCallback(() => {
+        if (
+            queryClient.isMutating({
+                mutationKey: thoughtsQueryKey
+            }) === 1
+        )
+            queryClient.invalidateQueries({
+                queryKey: getThoughtsQueryKey
+            })
+    }, [queryClient, thoughtsQueryKey, getThoughtsQueryKey])
 
-            onMutate: async ({
-                query: thoughtQuery,
-                values: thoughtValues
-            }) => {
-                await queryClient.cancelQueries({
-                    queryKey: getThoughtsQueryKey
-                })
+    const onDeleteMutate = useCallback(
+        async (variables: { id: string }) => {
+            await queryClient.cancelQueries({
+                queryKey: getThoughtsQueryKey
+            })
 
-                const staleData = queryClient.getQueryData(getThoughtsQueryKey)
+            const staleData = queryClient.getQueryData(getThoughtsQueryKey)
 
-                setPersistentQueryData(getThoughtsQueryKey, staleData => {
-                    const data = staleData ?? { pages: [], pageParams: [] }
+            setPersistentQueryData(getThoughtsQueryKey, staleData => {
+                const data = staleData ?? { pages: [], pageParams: [] }
 
-                    const updatedPages = data.pages.map(page => ({
-                        ...page,
-                        thoughts:
-                            page.thoughts?.map(thought =>
-                                thought.id === thoughtQuery.id
-                                    ? {
-                                          ...thought,
-                                          alias: thoughtValues.alias,
-                                          content: thoughtValues.content,
-                                          updatedAt: new Date()
-                                      }
-                                    : thought
-                            ) ?? []
-                    }))
+                const pageThoughtLimit = config.listPaginationLimit
 
-                    return { ...data, pages: updatedPages }
-                })
+                const staleThoughts = data.pages.flatMap(
+                    page => page.thoughts ?? []
+                )
 
-                return { staleData }
-            },
+                const stalePageCount = data.pages.length
+                const staleDataHasMore =
+                    data.pages[stalePageCount - 1]?.hasMore ?? false
 
-            onError: (error, _variables, context) => {
-                logger.error({
-                    title: "Failed to Update Thought",
-                    data: { error }
-                })
+                const updatedThoughts = staleThoughts.filter(
+                    thought => thought.id !== variables.id
+                )
 
-                if (context?.staleData)
-                    setPersistentQueryData(
-                        getThoughtsQueryKey,
-                        context.staleData
+                const updatedPageCount =
+                    Math.ceil(updatedThoughts.length / pageThoughtLimit) || 1
+
+                const updatedPages: typeof data.pages = []
+
+                for (const pageIndex of new Array(updatedPageCount).keys()) {
+                    const isLastPage = pageIndex === updatedPageCount - 1
+
+                    const startThoughtIndex = pageIndex * pageThoughtLimit
+                    const endThoughtIndex = startThoughtIndex + pageThoughtLimit
+
+                    const pageThoughts = updatedThoughts.slice(
+                        startThoughtIndex,
+                        endThoughtIndex
                     )
 
-                showToast({
-                    style: Toast.Style.Failure,
-                    title: "Failed to Update Thought",
-                    message: "Please try again later."
-                })
-            },
-
-            onSettled: () => {
-                if (
-                    queryClient.isMutating({
-                        mutationKey: thoughtsQueryKey
-                    }) === 1
-                )
-                    queryClient.invalidateQueries({
-                        queryKey: getThoughtsQueryKey
+                    updatedPages.push({
+                        thoughts: pageThoughts,
+                        hasMore: isLastPage ? staleDataHasMore : true
                     })
-            }
-        })
+                }
+
+                return { ...data, pages: updatedPages }
+            })
+
+            return { staleData }
+        },
+        [queryClient, getThoughtsQueryKey, setPersistentQueryData]
     )
+
+    const onDeleteError = useCallback(
+        (
+            error: Error,
+            _variables: { id: string },
+            context: { staleData: unknown } | undefined
+        ) => {
+            logger.error({
+                title: "Failed to Delete Thought",
+                data: { error }
+            })
+
+            if (context?.staleData)
+                setPersistentQueryData(getThoughtsQueryKey, context.staleData)
+
+            showToast({
+                style: Toast.Style.Failure,
+                title: "Failed to Delete Thought",
+                message: "Please try again later."
+            })
+        },
+        [getThoughtsQueryKey, setPersistentQueryData]
+    )
+
+    const onDeleteSettled = useCallback(() => {
+        if (
+            queryClient.isMutating({
+                mutationKey: thoughtsQueryKey
+            }) === 1
+        )
+            queryClient.invalidateQueries({
+                queryKey: getThoughtsQueryKey
+            })
+    }, [queryClient, thoughtsQueryKey, getThoughtsQueryKey])
+
+    const onUpdateMutate = useCallback(
+        async ({
+            query: thoughtQuery,
+            values: thoughtValues
+        }: {
+            query: QueryableThought
+            values: UpdatableThought
+        }) => {
+            await queryClient.cancelQueries({
+                queryKey: getThoughtsQueryKey
+            })
+
+            const staleData = queryClient.getQueryData(getThoughtsQueryKey)
+
+            setPersistentQueryData(getThoughtsQueryKey, staleData => {
+                const data = staleData ?? { pages: [], pageParams: [] }
+
+                const updatedPages = data.pages.map(page => ({
+                    ...page,
+                    thoughts:
+                        page.thoughts?.map(thought =>
+                            thought.id === thoughtQuery.id
+                                ? {
+                                      ...thought,
+                                      ...(thoughtValues.alias !== undefined && {
+                                          alias: thoughtValues.alias
+                                      }),
+                                      ...(thoughtValues.content !==
+                                          undefined && {
+                                          content: thoughtValues.content
+                                      }),
+                                      updatedAt: new Date()
+                                  }
+                                : thought
+                        ) ?? []
+                }))
+
+                return { ...data, pages: updatedPages }
+            })
+
+            return { staleData }
+        },
+        [queryClient, getThoughtsQueryKey, setPersistentQueryData]
+    )
+
+    const onUpdateError = useCallback(
+        (
+            error: Error,
+            _variables: unknown,
+            context: { staleData: unknown } | undefined
+        ) => {
+            logger.error({
+                title: "Failed to Update Thought",
+                data: { error }
+            })
+
+            if (context?.staleData)
+                setPersistentQueryData(getThoughtsQueryKey, context.staleData)
+
+            showToast({
+                style: Toast.Style.Failure,
+                title: "Failed to Update Thought",
+                message: "Please try again later."
+            })
+        },
+        [getThoughtsQueryKey, setPersistentQueryData]
+    )
+
+    const onUpdateSettled = useCallback(() => {
+        if (
+            queryClient.isMutating({
+                mutationKey: thoughtsQueryKey
+            }) === 1
+        )
+            queryClient.invalidateQueries({
+                queryKey: getThoughtsQueryKey
+            })
+    }, [queryClient, thoughtsQueryKey, getThoughtsQueryKey])
+
+    const createMutationOptions = useMemo(
+        () =>
+            reactApi.thoughts.create.mutationOptions({
+                context: { authToken },
+                onMutate: onCreateMutate,
+                onError: onCreateError,
+                onSettled: onCreateSettled
+            }),
+        [authToken, onCreateMutate, onCreateError, onCreateSettled]
+    )
+
+    const deleteMutationOptions = useMemo(
+        () =>
+            reactApi.thoughts.delete.mutationOptions({
+                context: { authToken },
+                onMutate: onDeleteMutate,
+                onError: onDeleteError,
+                onSettled: onDeleteSettled
+            }),
+        [authToken, onDeleteMutate, onDeleteError, onDeleteSettled]
+    )
+
+    const updateMutationOptions = useMemo(
+        () =>
+            reactApi.thoughts.update.mutationOptions({
+                context: { authToken },
+                onMutate: onUpdateMutate,
+                onError: onUpdateError,
+                onSettled: onUpdateSettled
+            }),
+        [authToken, onUpdateMutate, onUpdateError, onUpdateSettled]
+    )
+
+    const createMutation = useMutation(createMutationOptions)
+
+    const deleteMutation = useMutation(deleteMutationOptions)
+
+    const updateMutation = useMutation(updateMutationOptions)
 
     const actionPaletteContext = useActionPalette({ safe: true })
+
+    const handleCreateThought = useCallback(
+        (thought: CreatableThought) => createMutation.mutate(thought),
+        [createMutation.mutate]
+    )
+
+    const handleUpdateThought = useCallback<HandleUpdateThought>(
+        props => updateMutation.mutate(props),
+        [updateMutation.mutate]
+    )
+
+    const handleDeleteThought = useCallback<HandleDeleteThought>(
+        async (thought, props) => {
+            const { showConfirmation = true } = props ?? {}
+
+            if (showConfirmation) {
+                const thoughtSummary = thought.alias ?? thought.content ?? null
+                const thoughtDescriptor = thoughtSummary
+                    ? `"${thoughtSummary.length > 10 ? `${thoughtSummary.slice(0, 16)}...` : thoughtSummary}"`
+                    : "this thought"
+
+                const isConfirmed = await confirmAlert({
+                    title: "Delete Thought",
+                    message: `Are you sure you want to delete ${thoughtDescriptor}? This action cannot be undone.`,
+                    icon: Icon.Trash,
+
+                    primaryAction: {
+                        title: "Delete",
+                        style: Alert.ActionStyle.Destructive
+                    },
+
+                    /**
+                     * @remarks Don't use, it doesn't work. Shows a nice checkbox but it shows up unchecked even after checking it. Could have to do with our dynamic confirmation message - but this is definitely a bug. Confirmation preferences should not be stored based on the content of the confirmation message.
+                     */
+                    rememberUserChoice: false
+                })
+
+                if (!isConfirmed) return
+            }
+
+            deleteMutation.mutate({ id: thought.id })
+
+            return
+        },
+        [deleteMutation.mutate]
+    )
+
+    const actionProps = useMemo<ThoughtListActionsProps>(
+        () => ({
+            isShowingInspector,
+            setIsShowingInspector,
+            setIsCreatingThought,
+            setEditingThoughtId,
+            handleDeleteThought,
+
+            refreshThoughts: refresh
+        }),
+        [isShowingInspector, handleDeleteThought, refresh]
+    )
 
     const isFetchingMutation =
         createMutation.isPending ||
@@ -405,45 +534,6 @@ function ThoughtsList({ authToken }: { authToken: string }) {
         console.error(error)
     }
 
-    const handleCreateThought = (thought: CreatableThought) =>
-        createMutation.mutate(thought)
-
-    const handleUpdateThought: HandleUpdateThought = props =>
-        updateMutation.mutate(props)
-
-    const handleDeleteThought: HandleDeleteThought = async (thought, props) => {
-        const { showConfirmation = true } = props ?? {}
-
-        if (showConfirmation) {
-            const thoughtSummary = thought.alias ?? thought.content ?? null
-            const thoughtDescriptor = thoughtSummary
-                ? `"${thoughtSummary.length > 10 ? `${thoughtSummary.slice(0, 16)}...` : thoughtSummary}"`
-                : "this thought"
-
-            const isConfirmed = await confirmAlert({
-                title: "Delete Thought",
-                message: `Are you sure you want to delete ${thoughtDescriptor}? This action cannot be undone.`,
-                icon: Icon.Trash,
-
-                primaryAction: {
-                    title: "Delete",
-                    style: Alert.ActionStyle.Destructive
-                },
-
-                /**
-                 * @remarks Don't use, it doesn't work. Shows a nice checkbox but it shows up unchecked even after checking it. Could have to do with our dynamic confirmation message - but this is definitely a bug. Confirmation preferences should not be stored based on the content of the confirmation message.
-                 */
-                rememberUserChoice: false
-            })
-
-            if (!isConfirmed) return
-        }
-
-        deleteMutation.mutate({ id: thought.id })
-
-        return
-    }
-
     if (isCreatingThought)
         return (
             <CaptureThought
@@ -466,16 +556,6 @@ function ThoughtsList({ authToken }: { authToken: string }) {
             />
         )
 
-    const actionProps: ThoughtListActionsProps = {
-        isShowingInspector,
-        setIsShowingInspector,
-        setIsCreatingThought,
-        setEditingThoughtId,
-        handleDeleteThought,
-
-        refreshThoughts: refresh
-    }
-
     return (
         <List
             actions={<ThoughtListActions {...actionProps} />}
@@ -492,16 +572,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 
             {thoughts?.map(thought => (
                 <List.Item
-                    accessories={
-                        isShowingInspector
-                            ? null
-                            : [
-                                  {
-                                      date: thought.createdAt,
-                                      tooltip: `Created: ${thought.createdAt.toLocaleString()}`
-                                  }
-                              ]
-                    }
+                    accessories={getAccessories(thought)}
                     actions={
                         <ThoughtListActions
                             {...actionProps}
@@ -532,11 +603,11 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                                     <List.Item.Detail.Metadata.Separator />
                                     <List.Item.Detail.Metadata.Label
                                         text={{
-                                            value: DateTime.fromJSDate(
-                                                thought.createdAt
-                                            ).toLocaleString(
-                                                DateTime.DATETIME_FULL
+                                            value: formatDate(
+                                                thought.createdAt,
+                                                { preset: "compact" }
                                             ),
+
                                             color: Color.SecondaryText
                                         }}
                                         title="Created"

@@ -2,7 +2,7 @@
  *
  */
 
-import type { ALTEREDComponent } from "@altered/data/shapes"
+import type { ALTEREDComponent } from "@altered/core"
 
 export const alteredOnboardingEndComponent = {
     id: "component-altered-onboarding-end",

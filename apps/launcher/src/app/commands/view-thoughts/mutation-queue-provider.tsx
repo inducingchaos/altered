@@ -32,6 +32,9 @@ const MutationQueueContext = createContext<MutationQueueContextValue | null>(
     null
 )
 
+/**
+ * @remarks Incomplete - placeholder for future implementation. See git stash.
+ */
 export function MutationQueueProvider({ children }: { children: ReactNode }) {
     const queue = useRef<string[]>([])
     const status = useRef<"loading" | "success" | "error">("loading")

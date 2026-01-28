@@ -2,7 +2,7 @@
  *
  */
 
-import type { ALTEREDSystem } from "@altered/data/shapes"
+import type { ALTEREDSystem } from "@altered/core"
 import {
     connectToAiProviderAction,
     generateLlmsTxtAction,

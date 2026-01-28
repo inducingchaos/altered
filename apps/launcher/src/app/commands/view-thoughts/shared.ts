@@ -2,11 +2,7 @@
  *
  */
 
-import type {
-    QueryableThought,
-    Thought,
-    UpdatableThought
-} from "@altered/data/shapes"
+import type { QueryableThought, Thought, UpdatableThought } from "@altered/core"
 
 export type HandleUpdateThought = (props: {
     query: QueryableThought

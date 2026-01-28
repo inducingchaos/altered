@@ -66,23 +66,18 @@
     ],
     "tools": [],
     "dependencies": {
-        "@altered/data/shapes": "workspace:*",
-        "@altered/harness": "workspace:*",
-        "@altered/utils": "workspace:*",
+        "@altered/client": "workspace:*",
+        "@altered/core": "workspace:*",
         "@orpc/client": "catalog:orpc",
         "@orpc/tanstack-query": "catalog:orpc",
         "@raycast/api": "^1.103.6",
         "@raycast/utils": "^1.17.0",
         "@tanstack/query-persist-client-core": "catalog:tanstack-query",
         "@tanstack/react-query": "catalog:tanstack-query",
-        "better-auth": "catalog:better-auth",
-        "luxon": "^3.7.2",
-        "nanoid": "^5.1.6",
-        "zustand": "^5.0.9"
+        "nanoid": "^5.1.6"
     },
     "devDependencies": {
         "@altered-internal/typescript": "workspace:*",
-        "@types/luxon": "^3.7.1",
         "@types/node": "22.13.10",
         "@types/react": "19.0.10",
         "typescript": "catalog:typescript"

@@ -2,7 +2,7 @@
  *
  */
 
-import type { APIError, APIOutputs } from "@altered/harness"
+import type { APIError, APIOutputs } from "@altered/client/contract"
 import type { QueryOptionsBase } from "@orpc/tanstack-query"
 import { useQuery } from "@tanstack/react-query"
 

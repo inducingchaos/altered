@@ -2,7 +2,7 @@
  *
  */
 
-import type { Thought } from "@altered/data/shapes"
+import type { Thought } from "@altered/core"
 import { Action, ActionPanel, Icon } from "@raycast/api"
 import { useAuthentication } from "~/auth"
 import { LogOutAction, ReturnToActionPaletteAction } from "~/shared/components"

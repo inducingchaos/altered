@@ -2,7 +2,7 @@
  * @todo [P3] Move to a `custom` or `components` folder, since this is a React Interface (view component), not a command.
  */
 
-import type { Thought } from "@altered/data/shapes"
+import type { Thought } from "@altered/core"
 import { Action, ActionPanel, Form, Icon } from "@raycast/api"
 import { useForm } from "@raycast/utils"
 import { LogOutAction, ReturnToActionPaletteAction } from "~/shared/components"

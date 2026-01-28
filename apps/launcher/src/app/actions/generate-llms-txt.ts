@@ -2,7 +2,7 @@
  *
  */
 
-import { type ALTEREDAction, mockInterface } from "@altered/data/shapes"
+import { type ALTEREDAction, mockInterface } from "@altered/core"
 import { Icon } from "@raycast/api"
 
 export const generateLlmsTxtAction = {

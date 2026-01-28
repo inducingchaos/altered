@@ -2,8 +2,8 @@
  *
  */
 
-import type { Thought } from "@altered/data/shapes"
-import type { APIError } from "@altered/harness"
+import type { APIError } from "@altered/client/contract"
+import type { Thought } from "@altered/core"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 import { useAuthentication } from "~/auth"
@@ -62,7 +62,10 @@ export function useThoughts() {
     const { isFetching, data, error, hasNextPage, fetchNextPage, refetch } =
         useInfiniteQuery(getThoughtsQueryOptions)
 
-    const thoughts = data?.pages.flatMap(page => page.thoughts ?? []) ?? null
+    const thoughts = useMemo(
+        () => data?.pages.flatMap(page => page.thoughts ?? []) ?? null,
+        [data?.pages]
+    )
 
     const pagination: RaycastPaginationOptions = useMemo(
         () => ({

@@ -2,7 +2,7 @@
  *
  */
 
-import type { ALTEREDInterface } from "@altered/data/shapes"
+import type { ALTEREDInterface } from "@altered/core"
 import { CaptureThought } from "app/commands/capture-thought"
 
 export const captureThoughtCustomInterface = {

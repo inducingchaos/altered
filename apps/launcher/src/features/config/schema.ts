@@ -3,13 +3,43 @@
  */
 
 import { environment } from "@raycast/api"
-import { z } from "zod"
-import {
-    logLevels,
-    logPartsConfigSchema
+import type {
+    LogLevel,
+    LogPartsConfig
 } from "../observability/logger/constants"
+import { defineConfig } from "./builder"
 
-const addDarkModifierToFilePath = (filePath: string) => {
+export type ConfigDefinition = {
+    cwd: string
+    overrideEnvironment?: "development" | "production"
+
+    logLevel?: LogLevel
+    logSearch?: string
+    logParts?: LogPartsConfig
+    logToFile?: boolean
+
+    appName: string
+    appDescription: string
+    appIcon: string
+    appVersion: string
+
+    apiDelay?: number
+
+    themeIcons: boolean
+
+    listPaginationLimit: number
+
+    productionBaseUrl: string
+    developmentBaseUrl: string
+
+    oauthProviderId: string
+    oauthProviderDescription: string
+
+    oauthClientId: string
+    oauthClientScope: string
+}
+
+function addDarkModifierToFilePath(filePath: string): string {
     const modifier = "@dark"
     const possibleExtensions = [".png", ".jpg", ".jpeg", ".gif", ".svg"]
 
@@ -19,74 +49,42 @@ const addDarkModifierToFilePath = (filePath: string) => {
     return `${filePath.slice(0, -extension.length)}${modifier}${extension}`
 }
 
-export const configSchema = z
-    .object({
-        cwd: z.string(),
-        overrideEnvironment: z
-            .enum(["development", "production"])
-            .default("development"),
+const configBuilder = defineConfig<ConfigDefinition, true>()
 
-        logLevel: z.enum(logLevels).optional(),
-        logSearch: z.string().optional(),
-        logParts: logPartsConfigSchema.optional(),
-        logToFile: z.boolean().optional(),
+const configWithDefaults = configBuilder.default({
+    overrideEnvironment: "development"
+})
 
-        appName: z.string(),
-        appDescription: z.string(),
-        appIcon: z.string(),
-        appVersion: z.string(),
+const configWithEnvironment = configWithDefaults.transform(config => ({
+    ...config,
 
-        apiDelay: z.number().optional(),
+    environment: environment.isDevelopment
+        ? config.overrideEnvironment
+        : "production",
 
-        themeIcons: z.boolean(),
+    appIcon:
+        environment.appearance === "dark"
+            ? addDarkModifierToFilePath(config.appIcon)
+            : config.appIcon
+}))
 
-        listPaginationLimit: z.number(),
+const configWithOrigins = configWithEnvironment.transform(config => ({
+    ...config,
 
-        productionBaseUrl: z.url(),
-        developmentBaseUrl: z.url(),
+    baseUrl:
+        config.environment === "development"
+            ? config.developmentBaseUrl
+            : config.productionBaseUrl
+}))
 
-        oauthProviderId: z.string(),
-        oauthProviderDescription: z.string(),
+const configWithPaths = configWithOrigins.transform(config => ({
+    ...config,
 
-        oauthClientId: z.string(),
-        oauthClientScope: z.string()
-    })
-    .transform(config => {
-        return {
-            ...config,
+    rpcEndpoint: `${config.baseUrl}/rpc`,
+    oauthAuthorizationEndpoint: `${config.baseUrl}/api/auth/oauth2/authorize`,
+    oauthTokenEndpoint: `${config.baseUrl}/api/auth/oauth2/token`,
+    oauthUserInfoEndpoint: `${config.baseUrl}/api/auth/oauth2/userinfo`,
+    oauthRevokeEndpoint: `${config.baseUrl}/api/auth/oauth2/revoke`
+}))
 
-            environment: environment.isDevelopment
-                ? config.overrideEnvironment
-                : "production",
-
-            appIcon:
-                environment.appearance === "dark"
-                    ? addDarkModifierToFilePath(config.appIcon)
-                    : config.appIcon
-        }
-    })
-    .transform(config => {
-        return {
-            ...config,
-
-            baseUrl:
-                config.environment === "development"
-                    ? config.developmentBaseUrl
-                    : config.productionBaseUrl
-        }
-    })
-    .transform(config => {
-        return {
-            ...config,
-
-            rpcEndpoint: `${config.baseUrl}/rpc`,
-
-            oauthAuthorizationEndpoint: `${config.baseUrl}/api/auth/oauth2/authorize`,
-            oauthTokenEndpoint: `${config.baseUrl}/api/auth/oauth2/token`,
-            oauthUserInfoEndpoint: `${config.baseUrl}/api/auth/oauth2/userinfo`,
-            oauthRevokeEndpoint: `${config.baseUrl}/api/auth/oauth2/revoke`
-        }
-    })
-
-export type ConfigDef = z.input<typeof configSchema>
-export type Config = z.output<typeof configSchema>
+export const configFactory = configWithPaths

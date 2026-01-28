@@ -2,7 +2,7 @@
  *
  */
 
-import type { APIError } from "@altered/harness"
+import type { APIError } from "@altered/client/contract"
 import { isDefinedError } from "@orpc/client"
 import { popToRoot, showToast, Toast } from "@raycast/api"
 import { useEffect } from "react"

@@ -2,7 +2,7 @@
  *
  */
 
-import type { ALTEREDAction } from "@altered/data/shapes"
+import type { ALTEREDAction } from "@altered/core"
 import { Action, ActionPanel, Color, Grid, Icon, List } from "@raycast/api"
 import { useState } from "react"
 import { createInterfaceAdapter } from "~/adapters"

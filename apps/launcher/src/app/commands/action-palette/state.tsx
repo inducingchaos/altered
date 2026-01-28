@@ -2,12 +2,19 @@
  *
  */
 
-import type { ALTEREDAction, ALTEREDSystem } from "@altered/data/shapes"
-import { filterSystems } from "@altered/utils"
+import { filterSystems } from "@altered/client/utils"
+import type { ALTEREDAction, ALTEREDSystem } from "@altered/core"
 import { clearSearchBar } from "@raycast/api"
 // biome-ignore lint/performance/noNamespaceImport: Used for dynamic access to exports.
 import * as staticSystems from "app/systems"
-import { createContext, type ReactNode, use, useState } from "react"
+import {
+    createContext,
+    type ReactNode,
+    use,
+    useCallback,
+    useMemo,
+    useState
+} from "react"
 
 type ActionPaletteContextValue = {
     isLoading: boolean
@@ -52,27 +59,35 @@ export function ActionPaletteProvider({ children }: { children: ReactNode }) {
         null
     )
 
-    const systems = Object.values(staticSystems)
-    const filteredSystems = filterSystems(systems, {
-        searchText,
-        searchableKeyPaths: [
-            "name",
-            "title",
-            "description",
-            "actions.name",
-            "actions.title",
-            "actions.description",
-            "actions.trigger"
-        ]
-    })
+    const systems = useMemo(() => Object.values(staticSystems), [])
+
+    const filteredSystems = useMemo(
+        () =>
+            filterSystems(systems, {
+                searchText,
+                searchableKeyPaths: [
+                    "name",
+                    "title",
+                    "description",
+                    "actions.name",
+                    "actions.title",
+                    "actions.description",
+                    "actions.trigger"
+                ]
+            }),
+        [systems, searchText]
+    )
 
     /**
      * @todo [P3] Figure out if we should generalize the types at definition (by assigning the type rather than using `satisfies`) to avoid casting.
      */
-    const findAction = (id: string) =>
-        (systems as ALTEREDSystem[])
-            .flatMap(system => system.actions)
-            .find(action => action.id === id) ?? null
+    const findAction = useCallback(
+        (id: string) =>
+            (systems as ALTEREDSystem[])
+                .flatMap(system => system.actions)
+                .find(action => action.id === id) ?? null,
+        [systems]
+    )
 
     const selectedAction = selectedActionId
         ? findAction(selectedActionId)
@@ -87,73 +102,98 @@ export function ActionPaletteProvider({ children }: { children: ReactNode }) {
             ? `Confirm: Press "space" to open "${selectedAction?.name}"`
             : undefined
 
-    const handleAutoSelect = (searchText: string) => {
-        const confirmCharacter = " "
-        const containsConfirmCharacter = searchText.endsWith(confirmCharacter)
-        const matchableSearchText = containsConfirmCharacter
-            ? searchText.slice(0, -confirmCharacter.length)
-            : searchText
-
-        const matchedAction = systems
-            .flatMap(system => system.actions as ALTEREDAction[])
-            .find(action => action.trigger === matchableSearchText)
-
-        setSelectedActionId(matchedAction ? matchedAction.id : null)
-
-        if (matchedAction && containsConfirmCharacter)
-            renderAction(matchedAction.id)
-    }
-
-    const onSearchTextChange = (searchText: string) => {
-        setSearchText(searchText)
-
-        handleAutoSelect(searchText)
-    }
-
-    const renderAction = (id: string) => {
+    const renderAction = useCallback((id: string) => {
         setRenderedActionId(id)
 
         setSearchText("")
 
         //  Additionally required when conditionally rendering views, since the search bar state is stored globally by Raycast.
         clearSearchBar()
-    }
+    }, [])
 
-    const resetState = () => {
+    const handleAutoSelect = useCallback(
+        (searchText: string) => {
+            const confirmCharacter = " "
+            const containsConfirmCharacter =
+                searchText.endsWith(confirmCharacter)
+            const matchableSearchText = containsConfirmCharacter
+                ? searchText.slice(0, -confirmCharacter.length)
+                : searchText
+
+            const matchedAction = systems
+                .flatMap(system => system.actions as ALTEREDAction[])
+                .find(action => action.trigger === matchableSearchText)
+
+            setSelectedActionId(matchedAction ? matchedAction.id : null)
+
+            if (matchedAction && containsConfirmCharacter)
+                renderAction(matchedAction.id)
+        },
+        [systems, renderAction]
+    )
+
+    const onSearchTextChange = useCallback(
+        (searchText: string) => {
+            setSearchText(searchText)
+
+            handleAutoSelect(searchText)
+        },
+        [handleAutoSelect]
+    )
+
+    const resetState = useCallback(() => {
         setSearchText("")
 
         setSelectedItemId(null)
         setSelectedActionId(null)
 
         setRenderedActionId(null)
-    }
+    }, [])
+
+    const contextValue = useMemo<ActionPaletteContextValue>(
+        () => ({
+            isLoading,
+            isRenderingAction,
+
+            searchText,
+            setSearchText,
+            onSearchTextChange,
+            selectedItemId,
+            setSelectedItemId,
+
+            selectedActionId,
+            setSelectedActionId,
+            renderedActionId,
+
+            systems,
+            filteredSystems,
+            selectedAction,
+            renderedAction,
+            navigationTitle,
+
+            renderAction,
+            resetState
+        }),
+        [
+            isLoading,
+            isRenderingAction,
+            searchText,
+            onSearchTextChange,
+            selectedItemId,
+            selectedActionId,
+            renderedActionId,
+            systems,
+            filteredSystems,
+            selectedAction,
+            renderedAction,
+            navigationTitle,
+            renderAction,
+            resetState
+        ]
+    )
 
     return (
-        <ActionPaletteContext
-            value={{
-                isLoading,
-                isRenderingAction,
-
-                searchText,
-                setSearchText,
-                onSearchTextChange,
-                selectedItemId,
-                setSelectedItemId,
-
-                selectedActionId,
-                setSelectedActionId,
-                renderedActionId,
-
-                systems,
-                filteredSystems,
-                selectedAction,
-                renderedAction,
-                navigationTitle,
-
-                renderAction,
-                resetState
-            }}
-        >
+        <ActionPaletteContext value={contextValue}>
             {children}
         </ActionPaletteContext>
     )

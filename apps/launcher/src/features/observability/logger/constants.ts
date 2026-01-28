@@ -2,8 +2,6 @@
  *
  */
 
-import { z } from "zod"
-
 /**
  * @remarks Could expand to include `console.dir`, etc.
  */
@@ -41,15 +39,14 @@ export type LogOptions = {
 /**
  * @remarks Used by our "~/config" schema.
  */
-export const logPartsConfigSchema = z.object({
-    timestamp: z.boolean().optional(),
-    level: z.boolean().optional(),
-    scope: z.boolean().optional(),
-    title: z.boolean().optional(),
-    description: z.boolean().optional(),
-    data: z.boolean().optional()
-})
-export type LogPartsConfig = z.infer<typeof logPartsConfigSchema>
+export type LogPartsConfig = {
+    timestamp?: boolean
+    level?: boolean
+    scope?: boolean
+    title?: boolean
+    description?: boolean
+    data?: boolean
+}
 
 export type LoggerConfig = {
     parts?: LogPartsConfig
