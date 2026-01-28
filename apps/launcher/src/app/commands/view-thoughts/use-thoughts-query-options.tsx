@@ -2,7 +2,7 @@
  *
  */
 
-import type { CursorDefinition } from "@altered/data/shapes"
+import type { CursorDefinition } from "@altered/core"
 import { api as router } from "~/api/react"
 import { config } from "~/config"
 

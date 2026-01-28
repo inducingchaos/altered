@@ -2,13 +2,10 @@
  *
  */
 
-import {
-    type APIContract,
-    type ContractRouterClient,
-    createOrpcErrorLogger
-} from "@altered/harness"
+import { type APIContract, createOrpcErrorLogger } from "@altered/client"
 import { createORPCClient, createSafeClient, onError } from "@orpc/client"
 import { RPCLink } from "@orpc/client/fetch"
+import type { ContractRouterClient } from "@orpc/contract"
 import { config } from "~/config"
 
 export type ClientContext = {

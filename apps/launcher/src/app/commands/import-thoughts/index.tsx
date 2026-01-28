@@ -2,7 +2,7 @@
  *
  */
 
-import type { CreatableThought } from "@altered/data/shapes"
+import type { CreatableThought } from "@altered/core"
 import {
     Action,
     ActionPanel,

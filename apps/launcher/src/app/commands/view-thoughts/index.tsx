@@ -2,7 +2,7 @@
  *
  */
 
-import type { CreatableThought, Thought } from "@altered/data/shapes"
+import type { CreatableThought, Thought } from "@altered/core"
 import {
     Action,
     ActionPanel,
@@ -16,7 +16,6 @@ import {
     Toast
 } from "@raycast/api"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { DateTime } from "luxon"
 import { useState } from "react"
 import { usePersistQuery } from "~/api"
 import { api as reactApi } from "~/api/react"
@@ -333,8 +332,14 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                                 thought.id === thoughtQuery.id
                                     ? {
                                           ...thought,
-                                          alias: thoughtValues.alias,
-                                          content: thoughtValues.content,
+                                          ...(thoughtValues.alias !==
+                                              undefined && {
+                                              alias: thoughtValues.alias
+                                          }),
+                                          ...(thoughtValues.content !==
+                                              undefined && {
+                                              content: thoughtValues.content
+                                          }),
                                           updatedAt: new Date()
                                       }
                                     : thought
@@ -531,14 +536,22 @@ function ThoughtsList({ authToken }: { authToken: string }) {
 
                                     <List.Item.Detail.Metadata.Separator />
                                     <List.Item.Detail.Metadata.Label
-                                        text={{
-                                            value: DateTime.fromJSDate(
-                                                thought.createdAt
-                                            ).toLocaleString(
-                                                DateTime.DATETIME_FULL
-                                            ),
-                                            color: Color.SecondaryText
-                                        }}
+                                        text={
+                                            //  TODO: Refactor to function and stabilize reference?
+
+                                            {
+                                                value: new Intl.DateTimeFormat(
+                                                    undefined,
+                                                    {
+                                                        dateStyle: "short",
+                                                        timeStyle: "short",
+                                                        hour12: false
+                                                    }
+                                                ).format(thought.createdAt),
+
+                                                color: Color.SecondaryText
+                                            }
+                                        }
                                         title="Created"
                                     />
                                 </List.Item.Detail.Metadata>

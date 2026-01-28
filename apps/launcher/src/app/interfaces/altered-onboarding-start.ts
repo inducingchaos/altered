@@ -2,7 +2,7 @@
  *
  */
 
-import type { ALTEREDInterface } from "@altered/data/shapes"
+import type { ALTEREDInterface } from "@altered/core"
 import { alteredOnboardingStartComponent } from "app/components"
 
 export const alteredOnboardingStartInterface = {

@@ -2,7 +2,7 @@
  *
  */
 
-import type { ALTEREDInterface } from "@altered/data/shapes"
+import type { ALTEREDInterface } from "@altered/core"
 import { ConnectToAIProvider } from "app/commands/connect-to-ai-provider"
 
 export const connectToAiProviderCustomInterface = {

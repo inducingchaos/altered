@@ -2,7 +2,7 @@
  *
  */
 
-import type { ALTEREDInterface } from "@altered/data/shapes"
+import type { ALTEREDInterface } from "@altered/core"
 import { ImportThoughts } from "app/commands/import-thoughts"
 
 export const importThoughtsCustomInterface = {
