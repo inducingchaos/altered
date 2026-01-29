@@ -7,6 +7,7 @@ import { Action, ActionPanel, Icon } from "@raycast/api"
 import { useAuthentication } from "~/auth"
 import { LogOutAction, ReturnToActionPaletteAction } from "~/shared/components"
 import { useActionPalette } from "../action-palette/state"
+import { type InspectorLayoutID, inspectorLayoutIds } from "./inspector"
 import type { HandleDeleteThought, HandleUpdateThought } from "./shared"
 
 /**
@@ -16,7 +17,9 @@ export type ThoughtListActionsProps = {
     thought?: Thought
 
     isShowingInspector: boolean
-    setIsShowingInspector: (setState: (prevState: boolean) => boolean) => void
+    setIsShowingInspector: (newState: boolean) => void
+    inspectorLayoutId: InspectorLayoutID
+    setInspectorLayoutId: (newState: InspectorLayoutID) => void
 
     setIsCreatingThought: (newState: boolean) => void
 
@@ -29,16 +32,29 @@ export type ThoughtListActionsProps = {
     handleDeleteThought?: HandleDeleteThought
 
     refreshThoughts: () => void
+
+    selectNextThought: () => void
+    selectPreviousThought: () => void
 }
 
 export function ThoughtListActions({
     thought,
+
     isShowingInspector,
     setIsShowingInspector,
+    inspectorLayoutId,
+    setInspectorLayoutId,
+
     setIsCreatingThought,
+
     setEditingThoughtId,
+
     handleDeleteThought,
-    refreshThoughts
+
+    refreshThoughts,
+
+    selectNextThought,
+    selectPreviousThought
 }: ThoughtListActionsProps) {
     const { isAuthed } = useAuthentication()
 
@@ -50,9 +66,50 @@ export function ThoughtListActions({
                 {thought && (
                     <Action
                         icon={isShowingInspector ? Icon.EyeDisabled : Icon.Eye}
-                        onAction={() => setIsShowingInspector(prev => !prev)}
+                        onAction={() =>
+                            setIsShowingInspector(
+                                isShowingInspector ? false : true
+                            )
+                        }
                         shortcut={{ modifiers: ["cmd"], key: "i" }}
-                        title={`${isShowingInspector ? "Hide" : "Open"} Inspector`}
+                        title={`${isShowingInspector ? "Hide" : "Show"} Inspector`}
+                    />
+                )}
+
+                {thought && isShowingInspector && (
+                    <Action
+                        icon={Icon.AppWindowSidebarRight}
+                        onAction={() => {
+                            const currentLayoutIndex =
+                                inspectorLayoutIds.indexOf(inspectorLayoutId)
+
+                            const nextLayout = inspectorLayoutIds[
+                                (currentLayoutIndex + 1) %
+                                    inspectorLayoutIds.length
+                            ] as InspectorLayoutID
+
+                            setInspectorLayoutId(nextLayout)
+                        }}
+                        shortcut={{ modifiers: ["cmd", "shift"], key: "i" }}
+                        title={"Toggle Inspector Layout"}
+                    />
+                )}
+
+                {thought && (
+                    <Action
+                        icon={Icon.ArrowDown}
+                        onAction={selectNextThought}
+                        shortcut={{ modifiers: [], key: "tab" }}
+                        title={"Select Next Thought"}
+                    />
+                )}
+
+                {thought && (
+                    <Action
+                        icon={Icon.ArrowUp}
+                        onAction={selectPreviousThought}
+                        shortcut={{ modifiers: ["shift"], key: "tab" }}
+                        title={"Select Previous Thought"}
                     />
                 )}
 

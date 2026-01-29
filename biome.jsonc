@@ -50,7 +50,12 @@
                 /**
                  * @remarks In certain cases, a verbose ternary is more easily understood than a double bang.
                  */
-                "noUselessTernary": "off"
+                "noUselessTernary": "off",
+
+                /**
+                 * @remarks A sequenced negation is often more intuitive than a grouped negation.
+                 */
+                "useSimplifiedLogicExpression": "off"
             }
         }
     },

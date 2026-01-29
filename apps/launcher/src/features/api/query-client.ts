@@ -5,6 +5,7 @@
 import { StandardRPCJsonSerializer } from "@orpc/client/standard"
 import { Cache } from "@raycast/api"
 import {
+    type AsyncStorage,
     experimental_createQueryPersister,
     type PersistedQuery
 } from "@tanstack/query-persist-client-core"
@@ -25,7 +26,7 @@ const raycastCacheStorage = {
     setItem: (key: string, value: string) => cache.set(key, value),
 
     removeItem: (key: string) => void cache.remove(key)
-}
+} satisfies AsyncStorage
 
 function getMilliseconds({
     duration,

@@ -12,14 +12,15 @@ import {
     Action,
     ActionPanel,
     Alert,
-    Color,
     confirmAlert,
+    environment,
     Icon,
     List,
     popToRoot,
     showToast,
     Toast
 } from "@raycast/api"
+import { useCachedState } from "@raycast/utils"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useCallback, useMemo, useRef, useState } from "react"
 import { usePersistQuery } from "~/api"
@@ -32,10 +33,14 @@ import { useAuthentication } from "~/auth"
 import { config } from "~/config"
 import { configureLogger } from "~/observability"
 import { ReturnToActionPaletteAction, withContext } from "~/shared/components"
-import { formatDate } from "~/shared/utils"
 import { useActionPalette } from "../action-palette/state"
 import { CaptureThought } from "../capture-thought"
 import { EditThought } from "../edit-thought"
+import {
+    type InspectorLayoutID,
+    ThoughtInspectorDetail,
+    ThoughtInspectorListDetail
+} from "./inspector"
 import type { HandleDeleteThought, HandleUpdateThought } from "./shared"
 import {
     ThoughtListActions,
@@ -88,10 +93,24 @@ const resolveItemTitle = (thought: Thought) =>
 const resolveItemSubtitle = (thought: Thought) =>
     thought.alias?.length ? (thought.content ?? "No content.") : null
 
-const itemDetailNoContentText = { value: "-", color: Color.SecondaryText }
-
 function ThoughtsList({ authToken }: { authToken: string }) {
-    const [isShowingInspector, setIsShowingInspector] = useState(false)
+    const [selectedThoughtId, setSelectedThoughtId] = useState<string | null>(
+        null
+    )
+
+    const [isShowingInspector, setIsShowingInspector] = useCachedState(
+        "is-showing-inspector",
+        false,
+        {
+            cacheNamespace: environment.commandName
+        }
+    )
+
+    const [inspectorLayoutId, setInspectorLayoutId] =
+        useCachedState<InspectorLayoutID>("inspector-layout-id", "balanced", {
+            cacheNamespace: environment.commandName
+        })
+
     /**
      * @remarks This serves as single-use-case navigation history state for the `CaptureThought` form. Once we have our own generic history implemented, we can replace this state.
      */
@@ -497,17 +516,58 @@ function ThoughtsList({ authToken }: { authToken: string }) {
         [deleteMutation.mutate]
     )
 
+    const selectedThoughtIndex = useMemo(() => {
+        if (!thoughts) return -1
+
+        return thoughts.findIndex(thought => thought.id === selectedThoughtId)
+    }, [thoughts, selectedThoughtId])
+
+    const selectNextThought = useCallback(() => {
+        if (!thoughts || selectedThoughtIndex === -1) return
+
+        setSelectedThoughtId(
+            thoughts[(selectedThoughtIndex + 1) % thoughts.length]?.id ?? null
+        )
+    }, [thoughts, selectedThoughtIndex])
+
+    const selectPreviousThought = useCallback(() => {
+        if (!thoughts || selectedThoughtIndex === -1) return
+
+        setSelectedThoughtId(
+            thoughts[
+                (selectedThoughtIndex - 1 + thoughts.length) % thoughts.length
+            ]?.id ?? null
+        )
+    }, [thoughts, selectedThoughtIndex])
+
     const actionProps = useMemo<ThoughtListActionsProps>(
         () => ({
             isShowingInspector,
             setIsShowingInspector,
+            inspectorLayoutId,
+            setInspectorLayoutId,
+
             setIsCreatingThought,
+
             setEditingThoughtId,
+
             handleDeleteThought,
 
-            refreshThoughts: refresh
+            refreshThoughts: refresh,
+
+            selectNextThought,
+            selectPreviousThought
         }),
-        [isShowingInspector, handleDeleteThought, refresh]
+        [
+            isShowingInspector,
+            inspectorLayoutId,
+            setIsShowingInspector,
+            setInspectorLayoutId,
+            handleDeleteThought,
+            refresh,
+            selectNextThought,
+            selectPreviousThought
+        ]
     )
 
     const isFetchingMutation =
@@ -534,6 +594,9 @@ function ThoughtsList({ authToken }: { authToken: string }) {
         console.error(error)
     }
 
+    const selectedThought =
+        thoughts?.find(thought => thought.id === selectedThoughtId) ?? null
+
     if (isCreatingThought)
         return (
             <CaptureThought
@@ -556,13 +619,33 @@ function ThoughtsList({ authToken }: { authToken: string }) {
             />
         )
 
+    if (isShowingInspector && inspectorLayoutId === "full") {
+        if (selectedThought)
+            return (
+                <ThoughtInspectorDetail
+                    actions={
+                        <ThoughtListActions
+                            {...actionProps}
+                            thought={selectedThought}
+                        />
+                    }
+                    layoutId={inspectorLayoutId}
+                    thought={selectedThought}
+                />
+            )
+
+        setIsShowingInspector(false)
+    }
+
     return (
         <List
             actions={<ThoughtListActions {...actionProps} />}
             isLoading={isFetching}
             isShowingDetail={isShowingInspector}
             navigationTitle="View Thoughts"
+            onSelectionChange={setSelectedThoughtId}
             pagination={pagination}
+            selectedItemId={selectedThoughtId ?? undefined}
         >
             <List.EmptyView
                 description="Create your first thought to get started."
@@ -580,42 +663,12 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                         />
                     }
                     detail={
-                        <List.Item.Detail
-                            metadata={
-                                <List.Item.Detail.Metadata>
-                                    <List.Item.Detail.Metadata.Label
-                                        text={
-                                            thought.alias ??
-                                            itemDetailNoContentText
-                                        }
-                                        title="Alias"
-                                    />
-
-                                    <List.Item.Detail.Metadata.Separator />
-                                    <List.Item.Detail.Metadata.Label
-                                        text={
-                                            thought.content ??
-                                            itemDetailNoContentText
-                                        }
-                                        title="Content"
-                                    />
-
-                                    <List.Item.Detail.Metadata.Separator />
-                                    <List.Item.Detail.Metadata.Label
-                                        text={{
-                                            value: formatDate(
-                                                thought.createdAt,
-                                                { preset: "compact" }
-                                            ),
-
-                                            color: Color.SecondaryText
-                                        }}
-                                        title="Created"
-                                    />
-                                </List.Item.Detail.Metadata>
-                            }
+                        <ThoughtInspectorListDetail
+                            layoutId={inspectorLayoutId}
+                            thought={thought}
                         />
                     }
+                    id={thought.id}
                     key={thought.id}
                     subtitle={resolveItemSubtitle(thought) ?? undefined}
                     title={resolveItemTitle(thought)}
