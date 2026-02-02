@@ -10,7 +10,12 @@ export const thoughts = pgTable(
     {
         id: varchar().primaryKey().$defaultFn(nanoid),
         brainId: varchar().notNull(),
+
+        /**
+         * @deprecated Remove this column if unused after major constructs are fully implemented using dedicated tables and relations. The original intent was to discriminate primitive types (datasets, attributes, preferences) within a single thoughts table, but separate tables are more performant for queries.
+         */
         kind: varchar({ enum: ["dataset", "attribute", "preference"] }),
+
         alias: varchar(),
         content: varchar(),
         createdAt: timestamp().notNull().defaultNow(),
