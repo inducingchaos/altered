@@ -80,6 +80,27 @@ export const relations = defineRelations(tables, r => ({
         thoughtMetadata: r.many.thoughtMetadata({
             from: r.brains.id,
             to: r.thoughtMetadata.brainId
+        }),
+
+        datasets: r.many.datasets({
+            from: r.brains.id,
+            to: r.datasets.brainId
+        }),
+
+        thoughtsToDatasets: r.many.thoughtsToDatasets({
+            from: r.brains.id,
+            to: r.thoughtsToDatasets.brainId
+        })
+    },
+
+    datasets: {
+        extendingThought: r.one.thoughts({
+            from: r.datasets.extendingThoughtId,
+            to: r.thoughts.id
+        }),
+        thoughts: r.many.thoughts({
+            from: r.datasets.id.through(r.thoughtsToDatasets.datasetId),
+            to: r.thoughts.id.through(r.thoughtsToDatasets.thoughtId)
         })
     },
     thoughts: {
@@ -94,6 +115,22 @@ export const relations = defineRelations(tables, r => ({
         metadata: r.many.thoughtMetadata({
             from: r.thoughts.id,
             to: r.thoughtMetadata.thoughtId
+        }),
+
+        datasets: r.many.datasets({
+            from: r.thoughts.id.through(r.thoughtsToDatasets.thoughtId),
+            to: r.datasets.id.through(r.thoughtsToDatasets.datasetId)
+        })
+    },
+
+    thoughtsToDatasets: {
+        thought: r.one.thoughts({
+            from: r.thoughtsToDatasets.thoughtId,
+            to: r.thoughts.id
+        }),
+        dataset: r.one.datasets({
+            from: r.thoughtsToDatasets.datasetId,
+            to: r.datasets.id
         })
     },
 
