@@ -3,32 +3,32 @@ name: Datasets Feature Implementation
 overview: Implement a datasets feature for the ALTERED Raycast extension with a new datasets table, many-to-many junction table, server-side filtering/search, and UI components for filtering and managing dataset memberships.
 todos:
   - id: schema-datasets-table
-    content: Create datasets table with id, brainId, extendingThoughtId, timestamps
-    status: pending
+    content: Create datasets table with id, brainId, representingThoughtId, createdAt
+    status: completed
   - id: schema-junction-table
     content: Create thoughtsToDatasets junction table with composite primary key
-    status: pending
+    status: completed
   - id: schema-export-tables
     content: Export new tables from data-store/tables/index.ts
-    status: pending
+    status: completed
   - id: schema-deprecate-kind
     content: Add JSDoc to deprecate kind column on thoughts table
-    status: pending
+    status: completed
   - id: schema-relations
     content: Define Drizzle relations with through syntax for many-to-many
-    status: pending
+    status: completed
   - id: schema-migration
     content: Generate and run Drizzle migration
-    status: pending
+    status: completed
   - id: shapes-dataset-schemas
-    content: Create dataset schemas in data-shapes (arktype) AND core (pure TS types)
-    status: pending
+    content: Create dataset schemas with branded DatasetID, internal schema for brainId
+    status: completed
   - id: shapes-filter-schemas
-    content: Create generalized filter/search schemas in data-shapes and core packages
-    status: pending
+    content: Create generic filter/search schemas with type-safe ThoughtsFilterOptions and ThoughtsSearchOptions
+    status: completed
   - id: shapes-export
     content: Export new schemas from data-shapes and core packages
-    status: pending
+    status: completed
   - id: search-pg-trgm-migration
     content: Add migration for pg_trgm extension and GIN indexes for fuzzy search
     status: pending
@@ -95,10 +95,87 @@ isProject: false
 
 Add datasets as a first-class construct with:
 
-- Dedicated `datasets` table with `extendingThoughtId` (1-1 to representing thought)
+- Dedicated `datasets` table with `representingThoughtId` (1-1 to representing thought)
 - `thoughtsToDatasets` junction table for many-to-many membership
 - Server-side filtering and search for both thoughts and datasets
 - UI: dropdown filter in View Thoughts, TagPicker in Edit Thought, dataset creation form
+
+---
+
+## Design Decisions (Refinements from Implementation)
+
+The following adjustments were made during Phase 1-2 implementation to improve type safety, API design, and data modeling:
+
+### Naming: `extendingThought` → `representingThought`
+
+Renamed to better reflect the relationship semantics. A dataset doesn't "extend" a thought—it is "represented by" a thought that provides its alias/content.
+
+### Removed `updatedAt` Column and `UpdatableDataset` Schema
+
+Datasets currently have no mutable properties—only `representingThoughtId` which should never change after creation. The representing thought itself can be updated (alias/content), but that's handled via the thoughts API. Until we add dataset-specific mutable properties (e.g., settings, permissions), the `updatedAt` column adds no value.
+
+### Branded `DatasetID` Type
+
+Added a branded type `DatasetID = Brand<string, "Dataset ID">` (arktype: `type("string").brand("Dataset ID")`) to enforce type-exclusive dataset IDs. This prevents accidentally passing a thought ID where a dataset ID is expected (e.g., `filter.include.datasets` only accepts `DatasetID[]`).
+
+**Files:**
+- `packages/public/core/src/utils/brand.ts` - `Brand<Type, Name>` utility type
+- `packages/public/data-shapes/src/altered-datasets/db.ts` - `datasetIdSchema`
+- `packages/public/core/src/altered-datasets/db.ts` - `DatasetID` type
+
+### Public vs Internal Schemas (brainId Separation)
+
+Removed `brainId` from all public-facing dataset schemas. The `brainId` is server-side context injected from the authenticated user's selected brain—it should never be passable or visible to the client.
+
+**Structure:**
+- `@altered/data/shapes` (public): `datasetSchema` without `brainId`
+- `@altered-internal/data-shapes` (internal): `internalDatasetSchema` extends `datasetSchema` with `brainId`
+
+### Generic Filter and Search Schemas
+
+Made filter and search schemas generic and reusable:
+
+**Filter:**
+```typescript
+// Generic base
+export const genericFilterOptionsSchema = type("<IncludeOptions extends Record<string, unknown>>", {
+    "include?": "IncludeOptions"
+})
+
+// Thoughts-specific derivation with branded DatasetID
+export const thoughtsFilterOptionsSchema = genericFilterOptionsSchema({
+    "datasets?": datasetIdSchema.array()
+})
+```
+
+**Search:**
+```typescript
+// Generic base with type parameter for key paths
+export const genericSearchOptionsSchema = type("<KeyPath extends string>", {
+    "query?": "string",
+    "keyPaths?": "KeyPath[]",
+    "fuzzy?": "boolean"
+})
+
+// Thoughts-specific with SearchableThoughtKey union
+export const thoughtsSearchOptionsSchema = genericSearchOptionsSchema(searchableThoughtKeySchema)
+```
+
+### `SearchableThoughtKey` Type
+
+Added explicit searchable key types to enable type-safe `keyPaths` in search options:
+
+```typescript
+// data-shapes (arktype)
+export const searchableThoughtSchema = thoughtSchema.pick("alias", "content")
+export const searchableThoughtKeySchema = searchableThoughtSchema.keyof()
+
+// core (pure TS)
+export type SearchableThought = Pick<Thought, "alias" | "content">
+export type SearchableThoughtKey = keyof SearchableThought  // "alias" | "content"
+```
+
+This ensures `search.keyPaths` only accepts valid searchable fields at compile time.
 
 ---
 
@@ -117,7 +194,7 @@ export const datasets = pgTable(
     {
         id: varchar().primaryKey().$defaultFn(nanoid),
         brainId: varchar().notNull(),
-        extendingThoughtId: varchar(),  // 1-1 to thoughts.id (nullable initially)
+        representingThoughtId: varchar(),  // 1-1 to thoughts.id (nullable initially)
         createdAt: timestamp().notNull().defaultNow(),
         updatedAt: timestamp()
             .notNull()
@@ -185,8 +262,8 @@ Add relations using Drizzle 1.0 beta `through` syntax:
 // Add to existing relations object:
 
 datasets: {
-    extendingThought: r.one.thoughts({
-        from: r.datasets.extendingThoughtId,
+    representingThought: r.one.thoughts({
+        from: r.datasets.representingThoughtId,
         to: r.thoughts.id
     }),
     thoughts: r.many.thoughts({
@@ -232,66 +309,85 @@ Generate and run Drizzle migration to create the new tables.
 
 ```typescript
 import { type } from "arktype"
+import { thoughtSchema } from "../altered-thoughts"
 
+export const datasetIdSchema = type("string").brand("Dataset ID")
+
+/**
+ * @remarks We could transform this to have a more client-friendly signature - including the
+ * `alias` and `content` of the representing Thought. This translation would be for aesthetics
+ * and ergonomics. There is also a very small chance we may re-implement this as a Thought on
+ * the database level.
+ */
 export const datasetSchema = type({
-    id: "string",
-    brainId: "string",
-    extendingThoughtId: "string | null",
-    createdAt: "Date",
-    updatedAt: "Date"
+    id: datasetIdSchema,
+    representingThoughtId: "string",
+    createdAt: "Date"
 })
 
-export const creatableDatasetSchema = datasetSchema.omit("createdAt", "updatedAt").merge({
-    "id?": "string",
-    "brainId?": "string"  // Injected from context
-})
-
-export const updatableDatasetSchema = type({
-    "extendingThoughtId?": "string | null"
-})
+export const creatableDatasetSchema = datasetSchema
+    .omit("createdAt")
+    .merge({ "id?": "string" })
 
 export const queryableDatasetSchema = datasetSchema.pick("id")
 
+export type DatasetID = typeof datasetIdSchema.infer
 export type Dataset = typeof datasetSchema.infer
 export type CreatableDataset = typeof creatableDatasetSchema.infer
-export type UpdatableDataset = typeof updatableDatasetSchema.infer
 export type QueryableDataset = typeof queryableDatasetSchema.infer
+
+export const datasetWithThoughtSchema = datasetSchema.merge({
+    representingThought: thoughtSchema
+})
+
+export type DatasetWithThought = typeof datasetWithThoughtSchema.infer
 ```
 
-**File:** `[packages/public/core/src/altered-datasets/index.ts](packages/public/core/src/altered-datasets/index.ts)` (new)
+**File:** `[packages/public/core/src/altered-datasets/db.ts](packages/public/core/src/altered-datasets/db.ts)` (new)
 
-Replicate pure TypeScript types for lightweight consumption in the Raycast extension (no arktype dependency):
+Pure TypeScript types for lightweight consumption in the Raycast extension (no arktype dependency):
 
 ```typescript
+import type { Thought } from "../altered-thoughts"
+import type { Brand } from "../utils"
+
+export type DatasetID = Brand<string, "Dataset ID">
+
 export type Dataset = {
-    id: string
-    brainId: string
-    extendingThoughtId: string | null
+    id: DatasetID
+    representingThoughtId: string
     createdAt: Date
-    updatedAt: Date
 }
 
-export type CreatableDataset = {
-    id?: string
-    brainId?: string
-    extendingThoughtId?: string | null
+export type CreatableDataset = Omit<Dataset, "createdAt"> & {
+    id?: DatasetID
 }
 
-export type UpdatableDataset = {
-    extendingThoughtId?: string | null
-}
-
-export type QueryableDataset = {
-    id: string
-}
+export type QueryableDataset = Pick<Dataset, "id">
 
 export type DatasetWithThought = Dataset & {
-    extendingThought: {
-        id: string
-        alias: string | null
-        content: string | null
-    } | null
+    representingThought: Thought
 }
+```
+
+**File:** `[packages/internal/data-shapes/src/datasets.ts](packages/internal/data-shapes/src/datasets.ts)` (new)
+
+Internal schema extending public schema with `brainId`:
+
+```typescript
+import { datasetIdSchema, datasetSchema } from "@altered/data/shapes"
+
+export const internalDatasetSchema = datasetSchema.merge({
+    brainId: "string"
+})
+
+export const internalCreatableDatasetSchema = internalDatasetSchema.merge({
+    "id?": datasetIdSchema,
+    "createdAt?": "Date"
+})
+
+export type InternalDataset = typeof internalDatasetSchema.infer
+export type InternalCreatableDataset = typeof internalCreatableDatasetSchema.infer
 ```
 
 ### 2.2 Create Filter and Search Schemas (Generalized)
@@ -302,49 +398,39 @@ These schemas are generalized for reuse across multiple data types (thoughts, da
 
 ```typescript
 import { type } from "arktype"
+import { datasetIdSchema } from "../altered-datasets"
 
-/**
- * Generic filter schema for querying entities.
- * Extend or specialize per entity type as needed.
- */
-export const filterOptionsSchema = type({
-    "include?": {
-        "ids?": "string[]"  // Generic ID filtering
+export const genericFilterOptionsSchema = type(
+    "<IncludeOptions extends Record<string, unknown>>",
+    {
+        "include?": "IncludeOptions"
     }
+)
+
+export const thoughtsFilterOptionsSchema = genericFilterOptionsSchema({
+    "datasets?": datasetIdSchema.array()
 })
 
-/**
- * Thoughts-specific filter extending base filter.
- */
-export const thoughtsFilterSchema = type({
-    "include?": {
-        "datasets?": "string[]"  // Dataset IDs to filter by
-    }
-})
-
-export type FilterOptions = typeof filterOptionsSchema.infer
-export type ThoughtsFilter = typeof thoughtsFilterSchema.infer
+export type ThoughtsFilterOptions = typeof thoughtsFilterOptionsSchema.infer
 ```
 
 **File:** `[packages/public/data-shapes/src/search/index.ts](packages/public/data-shapes/src/search/index.ts)` (new)
 
 ```typescript
 import { type } from "arktype"
+import { searchableThoughtKeySchema } from "../altered-thoughts"
 
-/**
- * Generic search options schema for querying entities.
- * 
- * - `query`: The search string
- * - `keyPaths`: Optional array of fields to search (defaults to all searchable fields)
- * - `fuzzy`: Enable fuzzy matching (more expensive, better UX for typos)
- */
-export const searchOptionsSchema = type({
+export const genericSearchOptionsSchema = type("<KeyPath extends string>", {
     "query?": "string",
-    "keyPaths?": "string[]",
-    "fuzzy?": "boolean"  // Default: false (uses exact ILIKE matching)
+    "keyPaths?": "KeyPath[]",
+    "fuzzy?": "boolean"
 })
 
-export type SearchOptions = typeof searchOptionsSchema.infer
+export const thoughtsSearchOptionsSchema = genericSearchOptionsSchema(
+    searchableThoughtKeySchema
+)
+
+export type ThoughtsSearchOptions = typeof thoughtsSearchOptionsSchema.infer
 ```
 
 **File:** `[packages/public/core/src/filter/index.ts](packages/public/core/src/filter/index.ts)` (new)
@@ -352,27 +438,54 @@ export type SearchOptions = typeof searchOptionsSchema.infer
 Pure TypeScript types for lightweight client consumption:
 
 ```typescript
-export type FilterOptions = {
-    include?: {
-        ids?: string[]
-    }
+import type { DatasetID } from "../altered-datasets"
+
+export type GenericFilterOptions<
+    IncludeOptions extends Record<string, unknown>
+> = {
+    include?: IncludeOptions
 }
 
-export type ThoughtsFilter = {
-    include?: {
-        datasets?: string[]
-    }
-}
+export type ThoughtsFilterOptions = GenericFilterOptions<{
+    datasets?: DatasetID[]
+}>
 ```
 
 **File:** `[packages/public/core/src/search/index.ts](packages/public/core/src/search/index.ts)` (new)
 
 ```typescript
-export type SearchOptions = {
+import type { SearchableThoughtKey } from "../altered-thoughts"
+
+export type SearchOptions<KeyPath extends string> = {
     query?: string
-    keyPaths?: string[]
+    keyPaths?: KeyPath[]
     fuzzy?: boolean
 }
+
+export type ThoughtsSearchOptions = SearchOptions<SearchableThoughtKey>
+```
+
+**File:** `[packages/public/data-shapes/src/altered-thoughts/db.ts](packages/public/data-shapes/src/altered-thoughts/db.ts)` (modified)
+
+Added searchable key schema for type-safe search keypaths:
+
+```typescript
+// ... existing schemas ...
+
+export const searchableThoughtSchema = thoughtSchema.pick("alias", "content")
+export const searchableThoughtKeySchema = searchableThoughtSchema.keyof()
+
+export type SearchableThought = typeof searchableThoughtSchema.infer
+export type SearchableThoughtKey = typeof searchableThoughtKeySchema.infer
+```
+
+**File:** `[packages/public/core/src/altered-thoughts/db.ts](packages/public/core/src/altered-thoughts/db.ts)` (modified)
+
+```typescript
+// ... existing types ...
+
+export type SearchableThought = Pick<Thought, "alias" | "content">
+export type SearchableThoughtKey = keyof SearchableThought
 ```
 
 ### 2.3 Export New Schemas
@@ -415,8 +528,8 @@ Mirror the structure of `[packages/internal/data-access/src/thoughts/get/index.t
  * ```typescript
  * const getDatasets = createEntityGetter({
  *     table: datasets,
- *     searchableFields: ["extendingThought.alias", "extendingThought.content"],
- *     relations: { extendingThought: true }
+ *     searchableFields: ["representingThought.alias", "representingThought.content"],
+ *     relations: { representingThought: true }
  * })
  * ```
  */
@@ -432,7 +545,7 @@ export async function getDatasets({
 ```
 
 - Use cursor pagination (same pattern as thoughts)
-- Join with `thoughts` table via `extendingThoughtId` to get alias/content
+- Join with `thoughts` table via `representingThoughtId` to get alias/content
 - Apply search on joined thought's alias/content (see Section 3.5 for search strategy)
 - Return `DatasetWithThought` type that includes the extending thought data
 
@@ -441,17 +554,17 @@ export async function getDatasets({
 ```typescript
 export async function createDataset({
     dataset,
-    extendingThought,
+    representingThought,
     db
 }: {
     dataset: { brainId: string }
-    extendingThought: { alias: string; content?: string }
+    representingThought: { alias: string; content?: string }
     db: Database
 }): Promise<Dataset>
 ```
 
 - Create the extending thought first
-- Create the dataset with `extendingThoughtId` pointing to the thought
+- Create the dataset with `representingThoughtId` pointing to the thought
 - Return the created dataset
 
 #### 3.1.3 `update.ts` - Update Dataset
@@ -773,7 +886,7 @@ export const datasetsContract = {
     create: contractFactory
         .route({ tags: ["internal"] })
         .input(type({
-            extendingThought: type({ alias: "string", "content?": "string" })
+            representingThought: type({ alias: "string", "content?": "string" })
         }))
         .output(type({ dataset: datasetSchema })),
 
@@ -861,7 +974,7 @@ export const createDatasetProcedure = enrichedRouteFactory.datasets.create.handl
     async ({ input, context }) => ({
         dataset: await createDataset({
             dataset: { brainId: context.app.selectedBrainId },
-            extendingThought: input.extendingThought,
+            representingThought: input.representingThought,
             db: context.db
         })
     })
@@ -1095,7 +1208,7 @@ function ThoughtsList({ authToken }: { authToken: string }) {
                         {allDatasets.map(dataset => (
                             <List.Dropdown.Item
                                 key={dataset.id}
-                                title={dataset.extendingThought?.alias ?? "Untitled"}
+                                title={dataset.representingThought?.alias ?? "Untitled"}
                                 value={dataset.id}
                             />
                         ))}
@@ -1180,7 +1293,7 @@ export function EditThought({
                     <Form.TagPicker.Item
                         key={dataset.id}
                         value={dataset.id}
-                        title={dataset.extendingThought?.alias ?? "Untitled"}
+                        title={dataset.representingThought?.alias ?? "Untitled"}
                     />
                 ))}
             </Form.TagPicker>
@@ -1230,7 +1343,7 @@ export function CreateDataset({
     }>({
         onSubmit: async (formValues) => {
             const result = await createMutation.mutateAsync({
-                extendingThought: {
+                representingThought: {
                     alias: formValues.alias,
                     content: formValues.content || undefined
                 }
@@ -1395,24 +1508,28 @@ flowchart TB
 
 ## Summary of Files to Create/Modify
 
-### New Files (16)
+### New Files (18)
 
 **Database:**
 
-- `packages/internal/data-store/src/tables/datasets.ts`
-- `packages/internal/data-store/src/tables/thoughts-to-datasets.ts`
+- `packages/internal/data-store/src/tables/datasets.ts` ✅
+- `packages/internal/data-store/src/tables/thoughts-to-datasets.ts` ✅
 
 **Data Shapes (arktype validators):**
 
-- `packages/public/data-shapes/src/altered-datasets/db.ts`
-- `packages/public/data-shapes/src/filter/index.ts`
-- `packages/public/data-shapes/src/search/index.ts`
+- `packages/public/data-shapes/src/altered-datasets/db.ts` ✅
+- `packages/public/data-shapes/src/altered-datasets/index.ts` ✅
+- `packages/public/data-shapes/src/filter/index.ts` ✅
+- `packages/public/data-shapes/src/search/index.ts` ✅
+- `packages/internal/data-shapes/src/datasets.ts` ✅ (internal schema with brainId)
 
 **Core Types (pure TypeScript for lightweight client):**
 
-- `packages/public/core/src/altered-datasets/index.ts`
-- `packages/public/core/src/filter/index.ts`
-- `packages/public/core/src/search/index.ts`
+- `packages/public/core/src/altered-datasets/db.ts` ✅
+- `packages/public/core/src/altered-datasets/index.ts` ✅
+- `packages/public/core/src/filter/index.ts` ✅
+- `packages/public/core/src/search/index.ts` ✅
+- `packages/public/core/src/utils/brand.ts` ✅ (Brand<Type, Name> utility)
 
 **Data Access:**
 
@@ -1433,21 +1550,24 @@ flowchart TB
 - `apps/launcher/src/app/commands/view-thoughts/use-datasets-query-options.tsx`
 - `apps/launcher/src/app/commands/edit-thought/create-dataset.tsx`
 
-### Modified Files (14)
+### Modified Files (16)
 
 **Database:**
 
-- `packages/internal/data-store/src/tables/index.ts` - export new tables
-- `packages/internal/data-store/src/tables/thoughts.ts` - JSDoc deprecation on kind column
-- `packages/internal/data-store/src/relations/index.ts` - add datasets relations with through syntax
+- `packages/internal/data-store/src/tables/index.ts` ✅ - export new tables
+- `packages/internal/data-store/src/tables/thoughts.ts` ✅ - JSDoc deprecation on kind column
+- `packages/internal/data-store/src/relations/index.ts` ✅ - add datasets relations with through syntax
 
 **Data Shapes:**
 
-- `packages/public/data-shapes/src/index.ts` - export datasets, filter, search
+- `packages/public/data-shapes/src/index.ts` ✅ - export datasets, filter, search
+- `packages/public/data-shapes/src/altered-thoughts/db.ts` ✅ - add SearchableThoughtKey schema
 
 **Core Types:**
 
-- `packages/public/core/src/index.ts` - export datasets, filter, search types
+- `packages/public/core/src/index.ts` ✅ - export datasets, filter, search types
+- `packages/public/core/src/altered-thoughts/db.ts` ✅ - add SearchableThoughtKey type
+- `packages/public/core/src/utils/index.ts` ✅ - export Brand utility
 
 **Data Access:**
 

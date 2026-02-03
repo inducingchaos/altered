@@ -29,3 +29,6 @@ export type UpdatableThought = Omit<
  * @todo [P4] We could extrapolate this to accept any property of the Thought (as a union - or even more complex with and/or clauses), but for most cases, an ID is sufficient.
  */
 export type QueryableThought = Pick<Thought, "id">
+
+export type SearchableThought = Pick<Thought, "alias" | "content">
+export type SearchableThoughtKey = keyof SearchableThought

@@ -30,9 +30,15 @@ export const updatableThoughtSchema = thoughtSchema.omit(
  */
 export const queryableThoughtSchema = thoughtSchema.pick("id")
 
+export const searchableThoughtSchema = thoughtSchema.pick("alias", "content")
+export const searchableThoughtKeySchema = searchableThoughtSchema.keyof()
+
 export type Thought = typeof thoughtSchema.infer
 
 export type CreatableThought = typeof creatableThoughtSchema.infer
 export type UpdatableThought = typeof updatableThoughtSchema.infer
 
 export type QueryableThought = typeof queryableThoughtSchema.infer
+
+export type SearchableThought = typeof searchableThoughtSchema.infer
+export type SearchableThoughtKey = typeof searchableThoughtKeySchema.infer

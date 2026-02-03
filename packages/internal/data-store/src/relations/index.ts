@@ -94,8 +94,8 @@ export const relations = defineRelations(tables, r => ({
     },
 
     datasets: {
-        extendingThought: r.one.thoughts({
-            from: r.datasets.extendingThoughtId,
+        representingThought: r.one.thoughts({
+            from: r.datasets.representingThoughtId,
             to: r.thoughts.id
         }),
         thoughts: r.many.thoughts({

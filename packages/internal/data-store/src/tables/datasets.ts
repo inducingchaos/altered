@@ -10,12 +10,8 @@ export const datasets = pgTable(
     {
         id: varchar().primaryKey().$defaultFn(nanoid),
         brainId: varchar().notNull(),
-        extendingThoughtId: varchar().notNull(),
-        createdAt: timestamp().notNull().defaultNow(),
-        updatedAt: timestamp()
-            .notNull()
-            .defaultNow()
-            .$onUpdateFn(() => new Date())
+        representingThoughtId: varchar().notNull(),
+        createdAt: timestamp().notNull().defaultNow()
     },
     table => [
         index("datasets_brain_id_created_at_idx").on(
